@@ -7,4 +7,4 @@
      \/_/      \/_/  \/_/
 
 </pre>
-yup.py -- yupp in python
+yupp, the C preprocessor
