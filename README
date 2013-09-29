@@ -1,12 +1,54 @@
- __    __    _____ _____
-/\ \  /\ \  /\  _  \  _  \
-\ \ \_\/  \_\/  \_\ \ \_\ \
- \ \__  /\____/\  __/\  __/
-  \/_/\_\/___/\ \_\/\ \_\/
-     \/_/      \/_/  \/_/
+    yet another C preprocessor
+     __    __    _____ _____
+    /\ \  /\ \  /\  _  \  _  \
+    \ \ \_\/  \_\/  \_\ \ \_\ \
+     \ \__  /\____/\  __/\  __/
+      \/_/\_\/___/\ \_\/\ \_\/
+         \/_/      \/_/  \/_/
 
-($($\y:u.\m.\...(m y($\C.\p.(r)e p)($\ro.(ce)s)))so r)
+    ($($\y:u.\m.\...(m y($\C.\p.(r)e p)($\ro.(ce)s)))so r)
+    ___         __________________________________
+    ___ VERSION __________________________________
 
-http://yuppit.blogspot.com/
-http://github.com/in4lio/yupp/
-http://yup-py.appspot.com/
+    yup.py      0.5a1
+                2013-09-29
+
+    Python      2.7.5
+    ___             ______________________________
+    ___ WHAT IS IT? ______________________________
+
+    yupp is a text preprocessor which implements the macro language with
+    Lisp-like Polish notation syntax in fully parenthesized prefix form.
+    yupp is intended to transform C programs before they are compiled.
+    It can also be useful for more general purposes.
+    An embedding of macro constructions into the source code occurs by
+    the use of "application form" e.g. ($e).
+
+    ___        ___________________________________
+    ___ SYNTAX ___________________________________
+
+    Core syntactic forms of the language are a list, an application and a lambda.
+
+    list ::= '(' { form }0... ')'
+
+    (0.2 "string" atom)
+
+    application ::= '($' function { argument }0... ')'
+
+    ($add 2 2)
+
+    lambda ::= { '\' name { ':' default } '.' }1... form
+
+    \p.($add p 1)
+
+    All core forms can be included into each other. Only an application
+    form can be embeded into the source code directly.
+
+    Any functions from "string", "operator" and "math" modules of Python
+    standard library can be used in preprocessor expressions.
+
+    Following examples show basic syntax constructions of the language.
+    Web Console is at your service (http://yup-py.appspot.com/).
+
+    <roadworkahead>
+  
