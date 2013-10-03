@@ -1,0 +1,7 @@
+{
+	"cmd": ["python", "-u", "yup.py", "--type-file", "$file"],
+	"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
+	"selector": "source.yupp, text.yupp",
+	"working_dir": "$project_path",
+	"shell": true
+}

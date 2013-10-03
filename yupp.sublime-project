@@ -1,0 +1,25 @@
+{
+	"folders":
+	[
+		{
+			"path": ".\\",
+			"file_exclude_patterns": ["*.bak", "*.bat", "*.sublime*", "*.ico", ".git*", ".ast" ],
+			"folder_exclude_patterns": ["backup", "SublimeText"]
+		}
+	],
+	"settings":
+	{
+		"pylinter":
+		{
+			"pylint_rc": ".\\etc\\pylint.rc",
+			"disable": [
+			  "C0103" // Invalid name "%s" (should match %s)
+			, "C0111" // Missing docstring
+			, "I0011" // Locally disabling %s
+			, "W0105" // String statement has no effect
+			, "W0141" // Used builtin function %r
+			, "R0924" // Badly implemented Container
+			]
+		}
+	}
+}

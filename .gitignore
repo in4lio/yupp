@@ -1,17 +1,21 @@
-#	-- .ext --
-*.py[cod]
+#   -- .ext --
+*.ast
 *.bak
 *.bat
-*.sublime*
+*.c
+*.exe
+*.json*
+*.py[cod]
 
-#	-- folder --
+#   -- folder --
 backup
 doc
-etc
-eg
-SublimeText
 yup-py
 
-#	-- file --
+#   -- file --
+make_t.py
 t.py
-HISTORY
+test_highlighting.yu
+tr.py
+VERSION
+yupp.sublime-workspace
