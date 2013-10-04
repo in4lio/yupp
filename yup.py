@@ -743,7 +743,7 @@ def yuparse( sou ):
 
         return ast
 
-    except:                                                                                                             #pylint: disable=W0702
+    except:                                                                                                            #pylint: disable=W0702
         e_type, e, tb = sys.exc_info()
 #   ---- python exception
         arg = e.args[ 0 ] if e.args else None
@@ -2001,7 +2001,7 @@ class INFIX_VISITOR( NodeVisitor ):
 #   Buildin functions and consts
 #   -----------------------------------
 
-import string, operator, math, datetime                                                                                 #pylint: disable=W0402
+import string, operator, math, datetime                                                                                #pylint: disable=W0402
 
 #   ---------------------------------------------------------------------------
 def _input_file( name = '' ):
@@ -2032,7 +2032,7 @@ buildin.update({
     'len': len,
     'list': lambda *l : LIST( l ),
     'print': lambda *l : sys.stdout.write( ' '.join(( _unq( x ) if isinstance( x, STR ) else str( x )) for x in l )),
-                                                                                                                        #pylint: disable=W0142
+                                                                                                                       #pylint: disable=W0142
     'range': lambda *l : LIST( range( *l )),
     'repr': repr,
     'title': lambda : PLAIN( _title_template % {
@@ -2104,7 +2104,7 @@ def _list_eval_1( args, env, depth = 0 ):
     Evaluate first argument into the list.
     """
 #   ---------------
-                                                                                                                        #pylint: disable=E1103
+                                                                                                                       #pylint: disable=E1103
     if not args:
         return ( None, [])
 
@@ -2151,7 +2151,7 @@ def echo__eval_( fn ):
 
 #   ---------------------------------------------------------------------------
 @echo__eval_
-def yueval( node, env = ENV(), depth = 0 ):                                                                             #pylint: disable=R0915,R0912,R0911,R0914
+def yueval( node, env = ENV(), depth = 0 ):                                                                            #pylint: disable=R0915,R0912,R0911,R0914
     """
     AST reduction.
     """
@@ -2161,7 +2161,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
 #   ---------------
 #   TODO: region
-                                                                                                                        #pylint: disable=E1103
+                                                                                                                       #pylint: disable=E1103
     try:
         tr = False
         while True:
@@ -2586,7 +2586,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     return node
 
                 code = compile( node.tree, '', 'eval' )
-                                                                                                                        #pylint: disable=W0142
+                                                                                                                       #pylint: disable=W0142
                 return eval( code, dict( globals(), **buildin ), node.env )
 
 #   ---- LIST | list
@@ -2622,7 +2622,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
             else:
                 return node
 
-    except:                                                                                                             #pylint: disable=W0702
+    except:                                                                                                            #pylint: disable=W0702
         e_type, e, tb = sys.exc_info()
 #   ---- python or recursive exception
         arg = e.args[ 0 ] if e.args else None
@@ -2758,7 +2758,7 @@ def shell_argparse():
     argp.set_defaults( pp_skip_c_comment = PP_SKIP_C_COMMENT, pp_trim_app_indent = PP_TRIM_APP_INDENT
     , pp_reduce_emptiness = PP_REDUCE_EMPTINESS )
     return argp.parse_args()
-    return argp.parse_args([ '-h' ])                                                                                    #pylint: disable=W0101
+    return argp.parse_args([ '-h' ])                                                                                   #pylint: disable=W0101
 
 #   ---------------------------------------------------------------------------
 def shell_input():
@@ -2884,7 +2884,7 @@ def _pp_text( text, text_source = '' ):
         print OK
 
 #   ---------------------------------------------------------------------------
-def _pp( text ):                                                                                                        #pylint: disable=R0915
+def _pp( text ):                                                                                                       #pylint: disable=R0915
     """
     return yueval( yuparse( text ))
     (also tracing and logging)
@@ -2903,7 +2903,7 @@ def _pp( text ):                                                                
         if trace.TRACE:
             trace.info( repr( ast ))
             trace.info( TR_DEEPEST, trace.deepest )
-    except:                                                                                                             #pylint: disable=W0702
+    except:                                                                                                            #pylint: disable=W0702
         e_type, e, tb = sys.exc_info()
         msg = '\n'
 #       -- traceback and not raised exception
@@ -2938,7 +2938,7 @@ def _pp( text ):                                                                
         if trace.TRACE:
             trace.info( plain )
             trace.info( TR_DEEPEST, trace.deepest )
-    except:                                                                                                             #pylint: disable=W0702
+    except:                                                                                                            #pylint: disable=W0702
         e_type, e, tb = sys.exc_info()
         msg = '\n'
 #       -- traceback and not raised exception

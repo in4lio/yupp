@@ -12,7 +12,7 @@ http://github.com/in4lio/yupp/
 test_yup.py -- testkit for yup.py
 """
 
-from yup import *                                                                                                       #pylint: disable=W0614,W0401
+from yup import *                                                                                                      #pylint: disable=W0614,W0401
 
 #   ---- cut here ----
 
@@ -33,7 +33,7 @@ from yup import *                                                               
 
 t_parse_title = 'yuparse() testkit'
 t_parse_kit = [(
-                                                                                                                        #pylint: disable=C0301
+                                                                                                                       #pylint: disable=C0301
 #   ---- 01 -- PLAIN, APPLY, VAR, REMARK
 0,
 
@@ -145,7 +145,7 @@ TEXT([PLAIN('\n'), APPLY(VAR([], ATOM('f')), [COND(VAR([], ATOM('c')), INT(1L), 
 
 t_eval_title = 'yueval() testkit'
 t_eval_kit = [(
-                                                                                                                        #pylint: disable=C0301
+                                                                                                                       #pylint: disable=C0301
 #   ---- 01 -- PLAIN
 0,
 
@@ -643,7 +643,7 @@ def ___title___( t ):
     return CH * d + ' ' + t + ' ' + CH * ( LL - 2 - l - d )
 
 #   ---------------------------------------------------------------------------
-def test( kit, t ):                                                                                                     #pylint: disable=R0915
+def test( kit, t ):                                                                                                    #pylint: disable=R0915
     """
     For each test case: ( text, parsed, evaluated ),
     check: ( yuparse( text ) == parsed ) and ( yueval( parsed ) == evaluated ).
@@ -678,7 +678,7 @@ def test( kit, t ):                                                             
 #   ---- test
             result = ( ast == parsed )
 
-        except:                                                                                                         #pylint: disable=W0702
+        except:                                                                                                        #pylint: disable=W0702
             e_type, e, tb = sys.exc_info()
             msg = '\n'
 #           -- traceback and not raised exception
@@ -721,7 +721,7 @@ def test( kit, t ):                                                             
 #   ---- test
                 result = ( plain == evaluated )
 
-            except:                                                                                                     #pylint: disable=W0702
+            except:                                                                                                    #pylint: disable=W0702
                 e_type, e, tb = sys.exc_info()
                 msg = '\n'
 #               -- traceback and not raised exception

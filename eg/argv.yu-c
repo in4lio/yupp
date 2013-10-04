@@ -4,30 +4,30 @@
 ($import "lib/argv.yu")
 
 ($def-fn-argv \type int \name sum ]
-	int result = 0;
-	($ &arg-begin)
-	while ( ($ &arg-count)-- ) result += ($ &arg-value &type);
-	($ &arg-end)
-	return ( result );
+    int result = 0;
+    ($ &arg-begin)
+    while ( ($ &arg-count)-- ) result += ($ &arg-value &type);
+    ($ &arg-end)
+    return ( result );
 [\def-fn-argv )
 
 ($def-fn-argv \type double \name sumf ]
-	double result = 0;
-	($arg-begin)
-	while ( ($arg-count)-- ) result += ($arg-value double);
-	($arg-end)
-	return ( result );
+    double result = 0;
+    ($arg-begin)
+    while ( ($arg-count)-- ) result += ($arg-value double);
+    ($arg-end)
+    return ( result );
 [\def-fn-argv )
 
 int main( void )
 {
-	($set call-fn-argv \fn.\argv.]
-		($fn)( ($len argv)($argv \i.[, ($i)]) )
-	[\set )
+    ($set call-fn-argv \fn.\argv.]
+        ($fn)( ($len argv)($argv \i.[, ($i)]) )
+    [\set )
 
-	printf( "%d %.1f"
-	, ($call-fn-argv sum (1 3 5 7))
-	, ($call-fn-argv sumf (2.0 4.0 6.0 8.0))
-	);
-	return 0;
+    printf( "%d %.1f"
+    , ($call-fn-argv sum (1 3 5 7))
+    , ($call-fn-argv sumf (2.0 4.0 6.0 8.0))
+    );
+    return 0;
 }
