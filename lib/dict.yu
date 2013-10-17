@@ -1,0 +1,7 @@
+($macro dict (id cols body)
+	($set cols-($id) ($range ($len (($cols)) )))
+	($set each-($id) ($range ($len (($body)) )))
+	($set (($cols))
+		($cols-($id) \i.($ (($body)) \var.($i var)))
+	)
+)
