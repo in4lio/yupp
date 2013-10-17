@@ -15,7 +15,7 @@ COPYRIGHT   = 'Copyright (c) 2011, 2013'
 AUTHORS     = 'Vitaly Kravtsov (in4lio@gmail.com)'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.5a2'
+VERSION     = '0.5a3'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -699,8 +699,8 @@ def _unq( st ):
 
 #   ---------------------------------------------------------------------------
 def _import_source( lib ):
-    try:
 #   TODO: look for libraries into specified directories
+    try:
         f = open( lib, 'r' )
         try:
             sou = f.read().replace( '\r\n', '\n' )
@@ -772,6 +772,7 @@ def ps_text( sou, depth = 0 ):
 #   ---------------
     ast = []
     depth_pth_sq = depth_pth = 0
+    _plain_ret = ''
     while True:
         trace__ps_( 'ps_text', sou, depth )
 #   ---- set
@@ -817,13 +818,14 @@ def ps_text( sou, depth = 0 ):
         yield ( sou, TEXT( ast, depth_pth_sq, depth_pth ))
 
 #   ---- plain
-        if ast and isinstance( ast[ -1 ], PLAIN ):
-            ast = ast[ :-1 ]
+        if sou == _plain_ret and ast:
+            ast.pop()
         else:
             plain = ps_plain( sou, depth_pth_sq, depth_pth, None if ast else '', depth + 1 )
 
         ( sou, leg, depth_pth_sq, depth_pth ) = plain.next()
         ast.append( leg )
+        _plain_ret = sou
 
 #   ---------------------------------------------------------------------------
 @echo__ps_
@@ -2033,8 +2035,10 @@ buildin.update({
     'list': lambda *l : LIST( l ),
     'print': lambda *l : sys.stdout.write( ' '.join(( _unq( x ) if isinstance( x, STR ) else str( x )) for x in l )),
                                                                                                                        #pylint: disable=W0142
+    'q': lambda val : '"%s"' % str( val ),
     'range': lambda *l : LIST( range( *l )),
     'repr': repr,
+    'str': str,
     'title': lambda : PLAIN( _title_template % {
       'app': APP, 'version': VERSION
     , 'input': _input_file.name
