@@ -10,9 +10,10 @@
     ___         __________________________________
     ___ VERSION __________________________________
 
-    yup.py      0.5a2
-                2013-10-03
+    yup.py      0.5a3
+                2013-10-13
     python      2.7.5
+
     ___             ______________________________
     ___ WHAT IS IT? ______________________________
 
@@ -26,7 +27,7 @@
     ___        ___________________________________
     ___ SYNTAX ___________________________________
 
-    Core syntactic forms of the language is a list, an application and
+    Basic syntactic forms of the language is a list, an application and
     a lambda.
 
     list ::= '(' { form }0... ')'
@@ -41,8 +42,8 @@
 
     \p.($add p 1)
 
-    All syntactic forms can be included into each other but only
-    an application form can be embeded into the source code directly.
+    Syntactic forms can be nested within each other but only an application
+    form can be embedded into the source code directly.
 
     Any functions from "string", "operator" and "math" modules of Python
     standard library can be used in preprocessor expressions.
@@ -70,7 +71,7 @@
 
     HIT
 
-    ($! get specific element of the list by the index )
+    ($! get specific item of the list )
 
         ($0 abc)
 
@@ -146,7 +147,7 @@
         )
 
     ($! the enclosing of the source code into the loop
-        with backward square brackets - ][ )
+        with reverse square brackets - ][ )
 
     ($each-grade \i.]
 
@@ -418,7 +419,8 @@
     in failing to translate preprocessor expressions in a plain text,
     an evaluation result will be saved in ".ast" file.
 
-    Sorry but at the moment there is no other manual except this.
+    Sorry, but at the moment there is no other manual except a brief
+    intro in yupp Blog (http://yup-py.blogspot.com/).
 
     For more information about the preprocessor parameters, please get
     help on the command-line interface:
@@ -428,9 +430,10 @@
     ___         __________________________________
     ___ TESTKIT __________________________________
 
-    yupp is currently in an alpha stage. The program needs a testing and
-    an optimization. The file called "test_yup.py" contains a number of
-    smoke tests.
+    yupp is currently in an alpha stage. The file called "test_yup.py"
+    contains a number of smoke tests.
+    The program is in need of testing and optimization (especially
+    the eval-apply cycle).
 
     ___              _____________________________
     ___ SUBLIME TEXT _____________________________
@@ -444,11 +447,14 @@
     o   The project on GitHub:
         http://github.com/in4lio/yupp/
 
-    o   yupp Blog: <roadworkahead>
-        http://yuppit.blogspot.com/
+    o   yupp Blog:
+        http://yup-py.blogspot.com/
 
     o   yupp Web Console:
         http://yup-py.appspot.com/
+
+    o   The project on Google Code:
+        http://code.google.com/p/yup-py/
 
     ___     ______________________________________
     ___ GIT ______________________________________
