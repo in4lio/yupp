@@ -14,6 +14,7 @@ doc
 yup-py
 
 #   -- file --
+_netrc
 make_t.py
 t.py
 test_highlighting.yu

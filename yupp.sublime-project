@@ -3,7 +3,7 @@
 	[
 		{
 			"path": ".\\",
-			"file_exclude_patterns": ["*.bak", "*.bat", "*.sublime*", "*.ico", ".git*", ".ast" ],
+			"file_exclude_patterns": ["*.bak", "*.bat", "*.sublime*", "*.ico", "*.git*", "*.ast", "_netrc" ],
 			"folder_exclude_patterns": ["backup", "sublime_text"]
 		}
 	],
