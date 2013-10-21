@@ -191,7 +191,7 @@ def _ast_pretty( st ):
     p = {}
     depth = 0
     for i, ch in enumerate( st ):
-        if ch == ')' or ch == ']' or ch == '}':
+        if ch in ( ')', ']', '}' ):
             if depth:
                 depth -= 1
 #               -- opening bracket position
@@ -199,7 +199,7 @@ def _ast_pretty( st ):
 #               -- closing bracket position
                 parenth[ i ] = ( None, depth )
         else:
-            if ch == '(' or ch == '[' or ch == '{':
+            if ch in ( '(', '[', '{' ):
                 p[ depth ] = i
                 depth += 1
     result = ''
@@ -2049,11 +2049,6 @@ buildin.update({
 })
 
 #   ---------------------------------------------------------------------------
-def _str2c( _ ):
-#   TODO: http://stackoverflow.com/questions/1675181/get-str-repr-with-double-quotes-python
-    pass
-
-#   ---------------------------------------------------------------------------
 def _plain_back( st ):
     return ( '()' if st == [] else str( st ))
 
@@ -2910,10 +2905,10 @@ def _pp( text ):                                                                
     except:                                                                                                            #pylint: disable=W0702
         e_type, e, tb = sys.exc_info()
         msg = '\n'
-#       -- traceback and not raised exception
         arg = e.args[ 0 ] if e.args else None
         if (( TRACEBACK == TB_ALL ) or
             ( TRACEBACK == TB_PYTHON ) and isinstance( arg, str ) and arg.startswith( 'python' )):
+#           -- enabled traceback
             msg += ''.join( traceback.format_tb( tb ))
         msg += ''.join( traceback.format_exception_only( e_type, e ))
         if TR2F:
@@ -2945,10 +2940,10 @@ def _pp( text ):                                                                
     except:                                                                                                            #pylint: disable=W0702
         e_type, e, tb = sys.exc_info()
         msg = '\n'
-#       -- traceback and not raised exception
         arg = e.args[ 0 ] if e.args else None
         if (( TRACEBACK == TB_ALL ) or
             ( TRACEBACK == TB_PYTHON ) and isinstance( arg, str ) and arg.startswith( 'python' )):
+#           -- enabled traceback
             msg += ''.join( traceback.format_tb( tb ))
         msg += ''.join( traceback.format_exception_only( e_type, e ))
         if TR2F:

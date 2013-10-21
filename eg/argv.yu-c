@@ -1,7 +1,21 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-($import "lib/argv.yu")
+($set def-fn-argv \type.\name.\type..\arg-begin..\arg-count..\arg-value..\arg-end..\body.]
+($type) ($name)( int argcnt, ... )
+{
+    ($body \type type \arg-begin ]
+        va_list argptr;
+        va_start( argptr, argcnt );
+    [\arg-count ]
+        argcnt
+    [\arg-value \type.]
+        va_arg( argptr, ($type) )
+    [\arg-end ]
+        va_end( argptr );
+    [\body )
+}
+[\set )
 
 ($def-fn-argv \type int \name sum ]
     int result = 0;

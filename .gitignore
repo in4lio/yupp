@@ -15,6 +15,7 @@ yup-py
 
 #   -- file --
 _netrc
+logo.png
 make_t.py
 t.py
 test_highlighting.yu

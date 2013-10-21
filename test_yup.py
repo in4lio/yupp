@@ -681,9 +681,9 @@ def test( kit, t ):                                                             
         except:                                                                                                        #pylint: disable=W0702
             e_type, e, tb = sys.exc_info()
             msg = '\n'
-#           -- traceback and not raised exception
             arg = e.args[ 0 ]
             if TRACEBACK or isinstance( arg, str ) and arg.startswith( 'python' ):
+#               -- enabled traceback or not raised exception
                 msg += ''.join( traceback.format_tb( tb ))
             msg += ''.join( traceback.format_exception_only( e_type, e ))
             print msg
@@ -724,9 +724,9 @@ def test( kit, t ):                                                             
             except:                                                                                                    #pylint: disable=W0702
                 e_type, e, tb = sys.exc_info()
                 msg = '\n'
-#               -- traceback and not raised exception
                 arg = e.args[ 0 ]
                 if TRACEBACK or isinstance( arg, str ) and arg.startswith( 'python' ):
+#                   -- enabled traceback or not raised exception
                     msg += ''.join( traceback.format_tb( tb ))
                 msg += ''.join( traceback.format_exception_only( e_type, e ))
                 print msg
