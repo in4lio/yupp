@@ -1,24 +1,5 @@
-#   -- .ext --
 *.ast
 *.bak
-*.bat
 *.c
 *.exe
-*.json*
 *.py[cod]
-
-#   -- folder --
-backup
-temp
-doc
-yup-py
-
-#   -- file --
-_netrc
-logo.png
-make_t.py
-t.py
-test_highlighting.yu
-tr.py
-VERSION
-yupp.sublime-workspace
