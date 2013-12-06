@@ -1327,10 +1327,22 @@
 			<key>patterns</key>
 			<array>
 				<dict>
-					<key>begin</key>
-					<string>\(</string>
-					<key>end</key>
-					<string>\)</string>
+					<key>include</key>
+					<string>#yupp-comment-parens-eater</string>
+				</dict>
+			</array>
+		</dict>
+		<key>yupp-comment-parens-eater</key>
+		<dict>
+			<key>begin</key>
+			<string>\(</string>
+			<key>end</key>
+			<string>\)</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>include</key>
+					<string>#yupp-comment-parens-eater</string>
 				</dict>
 			</array>
 		</dict>
