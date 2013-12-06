@@ -15,7 +15,7 @@ COPYRIGHT   = 'Copyright (c) 2011, 2013'
 AUTHORS     = 'Vitaly Kravtsov (in4lio@gmail.com)'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.5a3'
+VERSION     = '0.5a4'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -306,16 +306,16 @@ class PLAIN( BASE_STR ):
     AST: PLAIN( text ) <-- ...
     """
 #   -----------------------------------
-    def __new__( cls, val, indent = False ):
+    def __new__( cls, val, indent = False, trim = False ):
         """
         indent:
-            None  - plain text contains only tabs and spaces
+            None  - plain text contains only TABs and SPACEs
             str   - the indent at the end of text (before next node) e.g. '\t  ' for 'foo\n\t  '
             False - no indent e.g. for 'foo  '
         """
         obj = BASE_STR.__new__( cls, val )
         obj.indent = indent
-        obj.trim = False
+        obj.trim = trim
         return obj
 
 #   -----------------------------------
@@ -330,6 +330,14 @@ class PLAIN( BASE_STR ):
             return st.lstrip()
 
         return st
+
+#   -----------------------------------
+    def add_indent( self, indent ):
+        if self.indent is not None:
+            return PLAIN( indent.join( self.splitlines( True ))
+            , ( indent + self.indent ) if isinstance( self.indent, str ) else self.indent, self.trim )
+        else:
+            return ( self )
 
 #   -----------------------------------
 #   Based on 'list' AST notes
@@ -1999,11 +2007,41 @@ class INFIX_VISITOR( NodeVisitor ):
     def visit_Name( self, node ):
         self.names.add( node.id )
 
+#   ---------------------------------------------------------------------------
+class SEQITER( object ):
+    """
+    AST: SEQITER <-- ($seqiter start step)
+    """
+#   -----------------------------------
+    iters = []
+
+#   -----------------------------------
+    def __init__( self, start = 0, step = 1 ):
+        SEQITER.iters.append( itertools.count( start, step ))
+        self.inx = len( SEQITER.iters ) - 1
+
+#   -----------------------------------
+    def __repr__( self ):
+        return '%s(%s)' % ( self.__class__.__name__, repr( self.inx ))
+
+#   -----------------------------------
+    def __eq__( self, other ):
+        return isinstance( other, self.__class__ ) and ( self.inx == other.inx )
+
+#   -----------------------------------
+    def next( self ):
+        return SEQITER.iters[ self.inx ].next()
+
+#   -----------------------------------
+    @staticmethod
+    def reset():
+        SEQITER.iters = []
+
 #   -----------------------------------
 #   Buildin functions and consts
 #   -----------------------------------
 
-import string, operator, math, datetime                                                                                #pylint: disable=W0402
+import string, operator, math, datetime, itertools                                                                     #pylint: disable=W0402
 
 #   ---------------------------------------------------------------------------
 def _input_file( name = '' ):
@@ -2038,6 +2076,7 @@ buildin.update({
     'q': lambda val : '"%s"' % str( val ),
     'range': lambda *l : LIST( range( *l )),
     'repr': repr,
+    'seqiter': SEQITER,
     'str': str,
     'title': lambda : PLAIN( _title_template % {
       'app': APP, 'version': VERSION
@@ -2047,6 +2086,10 @@ buildin.update({
     }),
     'unq': _unq
 })
+
+#   ---------------------------------------------------------------------------
+def yureset():
+    SEQITER.reset()
 
 #   ---------------------------------------------------------------------------
 def _plain_back( st ):
@@ -2213,14 +2256,24 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         break
 #   ---- T -- EMBED --> T
                     if isinstance( x, EMBED ):
-                        del node[ :nx ]
-                        node[ 0:0 ] = x.ast
-                        tail = yueval( node, env, depth + 1 )
-                        if isinstance( tail, list ):
-                            t.extend( tail )
+                        if isinstance( x.ast, T ):
+#                           -- add the indent of an application to each line of the substituting text
+                            for ii, xx in enumerate( x.ast ):
+                                if isinstance( xx, PLAIN ):
+                                    x.ast[ ii ] = xx.add_indent( node.indent )
+#                           -- insert an embedded AST into the head of the list of the rest and evaluate them together
+#                           -- so complicated because ($macro) can contain ($set)
+                            del node[ :nx ]
+                            node[ 0:0 ] = x.ast
+                            tail = yueval( node, env, depth + 1 )
+
+                            if isinstance( tail, list ):
+                                t.extend( tail )
+                            else:
+                                t.append( tail )
+                            break
                         else:
-                            t.append( tail )
-                        break
+                            x = x.ast
 #                   -- indent mimicry
                     t.append( TRIM( x, node.indent ) if x_apply else x )
                     node.indent = x_indent
@@ -2257,7 +2310,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
 #   ---- APPLY -- BUILDIN -- const
                     if node.args:
-                        raise TypeError( '%s: no arguments expected: %s' % ( _callee(), repr( node )[ :ERR_SLICE ]))
+                        raise TypeError( '%s: no arguments of constant expected: %s' % ( _callee()
+                        , repr( node )[ :ERR_SLICE ]))
 
                     return node.fn.fn
 
@@ -2284,7 +2338,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #   ---- APPLY -- TEXT
                 elif isinstance( node.fn, TEXT ):
                     if node.args or node.named:
-                        raise TypeError( '%s: no arguments expected: %s' % ( _callee(), repr( node )[ :ERR_SLICE ]))
+                        raise TypeError( '%s: no arguments of text expected: %s' % ( _callee()
+                        , repr( node )[ :ERR_SLICE ]))
 
                     node = node.fn
                     # fall through -- yueval( node )
@@ -2386,6 +2441,12 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                             x = yueval( APPLY( fn, [ x ], []), env, depth + 1 )
                         lst.append( x )
                     return lst
+
+#   ---- APPLY -- SEQITER
+                elif isinstance( node.fn, SEQITER ):
+                    if node.args or node.named:
+                        log.warn( 'no arguments of seqiter expected: %s', repr( node )[ :ERR_SLICE ])
+                    return node.fn.next()
 
 #   ---- APPLY -- None
                 elif node.fn is None:
@@ -2534,7 +2595,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     return EMBED( T( node.ast ))
 
 #               -- !? e.g. ($ \p.($...))
-                node = EMBED( T( node.ast )) if len( node.ast ) > 1 else node.ast[ 0 ]
+                node = T( node.ast ) if len( node.ast ) > 1 else node.ast[ 0 ]
                 # fall through -- yueval( node )
 
 #   ---- COND --> COND_CLOSURE
@@ -2927,6 +2988,7 @@ def _pp( text ):                                                                
     LOG = not trace.TRACE or TR_TO_FILE
     try:
         trace.deepest = 0
+        yureset()
         plain = yueval( ast )
 
         result = isinstance( plain, str )

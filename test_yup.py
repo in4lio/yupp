@@ -371,7 +371,7 @@ int sum( int argcnt, ... )
 }
 """
 ),(
-#   ---- 09 -- COND, recursion
+#   ---- 09 -- COND, recursion, indent
 0,
 
 r"""
@@ -388,21 +388,35 @@ r"""
 ($fact 12)
 ($set fact \n.($ 1 ?($eq n 0) | ($mul ($fact ($sub n 1)) n)))
 ($fact 33) //max is ~1200
-($set f \n.($if ($eq n 0) "0000" "BAD"))
-($f 0)
-($f 10)
-($f 0)
-($f 20)
-// macro
-($macro if (cond then else) ($ ($then) ? ($cond) | ($else)))
-($set f \n.($if ($eq n 0) "0000" "BAD"))
-($f 0)
-($f "a")
-($f 0)
-($f 20)
+    ($set f \n.($if ($eq n 0) "0000" "BAD"))
+    ($f 0)
+        ($f 10)
+    ($f 0)
+        ($f 20)
+    // macro
+    ($macro if (cond then else) ($ ($then) ? ($cond) | ($else)))
+    ($set f \n.($if ($eq n 0) "0000" "BAD"))
+    ($f 0)
+        ($f "a")
+    ($f 0)
+        ($f 20)
+($macro a (){
+    ($set b 5)
+    ($b),
+})
+{
+    {
+        ($a)
+    }
+}
+($set q ($seqiter 3 2))
+($macro a (n) ($q))
+{
+    ($q), ($($range 4) \n.[($a n), ])($q),
+}
 """,
 
-TEXT([PLAIN('\n'), SET([ATOM('if')], LAMBDA([([], ATOM('cond'), None), ([], ATOM('then'), TEXT([], 0, 0)), ([], ATOM('else'), TEXT([], 0, 0))], APPLY(COND(VAR([], ATOM('cond')), VAR([], ATOM('then')), VAR([], ATOM('else'))), [], []))), PLAIN('\n'), APPLY(VAR([], ATOM('if')), [APPLY(VAR([], ATOM('eq')), [INT(1L), INT(1L)], [])], [(ATOM('then'), STR("'True'")), (ATOM('else'), STR("'False'"))]), PLAIN('\n'), APPLY(VAR([], ATOM('if')), [APPLY(VAR([], ATOM('eq')), [INT(0L), INT(1L)], []), STR("'True'"), STR("'False'")], []), PLAIN('\n'), APPLY(VAR([], ATOM('if')), [INT(1L), STR("'True'")], []), PLAIN('\n'), APPLY(VAR([], ATOM('if')), [INT(0L)], [(ATOM('else'), STR("'False'"))]), PLAIN('\n'), APPLY(VAR([], ATOM('if')), [INFIX(TEXT([PLAIN(' 2 + 2 != 2 * 2 ')], 0, 0)), STR("'True'"), STR("'F'")], []), PLAIN('\n'), SET([ATOM('q')], INT(10L)), PLAIN('\n'), APPLY(VAR([], ATOM('if')), [APPLY(VAR([], ATOM('eq')), [VAR([], ATOM('q')), INT(0L)], []), STR("'Zero'"), VAR([], ATOM('q'))], []), PLAIN('\n'), SET([ATOM('fact')], LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('if')), [APPLY(VAR([], ATOM('eq')), [VAR([], ATOM('n')), INT(0L)], []), INT(1L), APPLY(VAR([], ATOM('mul')), [APPLY(VAR([], ATOM('fact')), [APPLY(VAR([], ATOM('sub')), [VAR([], ATOM('n')), INT(1L)], [])], []), VAR([], ATOM('n'))], [])], []))), PLAIN('\n'), APPLY(VAR([], ATOM('fact')), [INT(0L)], []), PLAIN('\n'), APPLY(VAR([], ATOM('fact')), [INT(12L)], []), PLAIN('\n'), SET([ATOM('fact')], LAMBDA([([], ATOM('n'), None)], APPLY(COND(APPLY(VAR([], ATOM('eq')), [VAR([], ATOM('n')), INT(0L)], []), INT(1L), APPLY(VAR([], ATOM('mul')), [APPLY(VAR([], ATOM('fact')), [APPLY(VAR([], ATOM('sub')), [VAR([], ATOM('n')), INT(1L)], [])], []), VAR([], ATOM('n'))], [])), [], []))), PLAIN('\n'), APPLY(VAR([], ATOM('fact')), [INT(33L)], []), PLAIN(' '), REMARK('//max is ~1200'), PLAIN('\n'), SET([ATOM('f')], LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('if')), [APPLY(VAR([], ATOM('eq')), [VAR([], ATOM('n')), INT(0L)], []), STR('"0000"'), STR('"BAD"')], []))), PLAIN('\n'), APPLY(VAR([], ATOM('f')), [INT(0L)], []), PLAIN('\n'), APPLY(VAR([], ATOM('f')), [INT(10L)], []), PLAIN('\n'), APPLY(VAR([], ATOM('f')), [INT(0L)], []), PLAIN('\n'), APPLY(VAR([], ATOM('f')), [INT(20L)], []), PLAIN('\n'), REMARK('// macro'), PLAIN('\n'), MACRO(ATOM('if'), [ATOM('cond'), ATOM('then'), ATOM('else')], ' ($ ($then) ? ($cond) | ($else))'), PLAIN('\n'), SET([ATOM('f')], LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('if')), [APPLY(VAR([], ATOM('eq')), [VAR([], ATOM('n')), INT(0L)], []), STR('"0000"'), STR('"BAD"')], []))), PLAIN('\n'), APPLY(VAR([], ATOM('f')), [INT(0L)], []), PLAIN('\n'), APPLY(VAR([], ATOM('f')), [STR('"a"')], []), PLAIN('\n'), APPLY(VAR([], ATOM('f')), [INT(0L)], []), PLAIN('\n'), APPLY(VAR([], ATOM('f')), [INT(20L)], []), PLAIN('\n')], 0, 0),
+TEXT([PLAIN('\n'), SET([ATOM('if')], LAMBDA([([], ATOM('cond'), None), ([], ATOM('then'), TEXT([], 0, 0)), ([], ATOM('else'), TEXT([], 0, 0))], APPLY(COND(VAR([], ATOM('cond')), VAR([], ATOM('then')), VAR([], ATOM('else'))), [], []))), PLAIN('\n'), APPLY(VAR([], ATOM('if')), [APPLY(VAR([], ATOM('eq')), [INT(1L), INT(1L)], [])], [(ATOM('then'), STR("'True'")), (ATOM('else'), STR("'False'"))]), PLAIN('\n'), APPLY(VAR([], ATOM('if')), [APPLY(VAR([], ATOM('eq')), [INT(0L), INT(1L)], []), STR("'True'"), STR("'False'")], []), PLAIN('\n'), APPLY(VAR([], ATOM('if')), [INT(1L), STR("'True'")], []), PLAIN('\n'), APPLY(VAR([], ATOM('if')), [INT(0L)], [(ATOM('else'), STR("'False'"))]), PLAIN('\n'), APPLY(VAR([], ATOM('if')), [INFIX(TEXT([PLAIN(' 2 + 2 != 2 * 2 ')], 0, 0)), STR("'True'"), STR("'F'")], []), PLAIN('\n'), SET([ATOM('q')], INT(10L)), PLAIN('\n'), APPLY(VAR([], ATOM('if')), [APPLY(VAR([], ATOM('eq')), [VAR([], ATOM('q')), INT(0L)], []), STR("'Zero'"), VAR([], ATOM('q'))], []), PLAIN('\n'), SET([ATOM('fact')], LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('if')), [APPLY(VAR([], ATOM('eq')), [VAR([], ATOM('n')), INT(0L)], []), INT(1L), APPLY(VAR([], ATOM('mul')), [APPLY(VAR([], ATOM('fact')), [APPLY(VAR([], ATOM('sub')), [VAR([], ATOM('n')), INT(1L)], [])], []), VAR([], ATOM('n'))], [])], []))), PLAIN('\n'), APPLY(VAR([], ATOM('fact')), [INT(0L)], []), PLAIN('\n'), APPLY(VAR([], ATOM('fact')), [INT(12L)], []), PLAIN('\n'), SET([ATOM('fact')], LAMBDA([([], ATOM('n'), None)], APPLY(COND(APPLY(VAR([], ATOM('eq')), [VAR([], ATOM('n')), INT(0L)], []), INT(1L), APPLY(VAR([], ATOM('mul')), [APPLY(VAR([], ATOM('fact')), [APPLY(VAR([], ATOM('sub')), [VAR([], ATOM('n')), INT(1L)], [])], []), VAR([], ATOM('n'))], [])), [], []))), PLAIN('\n'), APPLY(VAR([], ATOM('fact')), [INT(33L)], []), PLAIN(' '), REMARK('//max is ~1200'), PLAIN('\n    '), SET([ATOM('f')], LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('if')), [APPLY(VAR([], ATOM('eq')), [VAR([], ATOM('n')), INT(0L)], []), STR('"0000"'), STR('"BAD"')], []))), PLAIN('\n    '), APPLY(VAR([], ATOM('f')), [INT(0L)], []), PLAIN('\n        '), APPLY(VAR([], ATOM('f')), [INT(10L)], []), PLAIN('\n    '), APPLY(VAR([], ATOM('f')), [INT(0L)], []), PLAIN('\n        '), APPLY(VAR([], ATOM('f')), [INT(20L)], []), PLAIN('\n    '), REMARK('// macro'), PLAIN('\n    '), MACRO(ATOM('if'), [ATOM('cond'), ATOM('then'), ATOM('else')], ' ($ ($then) ? ($cond) | ($else))'), PLAIN('\n    '), SET([ATOM('f')], LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('if')), [APPLY(VAR([], ATOM('eq')), [VAR([], ATOM('n')), INT(0L)], []), STR('"0000"'), STR('"BAD"')], []))), PLAIN('\n    '), APPLY(VAR([], ATOM('f')), [INT(0L)], []), PLAIN('\n        '), APPLY(VAR([], ATOM('f')), [STR('"a"')], []), PLAIN('\n    '), APPLY(VAR([], ATOM('f')), [INT(0L)], []), PLAIN('\n        '), APPLY(VAR([], ATOM('f')), [INT(20L)], []), PLAIN('\n'), MACRO(ATOM('a'), [], '{\n    ($set b 5)\n    ($b),\n}'), PLAIN('\n{\n    {\n        '), APPLY(VAR([], ATOM('a')), [], []), PLAIN('\n    }\n}\n'), SET([ATOM('q')], APPLY(VAR([], ATOM('seqiter')), [INT(3L), INT(2L)], [])), PLAIN('\n'), MACRO(ATOM('a'), [ATOM('n')], ' ($q)'), PLAIN('\n{\n    '), APPLY(VAR([], ATOM('q')), [], []), PLAIN(', '), APPLY(APPLY(VAR([], ATOM('range')), [INT(4L)], []), [LAMBDA([([], ATOM('n'), None)], TEXT([APPLY(VAR([], ATOM('a')), [VAR([], ATOM('n'))], []), PLAIN(', ')], 0, 0))], []), APPLY(VAR([], ATOM('q')), [], []), PLAIN(',\n}\n')], 0, 0),
 
 r"""
 'True'
@@ -414,15 +428,25 @@ r"""
 1
 479001600
 8683317618811886495518194401280000000 //max is ~1200
-"0000"
-"BAD"
-"0000"
-"BAD"
-// macro
- "0000"
- "BAD"
- "0000"
- "BAD"
+    "0000"
+        "BAD"
+    "0000"
+        "BAD"
+    // macro
+    "0000"
+        "BAD"
+    "0000"
+        "BAD"
+{
+    {
+        {
+            5,
+        }
+    }
+}
+{
+    3, 5, 7, 9, 11, 13,
+}
 """
 ),(
 #   ---- 10 -- INFIX, recursion
@@ -443,9 +467,11 @@ r"""
 ($set g \a.($f {a + 2}))
 ($set h \a.($g {a + 3}))
 ($h 4)
+($set q ($seqiter 3 2))
+(${}($q)+($q)+($q)+($q))
 """,
 
-TEXT([PLAIN('\n'), SET([ATOM('fib1')], LAMBDA([([], ATOM('n'), None)], APPLY(COND(APPLY(VAR([], ATOM('lt')), [VAR([], ATOM('n')), INT(2L)], []), VAR([], ATOM('n')), APPLY(VAR([], ATOM('add')), [APPLY(VAR([], ATOM('fib1')), [APPLY(VAR([], ATOM('sub')), [VAR([], ATOM('n')), INT(1L)], [])], []), APPLY(VAR([], ATOM('fib1')), [APPLY(VAR([], ATOM('sub')), [VAR([], ATOM('n')), INT(2L)], [])], [])], [])), [], []))), PLAIN('\n'), SET([ATOM('if')], LAMBDA([([], ATOM('cond'), None), ([], ATOM('then'), TEXT([], 0, 0)), ([], ATOM('else'), TEXT([], 0, 0))], APPLY(COND(VAR([], ATOM('cond')), VAR([], ATOM('then')), VAR([], ATOM('else'))), [], []))), PLAIN('\n'), SET([ATOM('fib')], LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('if')), [APPLY(VAR([], ATOM('lt')), [VAR([], ATOM('n')), INT(2L)], []), VAR([], ATOM('n')), APPLY(VAR([], ATOM('add')), [APPLY(VAR([], ATOM('fib')), [APPLY(VAR([], ATOM('sub')), [VAR([], ATOM('n')), INT(1L)], [])], []), APPLY(VAR([], ATOM('fib')), [APPLY(VAR([], ATOM('sub')), [VAR([], ATOM('n')), INT(2L)], [])], [])], [])], []))), PLAIN('\n'), SET([ATOM('fib2')], LAMBDA([([], ATOM('n'), None)], APPLY(COND(INFIX(TEXT([PLAIN(' n < 2 ')], 0, 0)), VAR([], ATOM('n')), INFIX(TEXT([APPLY(VAR([], ATOM('fib2')), [INFIX(TEXT([PLAIN(' n - 1 ')], 0, 0))], []), PLAIN(' + '), APPLY(VAR([], ATOM('fib2')), [INFIX(TEXT([PLAIN(' n - 2 ')], 0, 0))], [])], 0, 0))), [], []))), PLAIN('\n'), APPLY(VAR([], ATOM('fib')), [INT(10L)], []), PLAIN('\n'), APPLY(VAR([], ATOM('fib1')), [INT(10L)], []), PLAIN('\n'), APPLY(INFIX(TEXT([APPLY(VAR([], ATOM('fib2')), [INT(1L)], []), PLAIN(' + '), APPLY(VAR([], ATOM('fib2')), [INT(2L)], []), PLAIN(' + '), APPLY(VAR([], ATOM('fib2')), [INT(3L)], []), PLAIN(' - '), APPLY(VAR([], ATOM('fib2')), [INT(6L)], [])], 0, 0)), [], []), PLAIN('\n'), SET([ATOM('a'), ATOM('b')], LIST([INT(5L), INT(10L)])), PLAIN('\n'), SET([ATOM('c')], INFIX(TEXT([PLAIN(' a + b ')], 0, 0))), PLAIN('\n'), APPLY(INFIX(TEXT([PLAIN(' int(( b + c - 2 ) * 3.5 / a )')], 0, 0)), [], []), PLAIN('\n'), SET([ATOM('f')], LAMBDA([([], ATOM('a'), None)], APPLY(INFIX(TEXT([PLAIN('a + 1')], 0, 0)), [], []))), PLAIN('\n'), SET([ATOM('g')], LAMBDA([([], ATOM('a'), None)], APPLY(VAR([], ATOM('f')), [INFIX(TEXT([PLAIN('a + 2')], 0, 0))], []))), PLAIN('\n'), SET([ATOM('h')], LAMBDA([([], ATOM('a'), None)], APPLY(VAR([], ATOM('g')), [INFIX(TEXT([PLAIN('a + 3')], 0, 0))], []))), PLAIN('\n'), APPLY(VAR([], ATOM('h')), [INT(4L)], []), PLAIN('\n')], 0, 0),
+TEXT([PLAIN('\n'), SET([ATOM('fib1')], LAMBDA([([], ATOM('n'), None)], APPLY(COND(APPLY(VAR([], ATOM('lt')), [VAR([], ATOM('n')), INT(2L)], []), VAR([], ATOM('n')), APPLY(VAR([], ATOM('add')), [APPLY(VAR([], ATOM('fib1')), [APPLY(VAR([], ATOM('sub')), [VAR([], ATOM('n')), INT(1L)], [])], []), APPLY(VAR([], ATOM('fib1')), [APPLY(VAR([], ATOM('sub')), [VAR([], ATOM('n')), INT(2L)], [])], [])], [])), [], []))), PLAIN('\n'), SET([ATOM('if')], LAMBDA([([], ATOM('cond'), None), ([], ATOM('then'), TEXT([], 0, 0)), ([], ATOM('else'), TEXT([], 0, 0))], APPLY(COND(VAR([], ATOM('cond')), VAR([], ATOM('then')), VAR([], ATOM('else'))), [], []))), PLAIN('\n'), SET([ATOM('fib')], LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('if')), [APPLY(VAR([], ATOM('lt')), [VAR([], ATOM('n')), INT(2L)], []), VAR([], ATOM('n')), APPLY(VAR([], ATOM('add')), [APPLY(VAR([], ATOM('fib')), [APPLY(VAR([], ATOM('sub')), [VAR([], ATOM('n')), INT(1L)], [])], []), APPLY(VAR([], ATOM('fib')), [APPLY(VAR([], ATOM('sub')), [VAR([], ATOM('n')), INT(2L)], [])], [])], [])], []))), PLAIN('\n'), SET([ATOM('fib2')], LAMBDA([([], ATOM('n'), None)], APPLY(COND(INFIX(TEXT([PLAIN(' n < 2 ')], 0, 0)), VAR([], ATOM('n')), INFIX(TEXT([APPLY(VAR([], ATOM('fib2')), [INFIX(TEXT([PLAIN(' n - 1 ')], 0, 0))], []), PLAIN(' + '), APPLY(VAR([], ATOM('fib2')), [INFIX(TEXT([PLAIN(' n - 2 ')], 0, 0))], [])], 0, 0))), [], []))), PLAIN('\n'), APPLY(VAR([], ATOM('fib')), [INT(10L)], []), PLAIN('\n'), APPLY(VAR([], ATOM('fib1')), [INT(10L)], []), PLAIN('\n'), APPLY(INFIX(TEXT([APPLY(VAR([], ATOM('fib2')), [INT(1L)], []), PLAIN(' + '), APPLY(VAR([], ATOM('fib2')), [INT(2L)], []), PLAIN(' + '), APPLY(VAR([], ATOM('fib2')), [INT(3L)], []), PLAIN(' - '), APPLY(VAR([], ATOM('fib2')), [INT(6L)], [])], 0, 0)), [], []), PLAIN('\n'), SET([ATOM('a'), ATOM('b')], LIST([INT(5L), INT(10L)])), PLAIN('\n'), SET([ATOM('c')], INFIX(TEXT([PLAIN(' a + b ')], 0, 0))), PLAIN('\n'), APPLY(INFIX(TEXT([PLAIN(' int(( b + c - 2 ) * 3.5 / a )')], 0, 0)), [], []), PLAIN('\n'), SET([ATOM('f')], LAMBDA([([], ATOM('a'), None)], APPLY(INFIX(TEXT([PLAIN('a + 1')], 0, 0)), [], []))), PLAIN('\n'), SET([ATOM('g')], LAMBDA([([], ATOM('a'), None)], APPLY(VAR([], ATOM('f')), [INFIX(TEXT([PLAIN('a + 2')], 0, 0))], []))), PLAIN('\n'), SET([ATOM('h')], LAMBDA([([], ATOM('a'), None)], APPLY(VAR([], ATOM('g')), [INFIX(TEXT([PLAIN('a + 3')], 0, 0))], []))), PLAIN('\n'), APPLY(VAR([], ATOM('h')), [INT(4L)], []), PLAIN('\n'), SET([ATOM('q')], APPLY(VAR([], ATOM('seqiter')), [INT(3L), INT(2L)], [])), PLAIN('\n'), INFIX(TEXT([APPLY(VAR([], ATOM('q')), [], []), PLAIN('+'), APPLY(VAR([], ATOM('q')), [], []), PLAIN('+'), APPLY(VAR([], ATOM('q')), [], []), PLAIN('+'), APPLY(VAR([], ATOM('q')), [], [])], 0, 0)), PLAIN('\n')], 0, 0),
 
 r"""
 55
@@ -453,6 +479,7 @@ r"""
 -4
 16
 10
+24
 """
 ),(
 #   ---- 11 -- "for each" loop
@@ -706,6 +733,7 @@ def test( kit, t ):                                                             
             LOG = not trace.TRACE or TR_TO_FILE
             try:
                 trace.deepest = 0
+                yureset()
 #   ---- eval
                 plain = yueval( ast )
 
@@ -765,4 +793,4 @@ if __name__ == '__main__':
 
     sys.exit( t_failed )
 
-#   -- EOF
+#   -- EOF (3.9 s)
