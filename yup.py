@@ -720,7 +720,11 @@ def _import_source( lib ):
         lpath = os.path.join( yushell.dirname, lib )
         if not os.path.isfile( lpath ):
 #           -- yupp lib directory
-            lpath = os.path.join( os.path.dirname( os.path.realpath( __file__ )), 'lib', lib )
+            if '__file__' in globals():
+                lpath = os.path.join( os.path.dirname( os.path.realpath( __file__ )), 'lib', lib )
+            else:
+#               -- specially for Web Console
+                lpath = os.path.join( './lib', lib )
     try:
         f = open( lpath, 'r' )
         try:
