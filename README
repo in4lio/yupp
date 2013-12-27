@@ -181,7 +181,9 @@
 
     345
 
-        ($ \a.\...($($lazy __va_args__) \f.($f a)) 9 \n.($sqrt n) \n.[ ($n) ] \n.($pow n 2))
+        ($ \a.\...($($lazy __va_args__) \f.($f a))
+            9 \n.($sqrt n) \n.[ ($n) ] \n.($pow n 2)
+        )
 
     3.0 9 81.0
 
