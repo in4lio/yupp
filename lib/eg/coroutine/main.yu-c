@@ -1,0 +1,53 @@
+($__TITLE__)
+
+($import "h.yu")
+($implement co)
+
+#include <stddef.h>
+#include "co.h"
+
+($import "coroutine.yu")
+
+($import "dict.yu")
+($import "co-dict.yu")
+
+static __inline void coroute_init( void )
+{
+	($each-COROUTE \i.]
+		($coroute-context-init ($i name));
+		($i name)_alive = ($i name)_init();
+
+	[ )
+}
+
+static __inline void coroute_uninit( void )
+{
+	($each-COROUTE \i.]
+		($i name)_uninit();
+
+	[ )
+}
+
+static int coroute_schedule( void )
+{
+	int alive = 0;
+	($each-COROUTE \i.]
+		if ($coroute-alive [($i name)_alive]) {
+			++alive;
+			($i name)_alive = ($coroute-call ($i name));
+		}
+
+	[ )
+	return ( alive );
+}
+
+int main( void )
+{
+	coroute_init();
+	for ( ; ; ) {
+		if ( coroute_schedule() == 0 ) break;
+	}
+	coroute_uninit();
+
+	return ( 0 );
+}

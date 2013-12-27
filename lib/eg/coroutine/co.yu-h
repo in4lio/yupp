@@ -1,0 +1,26 @@
+($__TITLE__)
+
+($import "h.yu")
+($h-begin ($__MODULE_NAME__))
+
+($extern-c-begin)
+
+($import "coroutine.yu")
+
+($coroute-h)
+
+($import "dict.yu")
+($import "co-dict.yu")
+
+($each-COROUTE \i.]
+	($__MODULE_NAME__)_EXT_INIT( ($coroute-context ($i name)), NULL );
+	($__MODULE_NAME__)_EXT_INIT( int ($i name)_alive, CO_SKIP );
+	extern ($coroute-declare ($i name));
+	extern int ($i name)_init( void );
+	extern void ($i name)_uninit( void );
+
+[ )
+
+($extern-c-end)
+
+($h-end)

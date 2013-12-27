@@ -1,0 +1,114 @@
+($__TITLE__)
+
+#include <stddef.h>
+#include <stdio.h>
+#include "co.h"
+
+($import "coroutine.yu")
+
+static semaphore_t EOL;
+
+#define SQ  19  /* odd, square side length */
+static unsigned int spiral[ SQ * SQ ] = { 0 };
+
+void spiral_init( void )
+{
+	const unsigned int dp[ 4 ] = { -SQ, -1, SQ, 1 };  /* step up, left, down and right */
+	unsigned int p = SQ * SQ / 2;  /* position into spiral */
+	unsigned int n = 2;  /* current number */
+	unsigned int lch = 3;  /* length of chain */
+	unsigned int i, ii;
+
+	spiral[ p ] = 1;
+	spiral[ ++p ] = 2;
+	while ( n < SQ * SQ ) {
+		for ( i = 0; i < 4; i++ ) {  /* up-left-down-right cycle */
+			for ( ii = 0; ii < lch >> 1; ii++ ) {  /* chain grows up every second turn */
+				p += dp[ i ];
+				spiral[ p ] = ++n;
+			}
+			++lch;
+		}
+	}
+}
+
+int isprime( unsigned int n )
+{
+	unsigned int i;
+
+	if ( n == 2 ) return ( 1 );
+	if ( n == 1 || n % 2 == 0 ) return ( 0 );
+	for ( i = 3; i * i <= n; i += 2 ) if (( n % i ) == 0 ) return ( 0 );
+	return ( 1 );
+}
+
+int A_init( void )
+{
+	spiral_init();
+	return ( CO_READY );
+}
+
+void A_uninit( void )
+{
+
+}
+
+($coroute-define A ]
+	for ( i = 0; i < SQ * SQ; i++ ) {
+		/* ulam spiral */
+		if ( isprime( spiral[ i ])) {
+			printf( "%03d", spiral[ i ]);
+		} else {
+			printf( " . " );
+		}
+		($coroute-yield);
+	}
+[ \enter ]
+	static int i;
+[ )
+
+int B_init( void )
+{
+	return ( CO_READY );
+}
+
+void B_uninit( void )
+{
+
+}
+
+($coroute-define B ]
+	while ( ($coroute-alive A_alive) ) {
+		($semaphore-acquire EOL);
+		for ( i = 0; i < SQ - 1; i++ ) {
+			/* spacing */
+			printf( " " );
+			($coroute-yield);
+		}
+		($semaphore-release EOL);
+		($coroute-yield);
+	}
+[ \enter ]
+	static int i;
+[ )
+
+int C_init( void )
+{
+	($semaphore-init EOL 1);
+	return ( CO_READY );
+}
+
+void C_uninit( void )
+{
+
+}
+
+($coroute-define C ]
+	while ( ($coroute-alive A_alive) ) {
+		($semaphore-acquire EOL);
+		/* line breaking */
+		printf( "\n" );
+		($semaphore-release EOL);
+		($coroute-yield);
+	}
+[ )

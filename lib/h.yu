@@ -1,0 +1,35 @@
+($macro h-begin (name)
+($set fn ($upper ($name)))
+#ifndef ($fn)_H
+#define ($fn)_H
+
+#ifdef  ($fn)_IMPLEMENT
+#define ($fn)_EXT
+#define ($fn)_EXT_INIT( dec, init ) \
+	dec = init
+#else
+#define ($fn)_EXT extern
+#define ($fn)_EXT_INIT( dec, init ) \
+	extern dec
+#endif
+)
+
+($macro h-end ()
+#endif
+)
+
+($macro implement (name)
+#define ($upper ($name))_IMPLEMENT
+)
+
+($macro extern-c-begin ()
+#ifdef __cplusplus
+extern "C" {
+#endif
+)
+
+($macro extern-c-end ()
+#ifdef __cplusplus
+}
+#endif
+)

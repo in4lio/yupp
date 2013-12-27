@@ -1,0 +1,93 @@
+($! based on Simon Tatham "Coroutines in C")
+
+($set __label_iter ($seqiter))
+
+($macro coroute-h ()
+typedef void * co_t;
+typedef unsigned int semaphore_t;
+
+enum {
+	CO_READY,
+	CO_WAIT,
+	CO_YIELD,
+	CO_END,
+	CO_SKIP,
+};
+)
+
+($macro coroute-context (name) co_t co_($name))
+
+($macro coroute-context-init (name) co_($name) = NULL)
+
+($macro coroute-declare (name) int coroute_($name)( co_t *co_p ))
+
+($set coroute-define \name.\exit..\coroute.\enter:[].\exit:[].]
+($coroute-declare ($name))
+{
+	($enter)
+	if ( *co_p ) goto **co_p;
+	/* begin */
+	($coroute exit)
+	/* end */
+	*co_p = &&L__END_($name);
+
+	L__END_($name):
+	($exit)
+	return CO_END;
+}
+[\set )
+
+($macro coroute-yield ()
+do { /* yield */
+	($set __label (L__($__label_iter)))
+	*co_p = &&($__label);
+	($&exit)
+	return CO_YIELD;
+
+	($__label):;
+} while ( 0 ))
+
+($macro coroute-wait (cond)
+do { /* wait */
+	($set __label (L__($__label_iter)))
+	*co_p = &&($__label);
+
+	($__label):
+	if (!(($cond))) { /* cond */
+		($&exit)
+		return CO_WAIT;
+	}
+} while ( 0 ))
+
+($macro coroute-restart ()
+do { /* restart */
+	*co_p = NULL;
+	($&exit)
+	return CO_YIELD;
+} while ( 0 ))
+
+($macro coroute-quit (name)
+do { /* quit */
+	*co_p = &&L__END_($name);
+	($&exit)
+	return CO_END;
+} while ( 0 ))
+
+($macro coroute-call (name) coroute_($name)( &co_($name) ))
+
+($macro coroute-alive (thr) (( ($thr) ) < CO_END ))
+
+($macro coroute-wait-coroute (thr) ($coroute-wait [!($coroute-alive [($thr)])]))
+
+($macro semaphore-init (name val) ($name) = ($val))
+
+($macro semaphore-acquire (name)
+do { /* acquire */
+	($coroute-wait (` ($name) > 0 ));
+	--($name);
+} while ( 0 ))
+
+($macro semaphore-release (name)
+do { /* release */
+	++($name);
+} while ( 0 ))

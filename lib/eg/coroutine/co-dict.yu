@@ -1,0 +1,8 @@
+($dict COROUTE
+	(` name )
+	(`
+	(  A    )
+	(  B    )
+	(  C    )
+	)
+)
