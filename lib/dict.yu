@@ -2,6 +2,15 @@
 	($set cols-($id) ($range ($len (($cols)) )))
 	($set each-($id) ($range ($len (($body)) )))
 	($set (($cols))
-		($cols-($id) \i.($ (($body)) \var.($i var)))
+		($cols-($id) \__i.($ (($body)) \__var.($__i __var)))
 	)
 )
+
+($set if \cond.\then:[].\else:[].($ then ? cond | else))
+
+($! ($unfold N [val_0] [val_1] [...] \n.(val_($n))) )
+($set unfold \count.\...]
+	($set __last ($sub ($len ($lazy __va_args__)) 1))
+	($set __func ($__last ($lazy __va_args__)))
+	($($range count) \__i.($if { __i < __last } ($__i ($lazy __va_args__)) ($__func __i)))
+[\set )

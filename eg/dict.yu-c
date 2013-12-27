@@ -1,4 +1,4 @@
-($title)
+($__TITLE__)
 ($set greeting "Hello world!\n")
 
 ($set name    ( Pi      ch      Zu          ))

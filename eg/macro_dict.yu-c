@@ -1,4 +1,4 @@
-($title)
+($__TITLE__)
 
 ($macro dict (id cols body)
 	($set cols-($id) ($range ($len (($cols)) )))

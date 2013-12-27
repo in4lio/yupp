@@ -10,8 +10,8 @@
     ___         __________________________________
     ___ VERSION __________________________________
 
-    yup.py      0.5a4
-                2013-12-06
+    yup.py      0.5a5
+                2013-12-27
     python      2.7.5
 
     ___             ______________________________
@@ -175,6 +175,16 @@
     ($! a late bound parameter - \p.. )
     ($! see example 3 )
 
+    ($! the variable argument list - \...(__va_args__) - experimental! )
+
+        ($ \a.\b.\...($__va_args__) 1 2 3 4 5)
+
+    345
+
+        ($ \a.\...($($lazy __va_args__) \f.($f a)) 9 \n.($sqrt n) \n.[ ($n) ] \n.($pow n 2))
+
+    3.0 9 81.0
+
     ($! take names of parameters from a list - \(list). )
 
     ___           ________________________________
@@ -183,7 +193,7 @@
     >cd yupp
     >more "./eg/dict.yu-c"
 
-        ($title)
+        ($__TITLE__)
         ($set greeting "Hello world!\n")
 
         ($set name    ( Pi      ch      Zu          ))
@@ -244,7 +254,7 @@
     >cd yupp
     >more "./eg/macro_dict.yu-c"
 
-        ($title)
+        ($__TITLE__)
 
         ($macro dict (id cols body)
             ($set cols-($id) ($range ($len (($cols)) )))
@@ -341,7 +351,7 @@
         #include <stdarg.h>
         #include <stdio.h>
 
-        ($import "lib/argv.yu")
+        ($import "argv.yu")
 
         ($def-fn-argv \type int \name sum ]
             int result = 0;

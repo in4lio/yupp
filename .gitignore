@@ -2,4 +2,6 @@
 *.bak
 *.c
 *.exe
+*.h
+*.o
 *.py[cod]

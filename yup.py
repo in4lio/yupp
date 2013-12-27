@@ -15,7 +15,7 @@ COPYRIGHT   = 'Copyright (c) 2011, 2013'
 AUTHORS     = 'Vitaly Kravtsov (in4lio@gmail.com)'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.5a4'
+VERSION     = '0.5a5'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -334,7 +334,10 @@ class PLAIN( BASE_STR ):
 #   -----------------------------------
     def add_indent( self, indent ):
         if self.indent is not None:
-            return PLAIN( indent.join( self.splitlines( True ))
+            ln = self.splitlines( True )
+            if ord( self[ -1 ]) in ps_EOL:
+                ln.append( '' )
+            return PLAIN( indent.join( ln )
             , ( indent + self.indent ) if isinstance( self.indent, str ) else self.indent, self.trim )
         else:
             return ( self )
@@ -528,20 +531,20 @@ class APPLY( object ):
 #   ---------------------------------------------------------------------------
 class SET( object ):
     """
-    AST: SET([ ATOM ], form ) <-- '($set' ... ')'
+    AST: SET( ATOM | [ ATOM ], form ) <-- '($set' ... ')'
     """
 #   -----------------------------------
-    def __init__( self, names, ast ):
-        self.names = names
+    def __init__( self, lval, ast ):
+        self.lval = lval
         self.ast = ast
 
 #   -----------------------------------
     def __repr__( self ):
-        return '%s(%s, %s)' % ( self.__class__.__name__, repr( self.names ), repr( self.ast ))
+        return '%s(%s, %s)' % ( self.__class__.__name__, repr( self.lval ), repr( self.ast ))
 
 #   -----------------------------------
     def __eq__( self, other ):
-        return isinstance( other, self.__class__ ) and ( self.names == other.names ) and ( self.ast == other.ast )
+        return isinstance( other, self.__class__ ) and ( self.lval == other.lval ) and ( self.ast == other.ast )
 
 #   ---------------------------------------------------------------------------
 class MACRO( object ):
@@ -703,20 +706,30 @@ def _while_in( sou, pool ):
 
 #   ---------------------------------------------------------------------------
 def _unq( st ):
-    return literal_eval( st )
+    try:
+        return literal_eval( st )
+    except:                                                                                                            #pylint: disable=W0702
+        return ( st )
 
 #   ---------------------------------------------------------------------------
 def _import_source( lib ):
 #   TODO: look for libraries into specified directories
+    lpath = lib
+    if not os.path.isfile( lpath ):
+#       -- input file directory
+        lpath = os.path.join( yushell.dirname, lib )
+        if not os.path.isfile( lpath ):
+#           -- yupp lib directory
+            lpath = os.path.join( os.path.dirname( os.path.realpath( __file__ )), 'lib', lib )
     try:
-        f = open( lib, 'r' )
+        f = open( lpath, 'r' )
         try:
             sou = f.read().replace( '\r\n', '\n' )
         finally:
             f.close()
     except:
         e_type, e, tb = sys.exc_info()
-        raise e_type, '%s: %s' % ( callee(), e ), tb
+        raise e_type, 'ps_import: %s' % ( e ), tb
 
     return sou
 
@@ -852,14 +865,14 @@ def ps_set( sou, depth = 0 ):
     if sou[ :1 ] == '(':
 #   ---- gap
         ( sou, _ ) = ps_gap( sou[ 1: ], depth + 1 )
-        names = []
+        lval = []
         while True:
 #   ---- atom
             ( sou, leg ) = ps_atom( sou, depth + 1 )
             if leg is None:
                 raise SyntaxError( '%s: name expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
 
-            names.append( leg )
+            lval.append( leg )
 #   ---- gap
             ( sou, _ ) = ps_gap( sou, depth + 1 )
 #   ---- )
@@ -871,7 +884,7 @@ def ps_set( sou, depth = 0 ):
         if leg is None:
             raise SyntaxError( '%s: name expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
 
-        names = [ leg ]
+        lval = leg
 #   ---- gap
     ( sou, _ ) = ps_gap( sou[ 1: ], depth + 1 )
 #   ---- form
@@ -888,7 +901,7 @@ def ps_set( sou, depth = 0 ):
     if sou[ :1 ] != ')':
         raise SyntaxError( '%s: ")" expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
 
-    return ( sou[ 1: ], SET( names, leg ))
+    return ( sou[ 1: ], SET( lval, leg ))
 
 #   ---------------------------------------------------------------------------
 @echo__ps_
@@ -1752,6 +1765,7 @@ class LAMBDA_CLOSURE( object ):
         return '%s(%s, %s, %s, %s)' % ( self.__class__.__name__, repr( self.l_form ), repr( self.env )
         , repr( self.late ), repr( self.default ))
 
+
 #   -----------------------------------
     def __eq__( self, other ):
         return ( isinstance( other, self.__class__ ) and ( self.l_form == other.l_form ) and ( self.env == other.env )
@@ -1795,24 +1809,22 @@ class INFIX_CLOSURE( object ):
 #   ---------------------------------------------------------------------------
 class COND_CLOSURE( object ):
     """
-    AST: COND_CLOSURE( former, former, form, ENV ) <-- COND
+    AST: COND_CLOSURE( former, former, form ) <-- COND
     """
 #   -----------------------------------
-    def __init__( self, cond, leg_1, leg_0, env ):
+    def __init__( self, cond, leg_1, leg_0 ):
         self.cond = cond
         self.leg_1 = leg_1
         self.leg_0 = leg_0
-        self.env = env
 
 #   -----------------------------------
     def __repr__( self ):
-        return '%s(%s, %s, %s, %s)' % ( self.__class__.__name__, repr( self.cond ), repr( self.leg_1 )
-        , repr( self.leg_0 ), repr( self.env ))
+        return '%s(%s, %s, %s)' % ( self.__class__.__name__, repr( self.cond ), repr( self.leg_1 ), repr( self.leg_0 ))
 
 #   -----------------------------------
     def __eq__( self, other ):
         return ( isinstance( other, self.__class__ ) and ( self.cond == other.cond ) and ( self.leg_1 == other.leg_1 )
-        and ( self.leg_0 == other.leg_0 ) and ( self.env == other.env ))
+        and ( self.leg_0 == other.leg_0 ))
 
 #   ---------------------------------------------------------------------------
 class SET_CLOSURE( object ):
@@ -1885,6 +1897,9 @@ class TRIM( BASE_CAP ):
 #   -----------------------------------
 #   Environment
 #   -----------------------------------
+
+#   ---- name of variable argument list
+__va_args__ = ATOM( '__va_args__' )
 
 #   ---------------------------------------------------------------------------
 class NOT_FOUND( object ):
@@ -1962,23 +1977,11 @@ class ENV( dict ):
 
 #   -----------------------------------
     def unassigned( self ):
-        for key in list( self.order ):
+        for key in self.order:
             if isinstance( self.__getitem__( key ), BOUND ):
                 return key
 
         return NOT_FOUND
-
-#   -----------------------------------
-#   -- unused
-    def merged( self ):
-        result = {}
-        env = self
-        while env is not None:
-            for key, value in env.items():
-                if not isinstance( value, BOUND ) and ( key not in result ):
-                    result[ key ] = value
-            env = env.parent
-        return result
 
 #   -----------------------------------
     def __repr__( self ):
@@ -1993,6 +1996,17 @@ class ENV( dict ):
     def __deepcopy__( self, memodict ):
         return ENV( copy.deepcopy( self.parent, memodict )
         , [( key, copy.deepcopy( self.__getitem__( key ), memodict )) for key in self.order ])
+
+#   -----------------------------------
+#   -- debug message
+    def _keylist( self ):
+        result = []
+        env = self
+        while env is not None:
+            for key, value in env.items():
+                result.append( str( key ) if isinstance( value, BOUND ) else key.upper())
+            env = env.parent
+        return '%s(%s)' % ( self.__class__.__name__, ' '.join( result ))
 
 #   ---------------------------------------------------------------------------
 class INFIX_VISITOR( NodeVisitor ):
@@ -2037,6 +2051,15 @@ class SEQITER( object ):
     def reset():
         SEQITER.iters = []
 
+#   ---------------------------------------------------------------------------
+class LAZY( BASE_CAP ):
+    """
+    AST: LAZY( form ) <-- '($lazy' ... ')'
+    """
+#   -----------------------------------
+    def __str__( self ):
+        return _plain( self.ast )
+
 #   -----------------------------------
 #   Buildin functions and consts
 #   -----------------------------------
@@ -2044,16 +2067,18 @@ class SEQITER( object ):
 import string, operator, math, datetime, itertools                                                                     #pylint: disable=W0402
 
 #   ---------------------------------------------------------------------------
-def _input_file( name = '' ):
-    _input_file.name = name if name else 'stdin'
+def yushell( input_file = None, output_file = None ):
+    if input_file:
+        yushell.input = os.path.basename( input_file )
+        yushell.dirname = os.path.dirname( input_file )
+        yushell.module = os.path.splitext( yushell.input )[ 0 ].replace( '-', '_' ).upper()
+    else:
+        yushell.input = '<stdin>'
+        yushell.dirname = ''
+        yushell.module = 'UNTITLED'
+    yushell.output = os.path.basename( output_file ) if output_file else '<stdout>'
 
-_input_file()
-
-#   ---------------------------------------------------------------------------
-def _output_file( name = '' ):
-    _output_file.name = name if name else 'stdout'
-
-_output_file()
+yushell()
 
 _title_template = r"""/*  %(output)s was generated by %(app)s %(version)s
     out of %(input)s at %(time)s
@@ -2064,11 +2089,18 @@ buildin.update( vars( string ))
 buildin.update( vars( operator ))
 buildin.update( vars( math ))
 buildin.update({
-    '__FILE__': lambda : '"%s"' % _input_file.name,
-    '__OUTPUT_FILE__': lambda : _output_file.name,
+    '__FILE__': lambda : '"%s"' % yushell.input,
+    '__OUTPUT_FILE__': lambda : '"%s"' % yushell.output,
+    '__MODULE_NAME__': lambda : ATOM( yushell.module ),
+    '__TITLE__': lambda : PLAIN( _title_template % {
+      'app': APP, 'version': VERSION
+    , 'input': yushell.input, 'output': yushell.output
+    , 'time': datetime.datetime.now().strftime( '%Y-%m-%d %H:%M' )
+    }),
     'car': lambda l : l[ :1 ],
     'cdr': lambda l : l[ 1: ],
     'islist': lambda l : isinstance( l, list ),
+    'lazy': lambda val : LIST( LAZY( x ) for x in val ) if isinstance( val, list ) else LAZY( val ),
     'len': len,
     'list': lambda *l : LIST( l ),
     'print': lambda *l : sys.stdout.write( ' '.join(( _unq( x ) if isinstance( x, STR ) else str( x )) for x in l )),
@@ -2078,12 +2110,6 @@ buildin.update({
     'repr': repr,
     'seqiter': SEQITER,
     'str': str,
-    'title': lambda : PLAIN( _title_template % {
-      'app': APP, 'version': VERSION
-    , 'input': _input_file.name
-    , 'output': _output_file.name
-    , 'time': datetime.datetime.now().strftime( '%Y-%m-%d %H:%M' )
-    }),
     'unq': _unq
 })
 
@@ -2114,6 +2140,10 @@ def _is_term( node ):
             if not _is_term( i ):
                 return False
 
+        return True
+
+#   ---- LAZY
+    if isinstance( node, LAZY ):
         return True
 
 #   ---- str based | int | float | long
@@ -2258,9 +2288,10 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     if isinstance( x, EMBED ):
                         if isinstance( x.ast, T ):
 #                           -- add the indent of an application to each line of the substituting text
-                            for ii, xx in enumerate( x.ast ):
-                                if isinstance( xx, PLAIN ):
-                                    x.ast[ ii ] = xx.add_indent( node.indent )
+                            if node.indent:
+                                for ii, xx in enumerate( x.ast ):
+                                    if isinstance( xx, PLAIN ):
+                                        x.ast[ ii ] = xx.add_indent( node.indent )
 #                           -- insert an embedded AST into the head of the list of the rest and evaluate them together
 #                           -- so complicated because ($macro) can contain ($set)
                             del node[ :nx ]
@@ -2302,8 +2333,10 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                             val = node.fn.fn( *node.args )
                             return int( val ) if isinstance( val, bool ) else val
 
-                        if node.fn.atom == 'repr':
-                            return node.fn.fn( node.args )
+                        if node.fn.atom in [ 'lazy', 'repr' ] \
+                        and len( node.args ) == 1 and not isinstance( node.args[ 0 ], VAR ):
+#                           -- argument is substituted
+                            return node.fn.fn( node.args[ 0 ])
 
 #                       -- unreducible
                         return node
@@ -2315,7 +2348,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
                     return node.fn.fn
 
-#   ---- APPLY -- int | float | long
+#   ---- APPLY -- int | float | long (subscripting)
                 elif isinstance( node.fn, int ) or isinstance( node.fn, long ) or isinstance( node.fn, float ):
                     if node.named:
                         raise SyntaxError( '%s: unexpected named argument of index function: %s' % ( _callee()
@@ -2324,7 +2357,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     if node.args:
                         if _is_term( node.args ):
                             pos = int( node.fn )
-#                           -- HACK: (syntactic sugar) if only one argument and it's a list - apply operation to it
+#                           -- (syntactic sugar) if only one argument and it's a list - apply operation to it
                             if len( node.args ) == 1 and isinstance( node.args[ 0 ], list ):
                                 return node.args[ 0 ][ pos ] if pos < len( node.args[ 0 ]) else None
                             else:
@@ -2368,12 +2401,13 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                             log.warn( 'unused argument(s) %s: %s', repr( node.args ), repr( node )[ :ERR_SLICE ])
                             return yueval( node.fn, env, depth + 1 )
 
-                        if var == ATOM( '...' ):
-#   TODO: handle if refuge is not the last parameter, name for refuge...
-                            val = node.args
+                        if var == __va_args__:
+#   TODO: handle if refuge is not the last parameter...
+                            val = LIST( node.args )
                             node.args = []
+                        else:
+                            val, node.args = _list_eval_1( node.args, env, depth + 1 )
 
-                        val, node.args = _list_eval_1( node.args, env, depth + 1 )
 #                       -- unreducible -- EMBED
                         if val is NOT_FOUND:
                             return node
@@ -2400,6 +2434,11 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     if not node.named and not node.args and node.fn.env.unassigned() not in node.fn.default:
                         node = node.fn
                     # fall through -- yueval( node ) -- apply next argument
+
+#   ---- APPLY -- LAZY
+                elif isinstance( node.fn, LAZY ):
+                    node.fn = node.fn.ast
+                    # fall through -- yueval( node )
 
 #   ---- APPLY -- str
                 elif isinstance( node.fn, str ):
@@ -2512,6 +2551,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         d_late[ var ] = [( key, BOUND()) for key in late ]
                     if default is not None:
                         d_default[ var ] = yueval( default, env, depth + 1 )
+                    if var == ATOM( '...' ):
+                        var = __va_args__
                     env_l[ var ] = BOUND()
 #               -- eval L_CLOSURE
                 node = L_CLOSURE( node.l_form, env_l, d_late, d_default )
@@ -2532,15 +2573,18 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #   ---- SET --> ENV
             elif isinstance( node, SET ):
                 env_l = ENV( env )
-                for i, var in enumerate( node.names ):
-                    env_l[ var ] = BOUND()
+                if isinstance( node.lval, ATOM ):
+                    env_l[ node.lval ] = BOUND()
+                else:
+                    for i, var in enumerate( node.lval ):
+                        env_l[ var ] = BOUND()
 #               -- circular reference
                 val = yueval( node.ast, env_l, depth + 1 )
-                if len( node.names ) == 1:
-                    env_l[ node.names[ 0 ]] = val
+                if isinstance( node.lval, ATOM ):
+                    env_l[ node.lval ] = val
                 else:
                     if isinstance( val, list ):
-                        for i, var in enumerate( node.names ):
+                        for i, var in enumerate( node.lval ):
                             if len( val ) > i:
                                 env_l[ var ] = val[ i ]
                             else:
@@ -2548,7 +2592,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                                 , repr( node )[ :ERR_SLICE ])
                                 env_l[ var ] = None
                     else:
-                        for var in node.names:
+                        for var in node.lval:
                             env_l[ var ] = val
                 return env_l
 
@@ -2586,7 +2630,11 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     return node
 
                 if isinstance( node.ast, STR ):
-                    node.ast = _unq( node.ast )
+                    node.ast = _unq( node.ast ).strip()
+#                   -- (syntactic sugar) enclose string into ($ )
+                    if not node.ast.startswith( '($' ):
+                        node.ast = '($' + node.ast + ')'
+
                 node = yuparse( node.ast )
                 if not node.ast:
                     return None
@@ -2603,7 +2651,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                 node.cond = yueval( node.cond, env, depth + 1 )
                 if not _is_term( node.cond ):
 #                   -- unreducible
-                    return COND_CLOSURE( node.cond, node.leg_1, node.leg_0, env )
+                    return COND_CLOSURE( node.cond, node.leg_1, node.leg_0 )
 
                 node = node.leg_1 if node.cond else node.leg_0
                 # fall through -- yueval( node )
@@ -2612,10 +2660,13 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
             elif isinstance( node, COND_CLOSURE ):
                 node.cond = yueval( node.cond, env, depth + 1 )
                 if not _is_term( node.cond ):
+#                   -- !? potential problem of infinite recursion...
+                    node.leg_1 = yueval( node.leg_1, env, depth + 1 )
+                    node.leg_0 = yueval( node.leg_0, env, depth + 1 )
 #                   -- unreducible
                     return node
 
-                node = yueval( node.leg_1 if node.cond else node.leg_0, node.env, depth + 1 )
+                node = yueval( node.leg_1 if node.cond else node.leg_0, env, depth + 1 )
                 # fall through -- yueval( node )
 
 #   ---- INFIX --> INFIX_CLOSURE
@@ -2883,8 +2934,7 @@ def _pp_file( fn ):
 #       -- output file naming
         fn_o = _output_fn( fn )
 #       -- preprocessing
-        _input_file( os.path.basename( fn ))
-        _output_file( os.path.basename( fn_o ))
+        yushell( fn, fn_o )
         result, plain = _pp( text )
         print
         if result:
@@ -2923,8 +2973,7 @@ def _pp_test( text, echo = True ):
 
     if echo:
         print PP_I, text
-    _input_file()
-    _output_file()
+    yushell()
     result, plain = _pp( text )
     print
     print PP_O, plain
@@ -2934,9 +2983,8 @@ def _pp_test( text, echo = True ):
     return True
 
 #   ---------------------------------------------------------------------------
-def _pp_text( text, text_source = '' ):
-    _input_file( text_source )
-    _output_file()
+def _pp_text( text, text_source = None ):
+    yushell( text_source )
     result, plain = _pp( text )
     print
     print plain
