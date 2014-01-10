@@ -1560,7 +1560,7 @@ def ps_infix( sou, depth = 0 ):
     op_like_and ::= '&' | '<<' | '>>';
     """
 #   ---------------
-#   -- infix was released as a python expression
+#   -- infix has been released as a python expression
 #   ---- {
     if sou[ :1 ] == '{':
         text = ps_text( sou[ 1: ], depth + 1 )
@@ -2103,6 +2103,7 @@ buildin.update({
     }),
     'car': lambda l : l[ :1 ],
     'cdr': lambda l : l[ 1: ],
+    'getslice': lambda seq, *l : LIST( operator.getitem( seq, slice( *l))),
     'islist': lambda l : isinstance( l, list ),
     'lazy': lambda val : LIST( LAZY( x ) for x in val ) if isinstance( val, list ) else LAZY( val ),
     'len': len,
@@ -2126,7 +2127,7 @@ def _plain_back( st ):
     return ( '()' if st == [] else str( st ))
 
 #   ---------------------------------------------------------------------------
-def _is_term( node ):
+def _is_term( node ):                                                                                                  #pylint: disable=R0911
     """
     Check node is term.
     """
