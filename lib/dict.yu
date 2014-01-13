@@ -1,3 +1,15 @@
+($!
+	($dict ID
+		(` id_0       id_1       ... id_N )
+		(`
+		(  id_0_val_0 id_1_val_0 ... id_N_val_0 )
+		(  id_0_val_1 id_1_val_1 ... id_N_val_1 )
+		                         ...
+		(  id_0_val_K id_1_val_K ... id_N_val_K )
+		)
+	)
+	($each-ID \i.($i id_N))
+)
 ($macro dict (id cols body)
 	($set cols-($id) ($range ($len (($cols)) )))
 	($set each-($id) ($range ($len (($body)) )))
@@ -6,9 +18,14 @@
 	)
 )
 
+($!
+	($if cond [leg_T] [leg_F])
+)
 ($set if \cond.\then:[].\else:[].($ then ? cond | else))
 
-($! ($unfold N [val_0] [val_1] [...] \n.(val_($n))) )
+($!
+	($unfold N [val_0] [val_1] [...] \n.(val_($n)))
+)
 ($set unfold \count.\...]
 	($set __last ($sub ($len ($lazy __va_args__)) 1))
 	($set __func ($__last ($lazy __va_args__)))
