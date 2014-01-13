@@ -173,7 +173,7 @@ int main()
 }
 """
 ),(
-#   ---- 02 -- APPLY, BUILDIN, __va_args__
+#   ---- 02 -- APPLY, BUILDIN, code, __va_args__
 0,
 
 r"""
@@ -184,9 +184,12 @@ r"""
 ($ \f.\a.($f a) exp ($e))
 ($ \a.($ \p1.\p2.\p3.($add ($add p1 p2) p3) *a) ( 100 10 1 ))
 ($ \a.\...($($lazy __va_args__) \f.($f a)) 9 \n.($sqrt n) \n.[ ($n) ] \n.($pow n 2))
+($join (,,1,2,,3,4,,5,6,) ,,,)
+($macro m (c) ($replace,,($c),,2,,_))
+($m,,1234256722)
 """,
 
-TEXT([PLAIN('\n'), APPLY(VAR([], ATOM('print')), [TEXT([APPLY(VAR([], ATOM('e')), [], []), PLAIN(' 100.0 '), APPLY(VAR([], ATOM('len')), [STR('"We all live in a yellow submarine,"')], []), PLAIN('\n')], 0, 0)], []), PLAIN('\n'), APPLY(VAR([], ATOM('print')), [APPLY(VAR([], ATOM('add')), [INT(2L), INT(2L)], []), STR("'*'"), APPLY(VAR([], ATOM('mul')), [INT(2L), INT(2L)], []), STR("'='"), APPLY(VAR([], ATOM('mul')), [APPLY(VAR([], ATOM('add')), [INT(2L), INT(2L)], []), APPLY(VAR([], ATOM('mul')), [INT(2L), INT(2L)], [])], []), STR("'\\n'"), VAR([], ATOM('yellow')), VAR([], ATOM('submarine')), STR("'\\n'")], []), PLAIN('\n'), APPLY(LAMBDA([([], ATOM('p1'), None), ([], ATOM('p2'), None), ([], ATOM('p3'), None)], APPLY(VAR([], ATOM('add')), [APPLY(VAR([], ATOM('add')), [VAR([], ATOM('p1')), VAR([], ATOM('p2'))], []), VAR([], ATOM('p3'))], [])), [INT(1L), INT(2L), EMBED(LIST([INT(3L), INT(4L), INT(5L)])), INT(6L), INT(7L), EMBED(LIST([INT(8L), INT(9L), INT(10L), INT(11L), INT(12L), INT(13L), INT(14L), INT(15L)]))], []), PLAIN('\n'), APPLY(LAMBDA([([], ATOM('f'), None), ([], ATOM('a'), None)], APPLY(VAR([], ATOM('f')), [VAR([], ATOM('a'))], [])), [VAR([], ATOM('exp')), APPLY(VAR([], ATOM('e')), [], [])], []), PLAIN('\n'), APPLY(LAMBDA([([], ATOM('a'), None)], APPLY(LAMBDA([([], ATOM('p1'), None), ([], ATOM('p2'), None), ([], ATOM('p3'), None)], APPLY(VAR([], ATOM('add')), [APPLY(VAR([], ATOM('add')), [VAR([], ATOM('p1')), VAR([], ATOM('p2'))], []), VAR([], ATOM('p3'))], [])), [EMBED(VAR([], ATOM('a')))], [])), [LIST([INT(100L), INT(10L), INT(1L)])], []), PLAIN('\n'), APPLY(LAMBDA([([], ATOM('a'), None), ([], ATOM('...'), None)], APPLY(APPLY(VAR([], ATOM('lazy')), [VAR([], ATOM('__va_args__'))], []), [LAMBDA([([], ATOM('f'), None)], APPLY(VAR([], ATOM('f')), [VAR([], ATOM('a'))], []))], [])), [INT(9L), LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('sqrt')), [VAR([], ATOM('n'))], [])), LAMBDA([([], ATOM('n'), None)], TEXT([PLAIN(' '), APPLY(VAR([], ATOM('n')), [], []), PLAIN(' ')], 0, 0)), LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('pow')), [VAR([], ATOM('n')), INT(2L)], []))], []), PLAIN('\n')], 0, 0),
+TEXT([PLAIN('\n'), APPLY(VAR([], ATOM('print')), [TEXT([APPLY(VAR([], ATOM('e')), [], []), PLAIN(' 100.0 '), APPLY(VAR([], ATOM('len')), [STR('"We all live in a yellow submarine,"')], []), PLAIN('\n')], 0, 0)], []), PLAIN('\n'), APPLY(VAR([], ATOM('print')), [APPLY(VAR([], ATOM('add')), [INT(2L), INT(2L)], []), STR("'*'"), APPLY(VAR([], ATOM('mul')), [INT(2L), INT(2L)], []), STR("'='"), APPLY(VAR([], ATOM('mul')), [APPLY(VAR([], ATOM('add')), [INT(2L), INT(2L)], []), APPLY(VAR([], ATOM('mul')), [INT(2L), INT(2L)], [])], []), STR("'\\n'"), VAR([], ATOM('yellow')), VAR([], ATOM('submarine')), STR("'\\n'")], []), PLAIN('\n'), APPLY(LAMBDA([([], ATOM('p1'), None), ([], ATOM('p2'), None), ([], ATOM('p3'), None)], APPLY(VAR([], ATOM('add')), [APPLY(VAR([], ATOM('add')), [VAR([], ATOM('p1')), VAR([], ATOM('p2'))], []), VAR([], ATOM('p3'))], [])), [INT(1L), INT(2L), EMBED(LIST([INT(3L), INT(4L), INT(5L)])), INT(6L), INT(7L), EMBED(LIST([INT(8L), INT(9L), INT(10L), INT(11L), INT(12L), INT(13L), INT(14L), INT(15L)]))], []), PLAIN('\n'), APPLY(LAMBDA([([], ATOM('f'), None), ([], ATOM('a'), None)], APPLY(VAR([], ATOM('f')), [VAR([], ATOM('a'))], [])), [VAR([], ATOM('exp')), APPLY(VAR([], ATOM('e')), [], [])], []), PLAIN('\n'), APPLY(LAMBDA([([], ATOM('a'), None)], APPLY(LAMBDA([([], ATOM('p1'), None), ([], ATOM('p2'), None), ([], ATOM('p3'), None)], APPLY(VAR([], ATOM('add')), [APPLY(VAR([], ATOM('add')), [VAR([], ATOM('p1')), VAR([], ATOM('p2'))], []), VAR([], ATOM('p3'))], [])), [EMBED(VAR([], ATOM('a')))], [])), [LIST([INT(100L), INT(10L), INT(1L)])], []), PLAIN('\n'), APPLY(LAMBDA([([], ATOM('a'), None), ([], ATOM('...'), None)], APPLY(APPLY(VAR([], ATOM('lazy')), [VAR([], ATOM('__va_args__'))], []), [LAMBDA([([], ATOM('f'), None)], APPLY(VAR([], ATOM('f')), [VAR([], ATOM('a'))], []))], [])), [INT(9L), LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('sqrt')), [VAR([], ATOM('n'))], [])), LAMBDA([([], ATOM('n'), None)], TEXT([PLAIN(' '), APPLY(VAR([], ATOM('n')), [], []), PLAIN(' ')], 0, 0)), LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('pow')), [VAR([], ATOM('n')), INT(2L)], []))], []), PLAIN('\n'), APPLY(VAR([], ATOM('join')), [LIST([TEXT([PLAIN('1,2')], 0, 0), TEXT([PLAIN('3,4')], 0, 0), TEXT([PLAIN('5,6,')], 0, 0)]), TEXT([PLAIN(',')], 0, 0)], []), PLAIN('\n'), MACRO(ATOM('m'), [ATOM('c')], ' ($replace,,($c),,2,,_)'), PLAIN('\n'), APPLY(VAR([], ATOM('m')), [TEXT([PLAIN('1234256722')], 0, 0)], []), PLAIN('\n')], 0, 0),
 
 r"""
 
@@ -195,6 +198,8 @@ r"""
 15.1542622415
 111
 3.0 9 81.0
+1,2,3,4,5,6,
+1_34_567__
 """
 ),(
 #   ---- 03 -- SET, indent

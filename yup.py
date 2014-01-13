@@ -15,7 +15,7 @@ COPYRIGHT   = 'Copyright (c) 2011, 2013'
 AUTHORS     = 'Vitaly Kravtsov (in4lio@gmail.com)'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.5a5'
+VERSION     = '0.6a1'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -646,6 +646,9 @@ ps_ANY = frozenset([ ord( '\n' ), ord( '\r' ), ord( '\t' )] + range( ord( ' ' ),
 #   ---- code mark
 ps_CODE = '($code'
 l_CODE = len( ps_CODE )
+#   ---- code double comma mark
+ps_DUALCOMMA = ',,'
+l_DUALCOMMA = len( ps_DUALCOMMA )
 #   ---- infix mark
 ps_INFIX = '(${}'
 l_INFIX = len( ps_INFIX )
@@ -1418,12 +1421,13 @@ def ps_l_form( sou, depth = 0 ):
 
 #   ---------------------------------------------------------------------------
 @echo__ps_
-def ps_code( sou, depth = 0 ):
+def ps_code( sou, depth = 0 ):                                                                                         #pylint: disable=R0911,R0912
     """
     code ::=
           ']' EOL text EOL '['
         | ']' text '[' >> { tag } ')' <<
         | '[' text ']' & ($eq depth_pth_sq 0)
+        | ',,' text >> ( ',,' | { tag } ')' ) <<
         | '($code' text ')' & ($eq depth_pth 0);
     """
 #   ---------------
@@ -1503,6 +1507,30 @@ def ps_code( sou, depth = 0 ):
 #   ---- ) & ($eq depth_pth 0)
             if ( rest[ :1 ] == ')' ) and ( leg.depth_pth == 0 ):
                 return ( rest[ 1: ], leg )
+
+#   ---- ,,
+    elif sou[ :l_DUALCOMMA ] == ps_DUALCOMMA:
+#       -- (syntactic sugar) e.g. ($f,,code,,code) equals to ($f [code] [code])
+        text = ps_text( sou[ l_DUALCOMMA: ], depth + 1 )
+        while True:
+#   ---- text
+            ( rest, leg ) = text.next()
+#   ---- >>
+            look = rest
+#   ---- ,, <<
+            if look[ :l_DUALCOMMA ] == ps_DUALCOMMA:
+                return ( rest, leg )
+#   ---- \
+            elif look[ :1 ] == '\\':
+#   ---- atom
+                ( look, name ) = ps_atom( look[ 1: ], depth + 1 )
+                if name is None:
+                    continue
+#   ---- gap
+                ( look, _ ) = ps_gap( look, depth + 1 )
+#   ---- ) <<
+            if look[ :1 ] == ')':
+                return ( rest, leg )
 
     return ( sou, None )
 
@@ -2065,7 +2093,7 @@ class LAZY( BASE_CAP ):
         return _plain( self.ast )
 
 #   -----------------------------------
-#   Buildin functions and consts
+#   Build-in functions and consts
 #   -----------------------------------
 
 import string, operator, math, datetime, itertools                                                                     #pylint: disable=W0402
@@ -2093,6 +2121,7 @@ buildin.update( vars( string ))
 buildin.update( vars( operator ))
 buildin.update( vars( math ))
 buildin.update({
+                                                                                                                       #pylint: disable=W0142
     '__FILE__': lambda : '"%s"' % yushell.input,
     '__OUTPUT_FILE__': lambda : '"%s"' % yushell.output,
     '__MODULE_NAME__': lambda : ATOM( yushell.module ),
@@ -2103,13 +2132,12 @@ buildin.update({
     }),
     'car': lambda l : l[ :1 ],
     'cdr': lambda l : l[ 1: ],
-    'getslice': lambda seq, *l : LIST( operator.getitem( seq, slice( *l))),
+    'getslice': lambda seq, *l : LIST( operator.getitem( seq, slice( *l ))),
     'islist': lambda l : isinstance( l, list ),
     'lazy': lambda val : LIST( LAZY( x ) for x in val ) if isinstance( val, list ) else LAZY( val ),
     'len': len,
     'list': lambda *l : LIST( l ),
     'print': lambda *l : sys.stdout.write( ' '.join(( _unq( x ) if isinstance( x, STR ) else str( x )) for x in l )),
-                                                                                                                       #pylint: disable=W0142
     'q': lambda val : '"%s"' % str( val ),
     'range': lambda *l : LIST( range( *l )),
     'repr': repr,
