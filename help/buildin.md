@@ -4,7 +4,7 @@
 --- | :---
 `($__FILE__)` | Name of the current preprocessed file.
 `($__OUTPUT_FILE__)` | Name of the output file.
-`($__MODULE__)` | Return an uppercase base name of the current preprocessed file without extension. All hyphens are replaced with underscores.
+`($__MODULE_NAME__)` | Return an uppercase base name of the current preprocessed file without extension. All hyphens are replaced with underscores.
 `($__TITLE__)` | Insert comment with file info.
 `($car list)` | Head of a list.
 `($cdr list)` | Tail of a list.
