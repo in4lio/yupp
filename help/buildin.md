@@ -33,8 +33,6 @@
 `($pow a b)` | Exponentiation `a ** b`.
 `($is_ a b)` | Identity `a is b`.
 `($is_not a b)` | Identity `a is not b`.
-`($setitem obj k v)` | Indexed Assignment `obj[k] = v`.
-`($delitem obj k)` | Indexed Deletion `del obj[k]`.
 `($getitem obj k)` | Indexing `obj[k]`.
 `($lshift a b)` | Left Shift `a << b`.
 `($mod a b)` | Modulo `a % b`.
@@ -53,7 +51,7 @@
 `($ne a b)` | Difference `a != b`.
 `($ge a b)` | Ordering `a >= b`.
 `($gt a b)` | Ordering `a > b`.
- | **Functions imported from Python `math` module**
+ | **Functions and constants imported from Python `math` module**
 `($acos x)` | Return the arc cosine (measured in radians) of x.
 `($acosh x)` | Return the hyperbolic arc cosine (measured in radians) of x.
 `($asin x)` | Return the arc sine (measured in radians) of x.
@@ -93,7 +91,9 @@
 `($tan x)` | Return the tangent of x (measured in radians).
 `($tanh x)` | Return the hyperbolic tangent of x.
 `($trunc x)` | Truncates x to the nearest integral toward 0.
- | **Functions imported from Python `string` module**
+`($pi)` | The mathematical constant π = 3.141592..., to available precision.
+`($e)` | The mathematical constant e = 2.718281..., to available precision.
+ | **Functions and constants imported from Python `string` module**
 `($digits)` | The string `'0123456789'`.
 `($hexdigits)` | The string `'0123456789abcdefABCDEF'`.
 `($letters)` | The concatenation of the strings `lowercase` and `uppercase` described below.
