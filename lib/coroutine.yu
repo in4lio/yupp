@@ -1,5 +1,32 @@
 ($! based on Simon Tatham "Coroutines in C")
 
+($!
+($coroute-context A);
+($coroute-context B);
+
+($coroute-define A ]
+	for ( ; ; ) {
+		/* ... */
+		($coroute-yield);
+	}
+[ )
+
+($coroute-define B ]
+	for ( ; ; ) {
+		/* ... */
+		($coroute-yield);
+	}
+[ )
+
+void main( void )
+{
+	for ( ; ; ) {
+		($coroute-call A);
+		($coroute-call B);
+	}
+}
+)
+
 ($set __label_iter ($seqiter))
 
 ($macro coroute-h ()
