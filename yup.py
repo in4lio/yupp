@@ -15,7 +15,7 @@ COPYRIGHT   = 'Copyright (c) 2011, 2013'
 AUTHORS     = 'Vitaly Kravtsov (in4lio@gmail.com)'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.6a1'
+VERSION     = '0.6a2'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -649,6 +649,9 @@ l_CODE = len( ps_CODE )
 #   ---- code double comma mark
 ps_DUALCOMMA = ',,'
 l_DUALCOMMA = len( ps_DUALCOMMA )
+#   ---- code end mark
+ps_DUALSEMI = ';;'
+l_DUALSEMI = len( ps_DUALSEMI )
 #   ---- infix mark
 ps_INFIX = '(${}'
 l_INFIX = len( ps_INFIX )
@@ -1427,7 +1430,7 @@ def ps_code( sou, depth = 0 ):                                                  
           ']' EOL text EOL '['
         | ']' text '[' >> { tag } ')' <<
         | '[' text ']' & ($eq depth_pth_sq 0)
-        | ',,' text >> ( ',,' | { tag } ')' ) <<
+        | ',,' text ( ';;' | >> ( ',,' | { tag } ')' & ($eq depth_pth 0) ) << )
         | '($code' text ')' & ($eq depth_pth 0);
     """
 #   ---------------
@@ -1515,6 +1518,10 @@ def ps_code( sou, depth = 0 ):                                                  
         while True:
 #   ---- text
             ( rest, leg ) = text.next()
+#   ---- ;;
+            if rest[ :l_DUALSEMI ] == ps_DUALSEMI:
+                return ( rest[ l_DUALSEMI: ], leg )
+
 #   ---- >>
             look = rest
 #   ---- ,, <<
@@ -1528,8 +1535,8 @@ def ps_code( sou, depth = 0 ):                                                  
                     continue
 #   ---- gap
                 ( look, _ ) = ps_gap( look, depth + 1 )
-#   ---- ) <<
-            if look[ :1 ] == ')':
+#   ---- ) & ($eq depth_pth 0) <<
+            if ( look[ :1 ] == ')' )  and ( leg.depth_pth == 0 ):
                 return ( rest, leg )
 
     return ( sou, None )

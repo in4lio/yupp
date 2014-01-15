@@ -1444,7 +1444,7 @@
 					<key>begin</key>
 					<string>,,</string>
 					<key>end</key>
-					<string>(?=,,)|(?=\))</string>
+					<string>(?=,,)|(?=\))|;;</string>
 					<key>name</key>
 					<string>code.yupp</string>
 					<key>patterns</key>
