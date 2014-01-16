@@ -310,10 +310,22 @@
 			<key>patterns</key>
 			<array>
 				<dict>
-					<key>begin</key>
-					<string>\(</string>
-					<key>end</key>
-					<string>\)</string>
+					<key>include</key>
+					<string>#yupp-comment-parens-eater</string>
+				</dict>
+			</array>
+		</dict>
+		<key>yupp-comment-parens-eater</key>
+		<dict>
+			<key>begin</key>
+			<string>\(</string>
+			<key>end</key>
+			<string>\)</string>
+			<key>patterns</key>
+			<array>
+				<dict>
+					<key>include</key>
+					<string>#yupp-comment-parens-eater</string>
 				</dict>
 			</array>
 		</dict>
@@ -401,6 +413,21 @@
 					<string>\]</string>
 					<key>end</key>
 					<string>\[</string>
+					<key>name</key>
+					<string>code.yupp</string>
+					<key>patterns</key>
+					<array>
+						<dict>
+							<key>include</key>
+							<string>#yupp-code</string>
+						</dict>
+					</array>
+				</dict>
+				<dict>
+					<key>begin</key>
+					<string>,,</string>
+					<key>end</key>
+					<string>(?=,,)|(?=\))|;;</string>
 					<key>name</key>
 					<string>code.yupp</string>
 					<key>patterns</key>

@@ -77,7 +77,7 @@ TEXT([PLAIN('\n'), REMARK('// fn()!'), PLAIN('\n'), APPLY(VAR([ATOM('u1'), ATOM(
 
 r"""
 do {($fn \code ]
-    abc( d ) + ($e f) * 10
+    abc( d ) + ($ee f) * 10
 [[(gh[i[j]] == k)"]"]
 ($code l(m(n(o(')'))))) ]p["]]]"]\[\fn)} while( 1 )
 ($fn ]
@@ -85,7 +85,7 @@ do {($fn \code ]
 \[)
 """,
 
-TEXT([PLAIN('\ndo {'), APPLY(VAR([], ATOM('fn')), [TEXT([PLAIN('(gh[i[j]] == k)'), STR('"]"')], 0, 0), TEXT([PLAIN(' l(m(n(o('), STR("')'"), PLAIN('))))')], 0, 0), TEXT([PLAIN('p['), STR('"]]]"'), PLAIN(']')], 0, 0)], [(ATOM('code'), TEXT([PLAIN('    abc( d ) + '), APPLY(VAR([], ATOM('e')), [VAR([], ATOM('f'))], []), PLAIN(' * 10')], 0, 0))]), PLAIN('} while( 1 )\n'), APPLY(VAR([], ATOM('fn')), [TEXT([REMARK('// eol:)')], 0, 0)], []), PLAIN('\n')], 0, 0),
+TEXT([PLAIN('\ndo {'), APPLY(VAR([], ATOM('fn')), [TEXT([PLAIN('(gh[i[j]] == k)'), STR('"]"')], 0, 0), TEXT([PLAIN(' l(m(n(o('), STR("')'"), PLAIN('))))')], 0, 0), TEXT([PLAIN('p['), STR('"]]]"'), PLAIN(']')], 0, 0)], [(ATOM('code'), TEXT([PLAIN('    abc( d ) + '), APPLY(VAR([], ATOM('ee')), [VAR([], ATOM('f'))], []), PLAIN(' * 10')], 0, 0))]), PLAIN('} while( 1 )\n'), APPLY(VAR([], ATOM('fn')), [TEXT([REMARK('// eol:)')], 0, 0)], []), PLAIN('\n')], 0, 0),
 
 ""
 ),(
@@ -94,10 +94,11 @@ TEXT([PLAIN('\ndo {'), APPLY(VAR([], ATOM('fn')), [TEXT([PLAIN('(gh[i[j]] == k)'
 
 r"""
 ($ \p.\pp1..\pp2..\pp:abc.\...\ppp1..\ppp.\pppp.($f p1) *(1 a b))
-($ \(list).($f2))
+($set lst (pa pb pc))
+($ \(lst).($f2))
 """,
 
-TEXT([PLAIN('\n'), APPLY(LAMBDA([([], ATOM('p'), None), ([ATOM('pp1'), ATOM('pp2')], ATOM('pp'), VAR([], ATOM('abc'))), ([], ATOM('...'), None), ([ATOM('ppp1')], ATOM('ppp'), None), ([], ATOM('pppp'), None)], APPLY(VAR([], ATOM('f')), [VAR([], ATOM('p1'))], [])), [EMBED(LIST([INT(1L), VAR([], ATOM('a')), VAR([], ATOM('b'))]))], []), PLAIN('\n'), APPLY(LAMBDA(VAR([], ATOM('list')), APPLY(VAR([], ATOM('f2')), [], [])), [], []), PLAIN('\n')], 0, 0),
+TEXT([PLAIN('\n'), APPLY(LAMBDA([([], ATOM('p'), None), ([ATOM('pp1'), ATOM('pp2')], ATOM('pp'), VAR([], ATOM('abc'))), ([], ATOM('...'), None), ([ATOM('ppp1')], ATOM('ppp'), None), ([], ATOM('pppp'), None)], APPLY(VAR([], ATOM('f')), [VAR([], ATOM('p1'))], [])), [EMBED(LIST([INT(1L), VAR([], ATOM('a')), VAR([], ATOM('b'))]))], []), PLAIN('\n'), SET(ATOM('lst'), LIST([VAR([], ATOM('pa')), VAR([], ATOM('pb')), VAR([], ATOM('pc'))])), PLAIN('\n'), APPLY(LAMBDA(VAR([], ATOM('lst')), APPLY(VAR([], ATOM('f2')), [], [])), [], []), PLAIN('\n')], 0, 0),
 
 ""
 ),(
@@ -116,14 +117,14 @@ TEXT([PLAIN('\n'), APPLY(VAR([], ATOM('l')), [LIST([FLOAT(-0.123), INT(-48L), IN
 0,
 
 r"""
-($z {y + x/2 - ($w) "hi{!}"} ($quotedHello()))
+($z {pi + e/2 - ($w) + len("hi{!}")} ($quotedHello()))
 ($macro m1 (a b) ($sum a b))
 ($macro m2 () ]printf("Hello %s!", "Nike");[/*HACK:]*/)
 ($$ "(${f} {0} {1})" 2 3 \f sub)
 ($$ a "yes" "no")
 """,
 
-TEXT([PLAIN('\n'), APPLY(VAR([], ATOM('z')), [INFIX(TEXT([PLAIN('y + x/2 - '), APPLY(VAR([], ATOM('w')), [], []), PLAIN(' '), STR('"hi{!}"')], 0, 0)), STR('Hello()')], []), PLAIN('\n'), MACRO(ATOM('m1'), [ATOM('a'), ATOM('b')], ' ($sum a b)'), PLAIN('\n'), MACRO(ATOM('m2'), [], ' ]printf("Hello %s!", "Nike");[/*HACK:]*/'), PLAIN('\n'), EVAL(APPLY(STR('"(${f} {0} {1})"'), [INT(2L), INT(3L)], [(ATOM('f'), VAR([], ATOM('sub')))])), PLAIN('\n'), EVAL(APPLY(VAR([], ATOM('a')), [STR('"yes"'), STR('"no"')], [])), PLAIN('\n')], 0, 0),
+TEXT([PLAIN('\n'), APPLY(VAR([], ATOM('z')), [INFIX(TEXT([PLAIN('pi + e/2 - '), APPLY(VAR([], ATOM('w')), [], []), PLAIN(' + len('), STR('"hi{!}"'), PLAIN(')')], 0, 0)), STR('Hello()')], []), PLAIN('\n'), MACRO(ATOM('m1'), [ATOM('a'), ATOM('b')], ' ($sum a b)'), PLAIN('\n'), MACRO(ATOM('m2'), [], ' ]printf("Hello %s!", "Nike");[/*HACK:]*/'), PLAIN('\n'), EVAL(APPLY(STR('"(${f} {0} {1})"'), [INT(2L), INT(3L)], [(ATOM('f'), VAR([], ATOM('sub')))])), PLAIN('\n'), EVAL(APPLY(VAR([], ATOM('a')), [STR('"yes"'), STR('"no"')], [])), PLAIN('\n')], 0, 0),
 
 ""
 ),(

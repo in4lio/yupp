@@ -300,8 +300,7 @@
 		<dict>
 			<key>begin</key>
 			<string>(?x)
-    		(?:  ^                                 # begin-of-line
-    		  |
+    		(?:
     		     (?: (?= \s )           (?&lt;!else|new|return) (?&lt;=\w)      #  or word + space before name
     		       | (?= \s*[A-Za-z_] ) (?&lt;!&amp;&amp;)       (?&lt;=[*&amp;&gt;])   #  or type modifier before name
     		     )
@@ -434,7 +433,7 @@
 			(\b
 				(?!(while|for|do|if|else|switch|catch|enumerate|return|r?iterate)\s*\()(?:(?!NS)[A-Za-z_][A-Za-z0-9_]*+\b | :: )++                  # actual name
 			)
-			 \s*(\()</string>
+			 \s*(\((?!\$))</string>
 					<key>name</key>
 					<string>meta.function-call.c</string>
 				</dict>
@@ -463,7 +462,7 @@
 				(?: [A-Za-z_][A-Za-z0-9_]*+ | :: )++    |              # actual name
 				(?: (?&lt;=operator) (?: [-*&amp;&lt;&gt;=+!]+ | \(\) | \[\] ) )?  # if it is a C++ operator
 			)
-			 \s*(\()</string>
+			 \s*(\((?!\$))</string>
 					<key>name</key>
 					<string>meta.initialization.c</string>
 				</dict>
