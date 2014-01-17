@@ -69,7 +69,6 @@ int isprime( int n )
 		($coroute-wait,, number > PR_NONE );
 		printf( "%03d ", number );
 		number = PR_NONE;
-		($coroute-yield);
 	}
 [ )
 
@@ -78,7 +77,6 @@ int isprime( int n )
 		($coroute-wait,, number == PR_DOT );
 		printf( " .  " );
 		number = PR_NONE;
-		($coroute-yield);
 	}
 [ )
 
@@ -87,7 +85,6 @@ int isprime( int n )
 		($coroute-wait,, number == PR_EOL );
 		printf( "\n" );
 		number = PR_NONE;
-		($coroute-yield);
 	}
 [ )
 
