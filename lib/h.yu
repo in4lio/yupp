@@ -12,17 +12,17 @@
 )
 
 ($macro h-begin (name)
-($set h-fn ($upper ($name)))
-#ifndef ($h-fn)_H
-#define ($h-fn)_H
+($set h-name ($upper ($name)))
+#ifndef ($h-name)_H
+#define ($h-name)_H
 
-#ifdef  ($h-fn)_IMPLEMENT
-#define ($h-fn)_EXT
-#define ($h-fn)_EXT_INIT( dec, init ) \
+#ifdef  ($h-name)_IMPLEMENT
+#define ($h-name)_EXT
+#define ($h-name)_EXT_INIT( dec, init ) \
 	dec = init
 #else
-#define ($h-fn)_EXT extern
-#define ($h-fn)_EXT_INIT( dec, init ) \
+#define ($h-name)_EXT extern
+#define ($h-name)_EXT_INIT( dec, init ) \
 	extern dec
 #endif
 
@@ -35,7 +35,10 @@
 #endif
 )
 
-($macro h-begin-named () ($h-begin ($__MODULE_NAME__)))
+($macro h-begin-named ()
+($set h-name ($__MODULE_NAME__))
+($h-begin ($__MODULE_NAME__))
+)
 
 ($macro implement (name)
 #define ($upper ($name))_IMPLEMENT
@@ -55,5 +58,5 @@ extern "C" {
 #endif
 )
 
-($macro h-extern () ($h-fn)_EXT)
-($macro h-extern-init ( dec init ) ($h-fn)_EXT_INIT( ($dec), ($replace [($init)] [,] [ COMMA ]) );)
+($macro h-extern () ($h-name)_EXT)
+($macro h-extern-init ( dec init ) ($h-name)_EXT_INIT( ($dec), ($replace [($init)] [,] [ COMMA ]) );)

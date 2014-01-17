@@ -354,96 +354,129 @@
         }
 
     ___                          _________________
-    ___ EXAMPLE 3 ( LATE BOUND ) _________________
+    ___ EXAMPLE 3 ( COROUTINES ) _________________
 
     >cd yupp
-    >more "./lib/argv.yu"
+    >more "./lib/eg/ulam.yu"
 
-        ($set def-fn-argv \type.\name.
-            \type..\arg-begin..\arg-count..\arg-value..\arg-end..\body.]
-        ($type) ($name)( int argcnt, ... )
-        {
-            ($body \type type \arg-begin ]
-                va_list argptr;
-                va_start( argptr, argcnt );
-            [\arg-count ]
-                argcnt
-            [\arg-value \type.]
-                va_arg( argptr, ($type) )
-            [\arg-end ]
-                va_end( argptr );
-            [\body )
-        }
-        [\set )
+        ($__TITLE__)
 
-    >more "./eg/argv.yu-c"
-
-        #include <stdarg.h>
+        #include <stddef.h>
         #include <stdio.h>
 
-        ($import "argv.yu")
+        ($import "coroutine.yu")
+        ($import "dict.yu")
 
-        ($def-fn-argv \type int \name sum ]
-            int result = 0;
-            ($ &arg-begin)
-            while ( ($ &arg-count)-- ) result += ($ &arg-value &type);
-            ($ &arg-end)
-            return ( result );
-        [\def-fn-argv )
+        ($coroute-h)
 
-        ($def-fn-argv \type double \name sumf ]
-            double result = 0;
-            ($arg-begin)
-            while ( ($arg-count)-- ) result += ($arg-value double);
-            ($arg-end)
-            return ( result );
-        [\def-fn-argv )
+        #define SQ  19  /* odd, square side length */
+        static int spiral[ SQ * SQ ] = { 0 };
+
+        #define PR_NONE  0
+        #define PR_EOL  -1
+        #define PR_DOT  -2
+        static int number = PR_NONE;  /* current state or prime number */
+
+        void spiral_init( void )
+        {
+            const int dp[ 4 ] = { -SQ, -1, SQ, 1 };  /* step up, left, down
+                                                        and right */
+            int p = SQ * SQ / 2;  /* position in spiral */
+            int n = 2;  /* current number */
+            int lch = 3;  /* chain length */
+            int i, ii;
+
+            spiral[ p ] = 1;
+            spiral[ ++p ] = 2;
+            while ( n < SQ * SQ ) {
+                for ( i = 0; i < 4; i++ ) {  /* up-left-down-right cycle */
+                    for ( ii = 0; ii < lch >> 1; ii++ ) {  /* chain cycle */
+                        p += dp[ i ];
+                        spiral[ p ] = ++n;
+                    }
+                    ++lch; /* chain grows up every second turn */
+                }
+            }
+        }
+
+        int isprime( int n )
+        {
+            int i;
+
+            if ( n == 2 ) return 1;
+            if ( n == 1 || n % 2 == 0 ) return 0;
+            for ( i = 3; i * i <= n; i += 2 ) if (( n % i ) == 0 ) return 0;
+            return 1;
+        }
+
+        /* Define coroutines. */
+
+        ($coroute-define U ]
+            for ( i = 0; i < SQ * SQ; i++ ) {
+                number = spiral[ i ];
+
+                if ( !isprime( number )) number = PR_DOT;
+                ($coroute-yield);
+
+                /* check line breaking */
+                if (( i % SQ ) == ( SQ - 1 )) number = PR_EOL;
+                ($coroute-yield);
+            }
+        [ \enter ]
+            static int i;
+        [ )
+
+        ($coroute-define L ]
+            for ( ; ; ) {
+                ($coroute-wait,, number > PR_NONE );
+                printf( "%03d ", number );
+                number = PR_NONE;
+                ($coroute-yield);
+            }
+        [ )
+
+        ($coroute-define A ]
+            for ( ; ; ) {
+                ($coroute-wait,, number == PR_DOT );
+                printf( " .  " );
+                number = PR_NONE;
+                ($coroute-yield);
+            }
+        [ )
+
+        ($coroute-define M ]
+            for ( ; ; ) {
+                ($coroute-wait,, number == PR_EOL );
+                printf( "\n" );
+                number = PR_NONE;
+                ($coroute-yield);
+            }
+        [ )
+
+        ($dict D
+            (` name )
+            (`
+            (  U    )
+            (  L    )
+            (  A    )
+            (  M    )
+            )
+        )
+
+        /* Print ULAM spiral. */
 
         int main( void )
         {
-            ($set call-fn-argv \fn.\argv.]
-                ($fn)( ($len argv)($argv \i.[, ($i)]) )
-            [\set )
+            ($each-D \i.]
+                ($coroute-context ($i name)) = NULL;
 
-            printf( "%d %.1f"
-            , ($call-fn-argv sum (1 3 5 7))
-            , ($call-fn-argv sumf (2.0 4.0 6.0 8.0))
-            );
-            return 0;
-        }
+            [ )
+            spiral_init();
+            while ( 1
+                ($each-D \i.]
+                    && ($coroute-alive ($coroute-call ($i name)))
 
-    >python yup.py -q "./eg/argv.yu-c"
-
-    >more "./eg/argv.c"
-
-        #include <stdarg.h>
-        #include <stdio.h>
-
-        int sum( int argcnt, ... )
-        {
-            int result = 0;
-            va_list argptr;
-            va_start( argptr, argcnt );
-            while ( argcnt-- ) result += va_arg( argptr, int );
-            va_end( argptr );
-            return ( result );
-        }
-
-        double sumf( int argcnt, ... )
-        {
-            double result = 0;
-            va_list argptr;
-            va_start( argptr, argcnt );
-            while ( argcnt-- ) result += va_arg( argptr, double );
-            va_end( argptr );
-            return ( result );
-        }
-
-        int main( void )
-        {
-            printf( "%d %.1f"
-            , sum( 4, 1, 3, 5, 7 )
-            , sumf( 4, 2.0, 4.0, 6.0, 8.0 )
+                [ )
             );
             return 0;
         }

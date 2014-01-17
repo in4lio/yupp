@@ -9,37 +9,37 @@
 static semaphore_t EOL;
 
 #define SQ  19  /* odd, square side length */
-static unsigned int spiral[ SQ * SQ ] = { 0 };
+static int spiral[ SQ * SQ ] = { 0 };
 
 void spiral_init( void )
 {
-	const unsigned int dp[ 4 ] = { -SQ, -1, SQ, 1 };  /* step up, left, down and right */
-	unsigned int p = SQ * SQ / 2;  /* position into spiral */
-	unsigned int n = 2;  /* current number */
-	unsigned int lch = 3;  /* length of chain */
-	unsigned int i, ii;
+	const int dp[ 4 ] = { -SQ, -1, SQ, 1 };  /* step up, left, down and right */
+	int p = SQ * SQ / 2;  /* position in spiral */
+	int n = 2;  /* current number */
+	int lch = 3;  /* chain length */
+	int i, ii;
 
 	spiral[ p ] = 1;
 	spiral[ ++p ] = 2;
 	while ( n < SQ * SQ ) {
 		for ( i = 0; i < 4; i++ ) {  /* up-left-down-right cycle */
-			for ( ii = 0; ii < lch >> 1; ii++ ) {  /* chain grows up every second turn */
+			for ( ii = 0; ii < lch >> 1; ii++ ) {  /* chain cycle */
 				p += dp[ i ];
 				spiral[ p ] = ++n;
 			}
-			++lch;
+			++lch; /* chain grows up every second turn */
 		}
 	}
 }
 
-int isprime( unsigned int n )
+int isprime( int n )
 {
-	unsigned int i;
+	int i;
 
-	if ( n == 2 ) return ( 1 );
-	if ( n == 1 || n % 2 == 0 ) return ( 0 );
-	for ( i = 3; i * i <= n; i += 2 ) if (( n % i ) == 0 ) return ( 0 );
-	return ( 1 );
+	if ( n == 2 ) return 1;
+	if ( n == 1 || n % 2 == 0 ) return 0;
+	for ( i = 3; i * i <= n; i += 2 ) if (( n % i ) == 0 ) return 0;
+	return 1;
 }
 
 int A_init( void )
