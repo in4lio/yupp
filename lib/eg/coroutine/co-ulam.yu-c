@@ -53,7 +53,7 @@ void A_uninit( void )
 
 }
 
-($coroute-define A ]
+($coro-define A ]
 	for ( i = 0; i < SQ * SQ; i++ ) {
 		/* ulam spiral */
 		if ( isprime( spiral[ i ])) {
@@ -61,7 +61,7 @@ void A_uninit( void )
 		} else {
 			printf( " . " );
 		}
-		($coroute-yield);
+		($coro-yield);
 	}
 [ \enter ]
 	static int i;
@@ -77,16 +77,16 @@ void B_uninit( void )
 
 }
 
-($coroute-define B ]
-	while ( ($coroute-alive A_alive) ) {
+($coro-define B ]
+	while ( ($coro-alive A_alive) ) {
 		($semaphore-acquire EOL);
 		for ( i = 0; i < SQ - 1; i++ ) {
 			/* spacing */
 			printf( " " );
-			($coroute-yield);
+			($coro-yield);
 		}
 		($semaphore-release EOL);
-		($coroute-yield);
+		($coro-yield);
 	}
 [ \enter ]
 	static int i;
@@ -103,12 +103,12 @@ void C_uninit( void )
 
 }
 
-($coroute-define C ]
-	while ( ($coroute-alive A_alive) ) {
+($coro-define C ]
+	while ( ($coro-alive A_alive) ) {
 		($semaphore-acquire EOL);
 		/* line breaking */
 		printf( "\n" );
 		($semaphore-release EOL);
-		($coroute-yield);
+		($coro-yield);
 	}
 [ )

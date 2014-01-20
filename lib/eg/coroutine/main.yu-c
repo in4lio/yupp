@@ -11,30 +11,30 @@
 ($import "dict.yu")
 ($import "co-dict.yu")
 
-static __inline void coroute_init( void )
+static __inline void coro_init( void )
 {
-	($each-COROUTE \i.]
-		($coroute-context-init ($i name));
+	($each-CORO \i.]
+		($coro-context-init ($i name));
 		($i name)_alive = ($i name)_init();
 
 	[ )
 }
 
-static __inline void coroute_uninit( void )
+static __inline void coro_uninit( void )
 {
-	($each-COROUTE \i.]
+	($each-CORO \i.]
 		($i name)_uninit();
 
 	[ )
 }
 
-static int coroute_schedule( void )
+static int coro_schedule( void )
 {
 	int alive = 0;
-	($each-COROUTE \i.]
-		if ($coroute-alive [($i name)_alive]) {
+	($each-CORO \i.]
+		if ($coro-alive [($i name)_alive]) {
 			++alive;
-			($i name)_alive = ($coroute-call ($i name));
+			($i name)_alive = ($coro-call ($i name));
 		}
 
 	[ )
@@ -43,11 +43,11 @@ static int coroute_schedule( void )
 
 int main( void )
 {
-	coroute_init();
+	coro_init();
 	for ( ; ; ) {
-		if ( coroute_schedule() == 0 ) break;
+		if ( coro_schedule() == 0 ) break;
 	}
-	coroute_uninit();
+	coro_uninit();
 
 	return ( 0 );
 }

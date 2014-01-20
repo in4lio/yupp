@@ -6,7 +6,7 @@
 ($import "coroutine.yu")
 ($import "dict.yu")
 
-($coroute-h)
+($coro-h)
 
 #define SQ  19  /* odd, square side length */
 static int spiral[ SQ * SQ ] = { 0 };
@@ -49,40 +49,40 @@ int isprime( int n )
 
 /* Define coroutines. */
 
-($coroute-define U ]
+($coro-define U ]
 	for ( i = 0; i < SQ * SQ; i++ ) {
 		number = spiral[ i ];
 
 		if ( !isprime( number )) number = PR_DOT;
-		($coroute-yield);
+		($coro-yield);
 
 		/* check line breaking */
 		if (( i % SQ ) == ( SQ - 1 )) number = PR_EOL;
-		($coroute-yield);
+		($coro-yield);
 	}
 [ \enter ]
 	static int i;
 [ )
 
-($coroute-define L ]
+($coro-define L ]
 	for ( ; ; ) {
-		($coroute-wait,, number > PR_NONE );
+		($coro-wait,, number > PR_NONE );
 		printf( "%03d ", number );
 		number = PR_NONE;
 	}
 [ )
 
-($coroute-define A ]
+($coro-define A ]
 	for ( ; ; ) {
-		($coroute-wait,, number == PR_DOT );
+		($coro-wait,, number == PR_DOT );
 		printf( " .  " );
 		number = PR_NONE;
 	}
 [ )
 
-($coroute-define M ]
+($coro-define M ]
 	for ( ; ; ) {
-		($coroute-wait,, number == PR_EOL );
+		($coro-wait,, number == PR_EOL );
 		printf( "\n" );
 		number = PR_NONE;
 	}
@@ -103,13 +103,13 @@ int isprime( int n )
 int main( void )
 {
 	($each-D \i.]
-		($coroute-context ($i name)) = NULL;
+		($coro-context ($i name)) = NULL;
 
 	[ )
 	spiral_init();
 	while ( 1
 		($each-D \i.]
-			&& ($coroute-alive ($coroute-call ($i name)))
+			&& ($coro-alive ($coro-call ($i name)))
 
 		[ )
 	);

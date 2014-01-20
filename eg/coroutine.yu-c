@@ -2,13 +2,13 @@
 
 ($__TITLE__)
 
-($set coroute-define \name.\coroute.\enter:[].]
-int coroute_($name)( void **ip )
+($set coro-define \name.\coro.\enter:[].]
+int coro_($name)( void **ip )
 {
 	($enter)
 	if ( *ip ) goto **ip;
 	/* begin */
-	($coroute)
+	($coro)
 	/* end */
 	*ip = &&LC__END_($name);
 
@@ -19,7 +19,7 @@ int coroute_($name)( void **ip )
 
 ($set __label_iter ($seqiter))
 
-($macro coroute-yield ()/* yield */
+($macro coro-yield ()/* yield */
 do {
 	($set __label (LC__($__label_iter)))
 	*ip = &&($__label);
@@ -28,26 +28,26 @@ do {
 	($__label):;
 } while ( 0 ))
 
-($macro coroute-call ( name ) coroute_($name)( &lc_($name) ))
+($macro coro-call ( name ) coro_($name)( &lc_($name) ))
 
 #include <stdio.h>
 
 void *lc_A = 0;
 void *lc_B = 0;
 
-($coroute-define A ]
+($coro-define A ]
 	for ( i = 0; i < 10; i++ ) {
 		printf( "A%d ", i );
-		($coroute-yield);
+		($coro-yield);
 	}
 [ \enter ]
 	static int i;
 [ )
 
-($coroute-define B ]
+($coro-define B ]
 	for ( i = 0; i < 8; i++ ) {
 		printf( "B%d ", i );
-		($coroute-yield);
+		($coro-yield);
 	}
 [ \enter ]
 	static int i;
@@ -57,8 +57,8 @@ int main( void )
 {
 	int alive_A, alive_B;
 	do {
-		alive_A = ($coroute-call A);
-		alive_B = ($coroute-call B);
+		alive_A = ($coro-call A);
+		alive_B = ($coro-call B);
 	} while ( alive_A || alive_B );
 	printf( "\n" );
 

@@ -1,35 +1,35 @@
 ($! based on Simon Tatham "Coroutines in C")
 
 ($!
-($coroute-context A);
-($coroute-context B);
+($coro-context A);
+($coro-context B);
 
-($coroute-define A ]
+($coro-define A ]
 	for ( ; ; ) {
 		/* ... */
-		($coroute-yield);
+		($coro-yield);
 	}
 [ )
 
-($coroute-define B ]
+($coro-define B ]
 	for ( ; ; ) {
 		/* ... */
-		($coroute-yield);
+		($coro-yield);
 	}
 [ )
 
 void main( void )
 {
 	for ( ; ; ) {
-		($coroute-call A);
-		($coroute-call B);
+		($coro-call A);
+		($coro-call B);
 	}
 }
 )
 
 ($set __label_iter ($seqiter))
 
-($macro coroute-h ()
+($macro coro-h ()
 typedef void * co_t;
 typedef unsigned int semaphore_t;
 
@@ -42,19 +42,19 @@ enum {
 };
 )
 
-($macro coroute-context (name) co_t co_($name))
+($macro coro-context (name) co_t co_($name))
 
-($macro coroute-context-init (name) co_($name) = NULL)
+($macro coro-context-init (name) co_($name) = NULL)
 
-($macro coroute-declare (name) int coroute_($name)( co_t *co_p ))
+($macro coro-declare (name) int coro_($name)( co_t *co_p ))
 
-($set coroute-define \name.\exit..\coroute.\enter:[].\exit:[].]
-($coroute-declare ($name))
+($set coro-define \name.\exit..\coro.\enter:[].\exit:[].]
+($coro-declare ($name))
 {
 	($enter)
 	if ( *co_p ) goto **co_p;
 	/* begin */
-	($coroute exit)
+	($coro exit)
 	/* end */
 	*co_p = &&L__END_($name);
 
@@ -64,7 +64,7 @@ enum {
 }
 [\set )
 
-($macro coroute-yield ()
+($macro coro-yield ()
 do { /* yield */
 	($set __label (L__($__label_iter)))
 	*co_p = &&($__label);
@@ -74,7 +74,7 @@ do { /* yield */
 	($__label):;
 } while ( 0 ))
 
-($macro coroute-wait (cond)
+($macro coro-wait (cond)
 do { /* wait */
 	($set __label (L__($__label_iter)))
 	*co_p = &&($__label);
@@ -86,31 +86,31 @@ do { /* wait */
 	}
 } while ( 0 ))
 
-($macro coroute-restart ()
+($macro coro-restart ()
 do { /* restart */
 	*co_p = NULL;
 	($&exit)
 	return CO_YIELD;
 } while ( 0 ))
 
-($macro coroute-quit (name)
+($macro coro-quit (name)
 do { /* quit */
 	*co_p = &&L__END_($name);
 	($&exit)
 	return CO_END;
 } while ( 0 ))
 
-($macro coroute-call (name) coroute_($name)( &co_($name) ))
+($macro coro-call (name) coro_($name)( &co_($name) ))
 
-($macro coroute-alive (thr) (( ($thr) ) < CO_END ))
+($macro coro-alive (thr) (( ($thr) ) < CO_END ))
 
-($macro coroute-wait-coroute (thr) ($coroute-wait [!($coroute-alive [($thr)])]))
+($macro coro-wait-coro (thr) ($coro-wait [!($coro-alive [($thr)])]))
 
 ($macro semaphore-init (name val) ($name) = ($val))
 
 ($macro semaphore-acquire (name)
 do { /* acquire */
-	($coroute-wait (` ($name) > 0 ));
+	($coro-wait (` ($name) > 0 ));
 	--($name);
 } while ( 0 ))
 

@@ -7,15 +7,15 @@
 
 ($import "coroutine.yu")
 
-($coroute-h)
+($coro-h)
 
 ($import "dict.yu")
 ($import "co-dict.yu")
 
-($each-COROUTE \i.]
-	($h-extern-init,,($coroute-context ($i name)),,NULL)
+($each-CORO \i.]
+	($h-extern-init,,($coro-context ($i name)),,NULL)
 	($h-extern-init,,int ($i name)_alive,,CO_SKIP)
-	extern ($coroute-declare ($i name));
+	extern ($coro-declare ($i name));
 	extern int ($i name)_init( void );
 	extern void ($i name)_uninit( void );
 
