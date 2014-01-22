@@ -17,11 +17,11 @@ int coro_($name)( void **ip )
 }
 [\set )
 
-($set __label_iter ($seqiter))
+($set __label_iter 0)
 
 ($macro coro-yield ()/* yield */
 do {
-	($set __label (LC__($__label_iter)))
+	($set __label (LC__($emit __label_iter inc)))
 	*ip = &&($__label);
 	return ( 1 );
 

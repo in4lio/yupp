@@ -15,7 +15,7 @@ COPYRIGHT   = 'Copyright (c) 2011, 2013'
 AUTHORS     = 'Vitaly Kravtsov (in4lio@gmail.com)'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.6a2'
+VERSION     = '0.6a3'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -567,6 +567,24 @@ class MACRO( object ):
         and ( self.text == other.text ))
 
 #   ---------------------------------------------------------------------------
+class EMIT( object ):
+    """
+    AST: EMIT( ATOM, form ) <-- '($emit' ... ')'
+    """
+#   -----------------------------------
+    def __init__( self, var, ast ):
+        self.var = var
+        self.ast = ast
+
+#   -----------------------------------
+    def __repr__( self ):
+        return '%s(%s, %s)' % ( self.__class__.__name__, repr( self.var ), repr( self.ast ))
+
+#   -----------------------------------
+    def __eq__( self, other ):
+        return isinstance( other, self.__class__ ) and ( self.var == other.var ) and ( self.ast == other.ast )
+
+#   ---------------------------------------------------------------------------
 class LAMBDA( object ):
     """
     AST: LAMBDA([([ ATOM ], ATOM, form )], TEXT | APPLY | LIST | INFIX) <-- [ '\\' _ '..' ] '\\' _ ':' _ '.' '(' ... ')'
@@ -679,6 +697,12 @@ l_MACRO = len( ps_MACRO )
 #   ---- comment mark
 ps_COMMENT = '($!'
 l_COMMENT = len( ps_COMMENT )
+#   ---- emit mark
+ps_EMIT = '($emit'
+l_EMIT = len( ps_EMIT )
+#   ---- emit tag
+ps_EMIT_T = '\\emit'
+l_EMIT_T = len( ps_EMIT_T )
 #   ---- embed character
 ps_EMBED = '*'
 #   ---- hexadecimal number
@@ -887,6 +911,7 @@ def ps_set( sou, depth = 0 ):
             ( sou, _ ) = ps_gap( sou, depth + 1 )
 #   ---- )
             if sou[ :1 ] == ')':
+                sou = sou[ 1: ]
                 break
     else:
 #   ---- atom
@@ -896,7 +921,7 @@ def ps_set( sou, depth = 0 ):
 
         lval = leg
 #   ---- gap
-    ( sou, _ ) = ps_gap( sou[ 1: ], depth + 1 )
+    ( sou, _ ) = ps_gap( sou, depth + 1 )
 #   ---- form
     ( sou, leg ) = ps_form( sou, depth + 1 )
     if leg is None:
@@ -904,7 +929,7 @@ def ps_set( sou, depth = 0 ):
 
 #   ---- gap
     ( sou, _ ) = ps_gap( sou, depth + 1 )
-#   ---- \set
+#   ---- { \set }
     if sou[ :l_SET_T ] == ps_SET_T:
         ( sou, _ ) = ps_gap( sou[ l_SET_T: ], depth + 1 )
 #   ---- )
@@ -993,6 +1018,41 @@ def ps_macro( sou, depth = 0 ):
 
 #   ---------------------------------------------------------------------------
 @echo__ps_
+def ps_emit( sou, depth = 0 ):
+    """
+    emit ::= '($emit' variable { form } { '\\emit' } ')';
+    """
+#   ---------------
+#   ---- ($emit
+    if sou[ :l_EMIT ] != ps_EMIT:
+        return ( sou, None )
+
+#   ---- gap
+    ( sou, _ ) = ps_gap( sou[ l_EMIT: ], depth + 1 )
+#   ---- variable
+    ( sou, leg ) = ps_variable( sou, depth + 1 )
+    if leg is None:
+        raise SyntaxError( '%s: variable expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+
+    var = leg
+#   ---- gap
+    ( sou, _ ) = ps_gap( sou, depth + 1 )
+#   ---- { form }
+    ( sou, leg ) = ps_form( sou, depth + 1 )
+    if leg is not None:
+#   ---- gap
+        ( sou, _ ) = ps_gap( sou, depth + 1 )
+#   ---- { \emit }
+    if sou[ :l_EMIT_T ] == ps_EMIT_T:
+        ( sou, _ ) = ps_gap( sou[ l_EMIT_T: ], depth + 1 )
+#   ---- )
+    if sou[ :1 ] != ')':
+        raise SyntaxError( '%s: ")" expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+
+    return ( sou[ 1: ], EMIT( var, leg ))
+
+#   ---------------------------------------------------------------------------
+@echo__ps_
 def ps_application( sou, depth = 0 ):
     """
     application ::= '($' function ($set fn ::function::text) { argument }0... { tag } ')';
@@ -1012,6 +1072,10 @@ def ps_application( sou, depth = 0 ):
 #   ---- ($code
     if sou[ :l_CODE ] == ps_CODE:
         return ps_code( sou, depth + 1 )
+
+#   ---- ($emit
+    if sou[ :l_EMIT ] == ps_EMIT:
+        return ps_emit( sou, depth + 1 )
 
 #   ---- (${}
     if sou[ :l_INFIX ] == ps_INFIX:
@@ -2001,7 +2065,7 @@ class ENV( dict ):
 
 #   -----------------------------------
 #   TODO: region
-    def lookup( self, reg, var ):
+    def lookup( self, reg, var ):                                                                                      #pylint: disable=W0613
         env = self
         while env is not None:
             if env.__contains__( var ):
@@ -2009,8 +2073,18 @@ class ENV( dict ):
 
             env = env.parent
 
-        if isinstance( reg, list ) and reg:
-            raise LookupError( 'undefined variable "%s"' % ( '::'.join( reg + [ var ])))
+        return NOT_FOUND
+
+#   -----------------------------------
+#   TODO: region
+    def update( self, reg, var, value ):                                                                               #pylint: disable=W0613
+        env = self
+        while env is not None:
+            if env.__contains__( var ):
+                dict.__setitem__( env, var, value )
+                return var
+
+            env = env.parent
 
         return NOT_FOUND
 
@@ -2061,36 +2135,6 @@ class INFIX_VISITOR( NodeVisitor ):
         self.names.add( node.id )
 
 #   ---------------------------------------------------------------------------
-class SEQITER( object ):
-    """
-    AST: SEQITER <-- ($seqiter start step)
-    """
-#   -----------------------------------
-    iters = []
-
-#   -----------------------------------
-    def __init__( self, start = 0, step = 1 ):
-        SEQITER.iters.append( itertools.count( start, step ))
-        self.inx = len( SEQITER.iters ) - 1
-
-#   -----------------------------------
-    def __repr__( self ):
-        return '%s(%s)' % ( self.__class__.__name__, repr( self.inx ))
-
-#   -----------------------------------
-    def __eq__( self, other ):
-        return isinstance( other, self.__class__ ) and ( self.inx == other.inx )
-
-#   -----------------------------------
-    def next( self ):
-        return SEQITER.iters[ self.inx ].next()
-
-#   -----------------------------------
-    @staticmethod
-    def reset():
-        SEQITER.iters = []
-
-#   ---------------------------------------------------------------------------
 class LAZY( BASE_CAP ):
     """
     AST: LAZY( form ) <-- '($lazy' ... ')'
@@ -2137,9 +2181,11 @@ buildin.update({
     , 'input': yushell.input, 'output': yushell.output
     , 'time': datetime.datetime.now().strftime( '%Y-%m-%d %H:%M' )
     }),
-    'car': lambda l : l[ :1 ],
-    'cdr': lambda l : l[ 1: ],
+    'car': lambda l : LIST( l[ :1 ]),
+    'cdr': lambda l : LIST( l[ 1: ]),
+    'dec': lambda val : ( val - 1 ),
     'getslice': lambda seq, *l : LIST( operator.getitem( seq, slice( *l ))),
+    'inc': lambda val : ( val + 1 ),
     'islist': lambda l : isinstance( l, list ),
     'lazy': lambda val : LIST( LAZY( x ) for x in val ) if isinstance( val, list ) else LAZY( val ),
     'len': len,
@@ -2148,14 +2194,9 @@ buildin.update({
     'q': lambda val : '"%s"' % str( val ),
     'range': lambda *l : LIST( range( *l )),
     'repr': repr,
-    'seqiter': SEQITER,
     'str': str,
     'unq': _unq
 })
-
-#   ---------------------------------------------------------------------------
-def yureset():
-    SEQITER.reset()
 
 #   ---------------------------------------------------------------------------
 def _plain_back( st ):
@@ -2521,12 +2562,6 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         lst.append( x )
                     return lst
 
-#   ---- APPLY -- SEQITER
-                elif isinstance( node.fn, SEQITER ):
-                    if node.args or node.named:
-                        log.warn( 'no arguments of seqiter expected: %s', repr( node )[ :ERR_SLICE ])
-                    return node.fn.next()
-
 #   ---- APPLY -- None
                 elif node.fn is None:
                     return None
@@ -2739,6 +2774,32 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                 code = compile( node.tree, '', 'eval' )
                                                                                                                        #pylint: disable=W0142
                 return eval( code, dict( globals(), **buildin ), node.env )
+
+#   ---- EMIT
+            elif isinstance( node, EMIT ):
+                val = env.lookup( node.var.reg, node.var.atom )
+                if val is NOT_FOUND:
+                    raise TypeError( '%s: undefined variable "%s": %s' % ( _callee(), str( node.var.atom )
+                    , repr( node )[ :ERR_SLICE ]))
+
+#   ---- EMIT -- VAR -- BOUND
+                if isinstance( val, BOUND ):
+#                   -- unreducible
+                    return node
+
+                if isinstance( val, list ):
+                    if len( val ):
+                        result = val[ 0 ]
+                        del val[ 0 ]
+                    else:
+                        result = None
+                else:
+                    result = val
+
+                if node.ast:
+                    val = yueval( APPLY( node.ast, [ val ], []), env, depth + 1 )
+                    env.update( node.var.reg, node.var.atom, val )
+                return result
 
 #   ---- LIST | list
             elif isinstance( node, list ):
@@ -3076,7 +3137,6 @@ def _pp( text ):                                                                
     LOG = not trace.TRACE or TR_TO_FILE
     try:
         trace.deepest = 0
-        yureset()
         plain = yueval( ast )
 
         result = isinstance( plain, str )
@@ -3132,6 +3192,12 @@ if __name__ == '__main__':
 #       -- startup testing
         _pp_test( r"""($($\y:u.\m.\...(m y($\C.\p.(r)e p)($\ro.(ce)s)))so r)""" )
         _pp_test( r"""
+    ($! a late bound parameter - \p.. )
+
+        ($set app1 \p..\fn.\n.($fn n))
+        ($app1,,print( ($q &p) );,,Hi!)
+
+        print( "Hi!" );
 """ )
 
     if shell.text:

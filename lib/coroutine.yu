@@ -27,7 +27,7 @@ void main( void )
 }
 )
 
-($set __label_iter ($seqiter))
+($set __label_iter 0)
 
 ($macro coro-h ()
 typedef void * co_t;
@@ -66,7 +66,7 @@ enum {
 
 ($macro coro-yield ()
 do { /* yield */
-	($set __label (L__($__label_iter)))
+	($set __label (L__($emit __label_iter inc)))
 	*co_p = &&($__label);
 	($&exit)
 	return CO_YIELD;
@@ -76,7 +76,7 @@ do { /* yield */
 
 ($macro coro-wait (cond)
 do { /* wait */
-	($set __label (L__($__label_iter)))
+	($set __label (L__($emit __label_iter inc)))
 	*co_p = &&($__label);
 
 	($__label):

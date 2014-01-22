@@ -8,7 +8,9 @@
 `($__TITLE__)` | Insert comment with file info.
 `($car list)` | Head of a list.
 `($cdr list)` | Tail of a list.
+`($dec a)` | Decrement `a - 1`.
 `($getslice seq start [end [step]])` | Slicing `seq[start:end:step]`.
+`($inc a)` | Increment `a + 1`.
 `($islist x)` | Check an argument is a list.
 `($lazy par)` | _Experimental_. Allow to get specific item of `__va_args__` or length of `__va_args__` in case `__va_args__` contains lambda.
 `($len list)` | Length of a list.
@@ -17,7 +19,6 @@
 `($q str)` | Quote a string.
 `($range end)`<br>`($range start end [step])` | Create a list containing arithmetic progression.
 `($repr x)` | Return a string containing a printable representation of an argument.
-`($seqiter [start [step]])` | Make an iterator that returns evenly spaced values starting with number start.
 `($str x)` | Return a string containing a nicely printable representation of an argument.
 `($unq str)` | Unquote a string.
  | **Functions imported from Python `operator` module**

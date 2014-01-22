@@ -10,8 +10,8 @@
     ___         __________________________________
     ___ VERSION __________________________________
 
-    yup.py      0.6a2
-                2014-01-14
+    yup.py      0.6a3
+                2014-01-22
     python      2.7.5
 
     ___             ______________________________
@@ -160,7 +160,7 @@
     int D = 2;
     int E = 1;
 
-    ($! the source code enclosing with double comma - ,, - experimental! )
+    ($! the source code enclosing with double comma - ,, )
 
     ($import "h.yu")
     ($h-begin F)
@@ -200,8 +200,26 @@
 
     25
 
+    ($! the iterator (modifier) )
+
+        ($set i 0)
+        ($emit i inc) ($emit i dec) ($emit i inc) ($emit i)
+
+    0 1 0 1
+
+    ($! the iterator (modifier) of the list )
+
+        ($set l ($range 5 25 5))
+        ($emit l) ($emit l) ($emit l) ($emit l)
+
+    5 10 15 20
+
     ($! a late bound parameter - \p.. )
-    ($! see example 3 )
+
+        ($set app1 \p..\fn.\n.($fn n))
+        ($app1,,print( ($q &p) );,,Hi!)
+
+    print( "Hi!" );
 
     ($! the variable argument list - \...(__va_args__) - experimental! )
 
