@@ -214,12 +214,12 @@
 
     5 10 15 20
 
-    ($! a late bound parameter - \p.. )
+    ($! the late bound parameter - \p.. )
 
         ($set app1 \p..\fn.\n.($fn n))
-        ($app1,,print( ($q &p) );,,Hi!)
+        ($app1,,printf( ($q &p) );,,Hi!)
 
-    print( "Hi!" );
+    printf( "Hi!" );
 
     ($! the variable argument list - \...(__va_args__) - experimental! )
 

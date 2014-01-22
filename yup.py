@@ -3192,12 +3192,6 @@ if __name__ == '__main__':
 #       -- startup testing
         _pp_test( r"""($($\y:u.\m.\...(m y($\C.\p.(r)e p)($\ro.(ce)s)))so r)""" )
         _pp_test( r"""
-    ($! a late bound parameter - \p.. )
-
-        ($set app1 \p..\fn.\n.($fn n))
-        ($app1,,print( ($q &p) );,,Hi!)
-
-        print( "Hi!" );
 """ )
 
     if shell.text:
