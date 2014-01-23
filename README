@@ -47,7 +47,7 @@
 
     Any functions from "string", "operator" and "math" modules of Python
     standard library can be used in preprocessor expressions
-    (http://in4lio.viewdocs.io/yupp/buildin).
+    (https://github.com/in4lio/yupp/wiki/Buildin-Functions).
 
     Following examples show basic syntactic constructs of the language.
     yupp Web Console is at your service (http://yup-py.appspot.com/).
