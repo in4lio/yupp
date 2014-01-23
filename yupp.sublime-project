@@ -3,8 +3,8 @@
 	[
 		{
 			"path": ".\\",
-			"file_exclude_patterns": ["*.bak", "*.bat", "*.sublime*", "*.ico", "*.git*", "*.ast", "_netrc", "args" ],
-			"folder_exclude_patterns": ["backup", "sublime_text", "object"]
+			"file_exclude_patterns": ["*.bak", "*.bat", "*.sublime*", "*.ico", "*.png", "*.git*", "_netrc", "args" ],
+			"folder_exclude_patterns": ["backup", "sublime_text", "object", "docs"]
 		}
 	],
 	"settings":
