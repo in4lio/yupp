@@ -1,30 +1,30 @@
 ($! based on Simon Tatham "Coroutines in C")
 
 ($!
-($coro-context A);
-($coro-context B);
+	($coro-context A);
+	($coro-context B);
 
-($coro-define A ]
-	for ( ; ; ) {
-		/* ... */
-		($coro-yield);
-	}
-[ )
+	($coro-define A ]
+		for ( ; ; ) {
+			/* ... */
+			($coro-yield);
+		}
+	[ )
 
-($coro-define B ]
-	for ( ; ; ) {
-		/* ... */
-		($coro-yield);
-	}
-[ )
+	($coro-define B ]
+		for ( ; ; ) {
+			/* ... */
+			($coro-yield);
+		}
+	[ )
 
-void main( void )
-{
-	for ( ; ; ) {
-		($coro-call A);
-		($coro-call B);
+	void main( void )
+	{
+		for ( ; ; ) {
+			($coro-call A);
+			($coro-call B);
+		}
 	}
-}
 )
 
 ($set __label_iter 0)

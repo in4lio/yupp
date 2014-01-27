@@ -119,13 +119,13 @@ TEXT([PLAIN('\n'), APPLY(VAR([], ATOM('l')), [LIST([FLOAT(-0.123), INT(-48L), IN
 
 r"""
 ($z {pi + e/2 - ($w) + len("hi{!}")} ($quotedHello()))
-($macro m1 (a b) ($sum a b))
+($macro m1 (a b) ($add a b))
 ($macro m2 () ]printf("Hello %s!", "Nike");[/*HACK:]*/)
 ($$ "(${f} {0} {1})" 2 3 \f sub)
 ($$ a "yes" "no")
 """,
 
-TEXT([PLAIN('\n'), APPLY(VAR([], ATOM('z')), [INFIX(TEXT([PLAIN('pi + e/2 - '), APPLY(VAR([], ATOM('w')), [], []), PLAIN(' + len('), STR('"hi{!}"'), PLAIN(')')], 0, 0)), STR('Hello()')], []), PLAIN('\n'), MACRO(ATOM('m1'), [ATOM('a'), ATOM('b')], ' ($sum a b)'), PLAIN('\n'), MACRO(ATOM('m2'), [], ' ]printf("Hello %s!", "Nike");[/*HACK:]*/'), PLAIN('\n'), EVAL(APPLY(STR('"(${f} {0} {1})"'), [INT(2L), INT(3L)], [(ATOM('f'), VAR([], ATOM('sub')))])), PLAIN('\n'), EVAL(APPLY(VAR([], ATOM('a')), [STR('"yes"'), STR('"no"')], [])), PLAIN('\n')], 0, 0),
+TEXT([PLAIN('\n'), APPLY(VAR([], ATOM('z')), [INFIX(TEXT([PLAIN('pi + e/2 - '), APPLY(VAR([], ATOM('w')), [], []), PLAIN(' + len('), STR('"hi{!}"'), PLAIN(')')], 0, 0)), STR('Hello()')], []), PLAIN('\n'), MACRO(ATOM('m1'), [ATOM('a'), ATOM('b')], ' ($add a b)'), PLAIN('\n'), MACRO(ATOM('m2'), [], ' ]printf("Hello %s!", "Nike");[/*HACK:]*/'), PLAIN('\n'), EVAL(APPLY(STR('"(${f} {0} {1})"'), [INT(2L), INT(3L)], [(ATOM('f'), VAR([], ATOM('sub')))])), PLAIN('\n'), EVAL(APPLY(VAR([], ATOM('a')), [STR('"yes"'), STR('"no"')], [])), PLAIN('\n')], 0, 0),
 
 ""
 ),(
@@ -293,7 +293,7 @@ r"""
 }
 [\set )
 
-($def-fn-argv \type int \name sum ]
+($def-fn-argv \type int \name sumi ]
     int result = 0;
     ($ &arg-begin)
     while ( ($ &arg-count)-- ) result += ($ &arg-value &type);
@@ -302,10 +302,10 @@ r"""
 \[\def-fn-argv )
 """,
 
-TEXT([PLAIN('\n'), SET(ATOM('def-fn-argv'), LAMBDA([([], ATOM('type'), None), ([], ATOM('name'), None), ([ATOM('type'), ATOM('arg-begin'), ATOM('arg-count'), ATOM('arg-value'), ATOM('arg-end')], ATOM('body'), None)], TEXT([APPLY(VAR([], ATOM('type')), [], []), PLAIN(' '), APPLY(VAR([], ATOM('name')), [], []), PLAIN('( int argcnt, ... )\n{\n    '), APPLY(VAR([], ATOM('body')), [], [(ATOM('type'), VAR([], ATOM('type'))), (ATOM('arg-begin'), TEXT([PLAIN('        va_list argptr;\n        va_start( argptr, argcnt );')], 0, 0)), (ATOM('arg-count'), TEXT([PLAIN('        argcnt')], 0, 0)), (ATOM('arg-value'), LAMBDA([([], ATOM('type'), None)], TEXT([PLAIN('        va_arg( argptr, '), APPLY(VAR([], ATOM('type')), [], []), PLAIN(' )')], 0, 0))), (ATOM('arg-end'), TEXT([PLAIN('        va_end( argptr );')], 0, 0))]), PLAIN('\n}')], 0, 0))), PLAIN('\n\n'), APPLY(VAR([], ATOM('def-fn-argv')), [TEXT([PLAIN('    int result = 0;\n    '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-begin')), [], []), PLAIN('\n    while ( '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-count')), [], []), PLAIN('-- ) result += '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-value')), [VAR(LATE_BOUNDED(), ATOM('type'))], []), PLAIN(';\n    '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-end')), [], []), PLAIN('\n    return ( result );')], 0, 0)], [(ATOM('type'), VAR([], ATOM('int'))), (ATOM('name'), VAR([], ATOM('sum')))]), PLAIN('\n')], 0, 0),
+TEXT([PLAIN('\n'), SET(ATOM('def-fn-argv'), LAMBDA([([], ATOM('type'), None), ([], ATOM('name'), None), ([ATOM('type'), ATOM('arg-begin'), ATOM('arg-count'), ATOM('arg-value'), ATOM('arg-end')], ATOM('body'), None)], TEXT([APPLY(VAR([], ATOM('type')), [], []), PLAIN(' '), APPLY(VAR([], ATOM('name')), [], []), PLAIN('( int argcnt, ... )\n{\n    '), APPLY(VAR([], ATOM('body')), [], [(ATOM('type'), VAR([], ATOM('type'))), (ATOM('arg-begin'), TEXT([PLAIN('        va_list argptr;\n        va_start( argptr, argcnt );')], 0, 0)), (ATOM('arg-count'), TEXT([PLAIN('        argcnt')], 0, 0)), (ATOM('arg-value'), LAMBDA([([], ATOM('type'), None)], TEXT([PLAIN('        va_arg( argptr, '), APPLY(VAR([], ATOM('type')), [], []), PLAIN(' )')], 0, 0))), (ATOM('arg-end'), TEXT([PLAIN('        va_end( argptr );')], 0, 0))]), PLAIN('\n}')], 0, 0))), PLAIN('\n\n'), APPLY(VAR([], ATOM('def-fn-argv')), [TEXT([PLAIN('    int result = 0;\n    '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-begin')), [], []), PLAIN('\n    while ( '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-count')), [], []), PLAIN('-- ) result += '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-value')), [VAR(LATE_BOUNDED(), ATOM('type'))], []), PLAIN(';\n    '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-end')), [], []), PLAIN('\n    return ( result );')], 0, 0)], [(ATOM('type'), VAR([], ATOM('int'))), (ATOM('name'), VAR([], ATOM('sumi')))]), PLAIN('\n')], 0, 0),
 
 r"""
-int sum( int argcnt, ... )
+int sumi( int argcnt, ... )
 {
     int result = 0;
     va_list argptr;
@@ -383,7 +383,7 @@ source
 r"""
 ($import "argv.yu")
 
-($def-fn-argv \type int \name sum ]
+($def-fn-argv \type int \name sumi ]
     int result = 0;
     ($ &arg-begin)
     while ( ($ &arg-count)-- ) result += ($ &arg-value &type);
@@ -392,17 +392,19 @@ r"""
 \[\def-fn-argv )
 """,
 
-TEXT([PLAIN('\n'), COMMENT(), PLAIN('\n\n'), SET(ATOM('def-fn-argv'), LAMBDA([([], ATOM('type'), None), ([], ATOM('name'), None), ([ATOM('type'), ATOM('arg-begin'), ATOM('arg-count'), ATOM('arg-value'), ATOM('arg-end')], ATOM('body'), None)], TEXT([APPLY(VAR([], ATOM('type')), [], []), PLAIN(' '), APPLY(VAR([], ATOM('name')), [], []), PLAIN('( int argcnt, ... )\n{\n    '), APPLY(VAR([], ATOM('body')), [], [(ATOM('type'), VAR([], ATOM('type'))), (ATOM('arg-begin'), TEXT([PLAIN('        va_list argptr;\n        va_start( argptr, argcnt );')], 0, 0)), (ATOM('arg-count'), TEXT([PLAIN('        argcnt')], 0, 0)), (ATOM('arg-value'), LAMBDA([([], ATOM('type'), None)], TEXT([PLAIN('        va_arg( argptr, '), APPLY(VAR([], ATOM('type')), [], []), PLAIN(' )')], 0, 0))), (ATOM('arg-end'), TEXT([PLAIN('        va_end( argptr );')], 0, 0))]), PLAIN('\n}')], 0, 0))), PLAIN('\n\n'), APPLY(VAR([], ATOM('def-fn-argv')), [TEXT([PLAIN('    int result = 0;\n    '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-begin')), [], []), PLAIN('\n    while ( '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-count')), [], []), PLAIN('-- ) result += '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-value')), [VAR(LATE_BOUNDED(), ATOM('type'))], []), PLAIN(';\n    '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-end')), [], []), PLAIN('\n    return ( result );')], 0, 0)], [(ATOM('type'), VAR([], ATOM('int'))), (ATOM('name'), VAR([], ATOM('sum')))]), PLAIN('\n')], 0, 0),
+TEXT([PLAIN('\n'), COMMENT(), PLAIN('\n\n'), SET(ATOM('def-fn-argv'), LAMBDA([([], ATOM('type'), None), ([], ATOM('name'), None), ([ATOM('type'), ATOM('arg-begin'), ATOM('arg-count'), ATOM('arg-value'), ATOM('arg-end')], ATOM('body'), None)], TEXT([APPLY(VAR([], ATOM('type')), [], []), PLAIN(' '), APPLY(VAR([], ATOM('name')), [], []), PLAIN('( int argcnt, ... )\n{\n\t'), APPLY(VAR([], ATOM('body')), [], [(ATOM('type'), VAR([], ATOM('type'))), (ATOM('arg-begin'), TEXT([PLAIN('\t\tva_list argptr;\n\t\tva_start( argptr, argcnt );')], 0, 0)), (ATOM('arg-count'), TEXT([PLAIN('\t\targcnt')], 0, 0)), (ATOM('arg-value'), LAMBDA([([], ATOM('type'), None)], TEXT([PLAIN('\t\tva_arg( argptr, '), APPLY(VAR([], ATOM('type')), [], []), PLAIN(' )')], 0, 0))), (ATOM('arg-end'), TEXT([PLAIN('\t\tva_end( argptr );')], 0, 0))]), PLAIN('\n}')], 0, 0))), PLAIN('\n'), PLAIN('\n\n'), APPLY(VAR([], ATOM('def-fn-argv')), [TEXT([PLAIN('    int result = 0;\n    '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-begin')), [], []), PLAIN('\n    while ( '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-count')), [], []), PLAIN('-- ) result += '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-value')), [VAR(LATE_BOUNDED(), ATOM('type'))], []), PLAIN(';\n    '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-end')), [], []), PLAIN('\n    return ( result );')], 0, 0)], [(ATOM('type'), VAR([], ATOM('int'))), (ATOM('name'), VAR([], ATOM('sumi')))]), PLAIN('\n')], 0, 0),
 
 r"""
-int sum( int argcnt, ... )
+
+
+int sumi( int argcnt, ... )
 {
-    int result = 0;
-    va_list argptr;
-    va_start( argptr, argcnt );
-    while ( argcnt-- ) result += va_arg( argptr, int );
-    va_end( argptr );
-    return ( result );
+	int result = 0;
+	va_list argptr;
+	va_start( argptr, argcnt );
+	while ( argcnt-- ) result += va_arg( argptr, int );
+	va_end( argptr );
+	return ( result );
 }
 """
 ),(

@@ -28,16 +28,13 @@ else
 D_PLATFORM =
 endif
 
-# -- include directories
-#    D_H = source
-D_H = .
-
 # -- source directories
-#D_C = source
 D_C = .
-#D_CXX = source
-D_CXX = .
+D_CXX = $(D_C)
 D_ASM = .
+
+# -- include directories
+D_H = $(D_C)
 
 # -- binary directory
 D_BIN = .
@@ -76,7 +73,7 @@ E_MAP = .map
 E_LIST = .listing
 
 # -- link options
-LIBS =
+LIBS =  -lm
 LFLAGS =
 
 ifeq ($(MAP), 1)
@@ -87,8 +84,8 @@ endif
 PPFLAGS = -q
 
 # -- compiler flags
-CFLAGS = $(addprefix -I, $(D_H)) -O2 -fno-exceptions -W -Wall -Wno-comment
-CXXFLAGS = $(addprefix -I, $(D_H)) -O2 -ffast-math -funroll-loops -fno-exceptions -g -W -Wall -Wno-comment
+CFLAGS = $(addprefix -I, $(D_H)) -O2 -W -Wall -Wno-comment
+CXXFLAGS = $(addprefix -I, $(D_H)) -O2 -ffast-math -funroll-loops -fno-exceptions -fomit-frame-pointer -g -W -Wall -Wno-comment
 ASMFLAGS = -Wall
 
 # ---------------------------------

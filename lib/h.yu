@@ -1,14 +1,14 @@
 ($!
-($h-begin-named)
+	($h-begin-named)
 
-($h-extern-init,,int a[ 4 ],,{ 0, 1, 2, 3 })
-($h-extern) int b;
+	($h-extern-init,,int a[ 4 ],,{ 0, 1, 2, 3 })
+	($h-extern) int b;
 
-($extern-c-begin)
-($h-extern) int f( void );
-($extern-c-end)
+	($extern-c-begin)
+	($h-extern) int f( void );
+	($extern-c-end)
 
-($h-end)
+	($h-end)
 )
 
 ($macro h-begin (name)
