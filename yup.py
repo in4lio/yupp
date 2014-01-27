@@ -15,7 +15,7 @@ COPYRIGHT   = 'Copyright (c) 2011, 2013'
 AUTHORS     = 'Vitaly Kravtsov (in4lio@gmail.com)'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.6a3'
+VERSION     = '0.6a4'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -2147,7 +2147,7 @@ class LAZY( BASE_CAP ):
 #   Build-in functions and consts
 #   -----------------------------------
 
-import string, operator, math, datetime, itertools                                                                     #pylint: disable=W0402
+import string, operator, math, datetime                                                                                #pylint: disable=W0402
 
 #   ---------------------------------------------------------------------------
 def yushell( input_file = None, output_file = None ):
@@ -2185,16 +2185,20 @@ buildin.update({
     'cdr': lambda l : LIST( l[ 1: ]),
     'dec': lambda val : ( val - 1 ),
     'getslice': lambda seq, *l : LIST( operator.getitem( seq, slice( *l ))),
+    'hex': hex,
     'inc': lambda val : ( val + 1 ),
     'islist': lambda l : isinstance( l, list ),
     'lazy': lambda val : LIST( LAZY( x ) for x in val ) if isinstance( val, list ) else LAZY( val ),
     'len': len,
     'list': lambda *l : LIST( l ),
     'print': lambda *l : sys.stdout.write( ' '.join(( _unq( x ) if isinstance( x, STR ) else str( x )) for x in l )),
+    'reduce': reduce,
+    'reversed': lambda l : LIST( reversed( l )),
     'q': lambda val : '"%s"' % str( val ),
     'range': lambda *l : LIST( range( *l )),
     'repr': repr,
     'str': str,
+    'sum': sum,
     'unq': _unq
 })
 
@@ -2414,10 +2418,17 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                             val = node.fn.fn( *node.args )
                             return int( val ) if isinstance( val, bool ) else val
 
+#   ---- APPLY -- BUILDIN -- lazy | repr
                         if node.fn.atom in [ 'lazy', 'repr' ] \
                         and len( node.args ) == 1 and not isinstance( node.args[ 0 ], VAR ):
 #                           -- argument is substituted
                             return node.fn.fn( node.args[ 0 ])
+
+#   ---- APPLY -- BUILDIN -- reduce
+                        if node.fn.atom in [ 'reduce' ] \
+                        and len( node.args ) > 1 and isinstance( node.args[ 0 ], BUILDIN ) \
+                        and _is_term( node.args[ 1: ]):
+                            return node.fn.fn( node.args[ 0 ].fn, *node.args[ 1: ] )
 
 #                       -- unreducible
                         return node

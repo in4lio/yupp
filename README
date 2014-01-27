@@ -10,8 +10,8 @@
     ___         __________________________________
     ___ VERSION __________________________________
 
-    yup.py      0.6a3
-                2014-01-22
+    yup.py      0.6a4
+                2014-01-27
     python      2.7.5
 
     ___             ______________________________
@@ -163,31 +163,10 @@
 
     ($! the source code enclosing with double comma - ,, )
 
-    ($import "h.yu")
-    ($h-begin F)
-    ($h-extern-init,,char a[ 4 ],,{ 0, 1, 2, 3 })
-    ($h-end)
+    ($import "binary.yu")
+    ($hex ($BB,,11000000,,11111111,,11101110))
 
-    #ifndef F_H
-    #define F_H
-
-    #ifdef  F_IMPLEMENT
-    #define F_EXT
-    #define F_EXT_INIT( dec, init ) \
-        dec = init
-    #else
-    #define F_EXT extern
-    #define F_EXT_INIT( dec, init ) \
-        extern dec
-    #endif
-
-    #ifndef COMMA
-    #define COMMA   ,
-    #endif
-
-    F_EXT_INIT( char a[ 4 ], { 0 COMMA  1 COMMA  2 COMMA  3 } );
-
-    #endif
+    0xc0ffee
 
     ($! the string substitution )
 
@@ -201,7 +180,8 @@
 
     25
 
-    ($! the iterator (modifier) )
+    ($! the iterator (modifier) - experimental!
+        NOT applicable in a loop )
 
         ($set i 0)
         ($emit i inc) ($emit i dec) ($emit i inc) ($emit i)
@@ -522,7 +502,8 @@
     yupp is currently in an alpha stage. The file called "test_yup.py"
     contains a number of smoke tests.
     The program still needs testing and optimization (especially
-    the eval-apply cycle).
+    the eval-apply cycle). Also you can face problems when using recursion
+    and experimental features.
 
     ___              _____________________________
     ___ SUBLIME TEXT _____________________________
@@ -534,7 +515,7 @@
     ___ WEB ______________________________________
 
     o   The project on GitHub:
-        http://github.com/in4lio/yupp/
+        https://github.com/in4lio/yupp/
 
     o   yupp Blog:
         http://yup-py.blogspot.com/
