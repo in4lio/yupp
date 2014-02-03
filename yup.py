@@ -11,11 +11,11 @@ http://github.com/in4lio/yupp/
 
 yup.py -- yupp in python
 """
-COPYRIGHT   = 'Copyright (c) 2011, 2013'
+COPYRIGHT   = 'Copyright (c) 2011, 2013, 2014'
 AUTHORS     = 'Vitaly Kravtsov (in4lio@gmail.com)'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.6a4'
+VERSION     = '0.6a5'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -629,6 +629,8 @@ class COND( object ):
 #   *                                 *
 #   * * * * * * * * * * * * * * * * * *
 
+DIRECTORY = []
+
 #   -----------------------------------
 #   Terminal symbols
 #   -----------------------------------
@@ -755,6 +757,11 @@ def _import_source( lib ):
             else:
 #               -- specially for Web Console
                 lpath = os.path.join( './lib', lib )
+#           -- specified directory
+            for dirname in DIRECTORY:
+                if os.path.isfile( lpath ):
+                    break
+                lpath = os.path.join( dirname, lib )
     try:
         f = open( lpath, 'r' )
         try:
@@ -2143,6 +2150,14 @@ class LAZY( BASE_CAP ):
     def __str__( self ):
         return _plain( self.ast )
 
+#   ---------------------------------------------------------------------------
+class SKIPREST( BASE_MARK ):
+    """
+    Skip the rest of text.
+    """
+#   ---------------
+    pass
+
 #   -----------------------------------
 #   Build-in functions and consts
 #   -----------------------------------
@@ -2181,6 +2196,7 @@ buildin.update({
     , 'input': yushell.input, 'output': yushell.output
     , 'time': datetime.datetime.now().strftime( '%Y-%m-%d %H:%M' )
     }),
+    'skip': SKIPREST(),
     'car': lambda l : LIST( l[ :1 ]),
     'cdr': lambda l : LIST( l[ 1: ]),
     'dec': lambda val : ( val - 1 ),
@@ -2356,6 +2372,14 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         continue
 
                     x = yueval( x, env, depth + 1 )
+                    if x is None:
+#                       -- skip
+                        continue
+
+#   ---- T -- SKIPREST
+                    if isinstance( x, SKIPREST ):
+                        break
+
 #   ---- T -- ENV
                     if isinstance( x, ENV ):
                         if nx < len( node ):
@@ -2369,6 +2393,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #                           -- item is ignored
                             log.warn( 'useless assign: %s', repr( node )[ :ERR_SLICE ])
                         break
+
 #   ---- T -- EMBED --> T
                     if isinstance( x, EMBED ):
                         if isinstance( x.ast, T ):
@@ -2388,6 +2413,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                             else:
                                 t.append( tail )
                             break
+
                         else:
                             x = x.ast
 #                   -- indent mimicry
@@ -2572,6 +2598,10 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                             x = yueval( APPLY( fn, [ x ], []), env, depth + 1 )
                         lst.append( x )
                     return lst
+
+#   ---- APPLY -- SKIPREST
+                elif isinstance( node.fn, SKIPREST ):
+                    return node.fn
 
 #   ---- APPLY -- None
                 elif node.fn is None:
@@ -2817,6 +2847,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                 lst = LIST()
                 for i, x in enumerate( node ):
                     x = yueval( x, env, depth + 1 )
+                    if x is None:
+                        continue
 #   ---- LIST -- EMBED
                     if isinstance( x, EMBED ):
                         if isinstance( x.ast, list ):
@@ -2931,7 +2963,8 @@ TYPE_FILE = False
 
 LOG_LEVEL_SCALE = 10
 
-SYSTEM_EXIT_HELP = 'The preprocessor exit status is a negative number of unsuccessfully processed files' \
+SYSTEM_EXIT_HELP = 'Also, arguments can be passed through the response file e.g. yup.py @FILE .' \
+' The preprocessor exit status is a negative number of unsuccessfully processed files' \
 ' or an error of command line arguments (2) or a program execution error (1)' \
 ' or zero in case of successful execution.'
 
@@ -2952,6 +2985,9 @@ def shell_argparse():
     , help = "a source of input text (used by Web Console)" )
 #   -- input files
     argp.add_argument( 'files', metavar = 'FILE', type = str, nargs = '*', help = "an input file" )
+#   -- an import directory
+    argp.add_argument( '-d', action = 'append', metavar = 'DIR', dest = 'directory', default = DIRECTORY
+    , help = "an import directory" )
 #   -- echo options
     argp.add_argument( '-q', '--quiet', action = 'store_true', dest = 'quiet', default = QUIET
     , help = QUIET_HELP )
@@ -2980,6 +3016,18 @@ def shell_argparse():
 
     argp.set_defaults( pp_skip_c_comment = PP_SKIP_C_COMMENT, pp_trim_app_indent = PP_TRIM_APP_INDENT
     , pp_reduce_emptiness = PP_REDUCE_EMPTINESS )
+
+    if ( len( sys.argv ) == 2 ) and sys.argv[ 1 ].startswith( '@' ):
+#       -- get arguments from response file
+        try:
+            with open( sys.argv[ 1 ][ 1: ], 'r' ) as f:
+                return argp.parse_args( f.read().split())
+
+        except IOError as e:
+#           -- file operation failure
+            print FAIL % ( type( e ).__name__, e )
+            sys.exit( 2 )
+
     return argp.parse_args()
     return argp.parse_args([ '-h' ])                                                                                   #pylint: disable=W0101
 
@@ -3197,6 +3245,7 @@ if __name__ == '__main__':
     PP_SKIP_C_COMMENT = shell.pp_skip_c_comment
     PP_TRIM_APP_INDENT = shell.pp_trim_app_indent
     PP_REDUCE_EMPTINESS = shell.pp_reduce_emptiness
+    DIRECTORY = shell.directory
 
     if not QUIET:
         print TITLE

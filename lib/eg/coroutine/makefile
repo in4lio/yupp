@@ -1,6 +1,6 @@
  # ---------------------------------
 #   yu-c makefile
-#   20.12.2013
+#   02.02.2014
 # ---------------------------------
 
 # -- binary name without extension
@@ -28,6 +28,8 @@ else
 D_PLATFORM =
 endif
 
+# -- import directories
+D_YU =
 # -- source directories
 D_C = .
 D_CXX = $(D_C)
@@ -81,7 +83,7 @@ LFLAGS := $(LFLAGS) -Wl,-Map,$(D_MAP)/$(BIN)$(E_MAP)
 endif
 
 # -- preprocessor flags
-PPFLAGS = -q
+PPFLAGS = -q $(addprefix -d, $(D_YU))
 
 # -- compiler flags
 CFLAGS = $(addprefix -I, $(D_H)) -O2 -W -Wall -Wno-comment
@@ -178,13 +180,13 @@ $(D_BIN)/$(BIN)$(E_BIN) : $(O)
 	@echo "*** $(D_BIN)/$(BIN)$(E_BIN) ***"
 
 $(G_C) : %$(E_C) : %$(E_YUC)
-	$(PP) $(PPFLAGS) $<
+	$(call wrap,$(PP),$(PPFLAGS) $<)
 
 $(G_CXX) : %$(E_CXX) : %$(E_YUCXX)
-	$(PP) $(PPFLAGS) $<
+	$(call wrap,$(PP),$(PPFLAGS) $<)
 
 $(G_H) : %$(E_H) : %$(E_YUH)
-	$(PP) $(PPFLAGS) $<
+	$(call wrap,$(PP),$(PPFLAGS) $<)
 
 $(S_CXX) $(S_C) : $(G_H)
 
