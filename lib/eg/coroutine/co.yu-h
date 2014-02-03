@@ -1,16 +1,16 @@
 ($__TITLE__)
 
+($import "stdlib.yu")
 ($import "h.yu")
-($h-begin-named)
-
-($extern-c-begin)
-
 ($import "coroutine.yu")
+
+($h-begin-named)
 
 ($coro-h)
 
-($import "dict.yu")
 ($import "co-dict.yu")
+
+($extern-c-begin)
 
 ($each-CORO \i.]
 	($h-extern-init,,($coro-context ($i name)),,NULL)

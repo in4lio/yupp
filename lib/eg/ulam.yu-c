@@ -3,8 +3,8 @@
 #include <stddef.h>
 #include <stdio.h>
 
+($import "stdlib.yu")
 ($import "coroutine.yu")
-($import "dict.yu")
 
 ($coro-h)
 

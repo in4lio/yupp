@@ -1,14 +1,14 @@
 ($__TITLE__)
 
+($import "stdlib.yu")
 ($import "h.yu")
+($import "coroutine.yu")
+
 ($implement co)
 
 #include <stddef.h>
 #include "co.h"
 
-($import "coroutine.yu")
-
-($import "dict.yu")
 ($import "co-dict.yu")
 
 static __inline void coro_init( void )
@@ -30,15 +30,16 @@ static __inline void coro_uninit( void )
 
 static int coro_schedule( void )
 {
-	int alive = 0;
 	($each-CORO \i.]
-		if ($coro-alive [($i name)_alive]) {
-			++alive;
-			($i name)_alive = ($coro-call ($i name));
-		}
+		if ($coro-alive [($i name)_alive]) ($i name)_alive = ($coro-call ($i name));
 
 	[ )
-	return ( alive );
+	return ( 0
+	($each-CORO \i.]
+		|| ($coro-alive [($i name)_alive])
+
+	[ )
+	);
 }
 
 int main( void )

@@ -10,8 +10,8 @@
     ___         __________________________________
     ___ VERSION __________________________________
 
-    yup.py      0.6a4
-                2014-01-27
+    yup.py      0.6a5
+                2014-02-02
     python      2.7.5
 
     ___             ______________________________
@@ -163,7 +163,7 @@
 
     ($! the source code enclosing with double comma - ,, )
 
-    ($import "binary.yu")
+    ($import "stdlib.yu")
     ($hex ($BB,,11000000,,11111111,,11101110))
 
     0xc0ffee
@@ -363,8 +363,8 @@
         #include <stddef.h>
         #include <stdio.h>
 
+        ($import "stdlib.yu")
         ($import "coroutine.yu")
-        ($import "dict.yu")
 
         ($coro-h)
 
