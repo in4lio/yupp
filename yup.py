@@ -97,6 +97,7 @@ import logging
 import traceback
 import tempfile
 import os
+import stat
 import sys
 sys.setrecursionlimit( 2 ** 20 )
 
@@ -3045,6 +3046,7 @@ def shell_backup( fn ):
     if os.path.isfile( fn ):
         fn_bak = fn + E_BAK
         if os.path.isfile( fn_bak ):
+            os.chmod( fn_bak, stat.S_IWRITE )
             os.remove( fn_bak )
         os.rename( fn, fn_bak )
 
@@ -3106,6 +3108,7 @@ def _pp_file( fn ):
             shell_backup( fn_o )
 #           -- output file writing
             shell_savetofile( fn_o, plain )
+            os.chmod( fn_o, stat.S_IREAD )
             if not QUIET:
                 print OK
         else:
