@@ -40,9 +40,16 @@
 } while ( 0 ))
 
 ($!
-	($define LINK_MODULE)
+	($define,,array_length( x ),,( sizeof( x ) / sizeof(( x )[ 0 ])))
 )
-($macro define (name)($set ($name) 1)
+($set EOL,,
+)
+($set define \sig.\body.($join ($split [#define ($sig) ($body)] EOL),, \($EOL)))
+
+($!
+	($def LINK_MODULE)
+)
+($macro def (name)($set ($name) 1)
 #define ($name))
 
 ($!

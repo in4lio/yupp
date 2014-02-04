@@ -702,7 +702,7 @@
 				</dict>
 			</dict>
 			<key>end</key>
-			<string>(?=(?://|/\*))|$</string>
+			<string>(?=(?://|/\*))|$|(?=\(\$)</string>
 			<key>name</key>
 			<string>meta.preprocessor.c</string>
 			<key>patterns</key>
