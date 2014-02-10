@@ -1,6 +1,6 @@
  # ---------------------------------
 #   yu-c makefile
-#   02.02.2014
+#   10.02.2014
 # ---------------------------------
 
 # -- binary name without extension
@@ -30,6 +30,7 @@ endif
 
 # -- import directories
 D_YU =
+
 # -- source directories
 D_C = .
 D_CXX = $(D_C)
@@ -75,7 +76,7 @@ E_MAP = .map
 E_LIST = .listing
 
 # -- link options
-LIBS =  -lm
+LIBS = -lm
 LFLAGS =
 
 ifeq ($(MAP), 1)
@@ -83,7 +84,7 @@ LFLAGS := $(LFLAGS) -Wl,-Map,$(D_MAP)/$(BIN)$(E_MAP)
 endif
 
 # -- preprocessor flags
-PPFLAGS = -q $(addprefix -d, $(D_YU))
+PPFLAGS = --pp-no-skip-c-comment -q $(addprefix -d, $(D_YU))
 
 # -- compiler flags
 CFLAGS = $(addprefix -I, $(D_H)) -O2 -W -Wall -Wno-comment

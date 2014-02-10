@@ -564,7 +564,7 @@
 			<key>comment</key>
 			<string>eat nested preprocessor if(def)s</string>
 			<key>end</key>
-			<string>^\s*#\s*endif\b.*$</string>
+			<string>^\s*#\s*endif\b</string>
 			<key>patterns</key>
 			<array>
 				<dict>
@@ -758,7 +758,7 @@
 						</dict>
 					</dict>
 					<key>end</key>
-					<string>(?=^\s*#\s*endif\b.*$)</string>
+					<string>(?=^\s*#\s*endif\b)</string>
 					<key>patterns</key>
 					<array>
 						<dict>
@@ -771,7 +771,7 @@
 					<key>begin</key>
 					<string></string>
 					<key>end</key>
-					<string>(?=^\s*#\s*(else|endif)\b.*$)</string>
+					<string>(?=^\s*#\s*(else|endif)\b)</string>
 					<key>name</key>
 					<string>comment.block.preprocessor.if-branch</string>
 					<key>patterns</key>
@@ -831,7 +831,7 @@
 						</dict>
 					</dict>
 					<key>end</key>
-					<string>(?=^\s*#\s*endif\b.*$)</string>
+					<string>(?=^\s*#\s*endif\b)</string>
 					<key>patterns</key>
 					<array>
 						<dict>
@@ -906,7 +906,7 @@
 					<key>contentName</key>
 					<string>comment.block.preprocessor.else-branch</string>
 					<key>end</key>
-					<string>(?=^\s*#\s*endif\b.*$)</string>
+					<string>(?=^\s*#\s*endif\b)</string>
 					<key>patterns</key>
 					<array>
 						<dict>
@@ -923,7 +923,7 @@
 					<key>begin</key>
 					<string></string>
 					<key>end</key>
-					<string>(?=^\s*#\s*(else|endif)\b.*$)</string>
+					<string>(?=^\s*#\s*(else|endif)\b)</string>
 					<key>patterns</key>
 					<array>
 						<dict>
@@ -979,7 +979,7 @@
 					<key>contentName</key>
 					<string>comment.block.preprocessor.else-branch.in-block</string>
 					<key>end</key>
-					<string>(?=^\s*#\s*endif\b.*$)</string>
+					<string>(?=^\s*#\s*endif\b)</string>
 					<key>patterns</key>
 					<array>
 						<dict>
@@ -996,7 +996,7 @@
 					<key>begin</key>
 					<string></string>
 					<key>end</key>
-					<string>(?=^\s*#\s*(else|endif)\b.*$)</string>
+					<string>(?=^\s*#\s*(else|endif)\b)</string>
 					<key>patterns</key>
 					<array>
 						<dict>
@@ -1025,7 +1025,7 @@
 				</dict>
 			</dict>
 			<key>end</key>
-			<string>^\s*(#\s*(endif)\b).*$</string>
+			<string>^\s*(#\s*(endif)\b)</string>
 			<key>patterns</key>
 			<array>
 				<dict>
@@ -1052,7 +1052,7 @@
 				</dict>
 			</dict>
 			<key>end</key>
-			<string>^\s*(#\s*(endif)\b).*$</string>
+			<string>^\s*(#\s*(endif)\b)</string>
 			<key>patterns</key>
 			<array>
 				<dict>
