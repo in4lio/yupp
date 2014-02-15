@@ -15,7 +15,7 @@ COPYRIGHT   = 'Copyright (c) 2011, 2013, 2014'
 AUTHORS     = 'Vitaly Kravtsov (in4lio@gmail.com)'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.6a6'
+VERSION     = '0.6a7'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -226,23 +226,24 @@ def _ast_pretty( st ):
     return result
 
 #   ---------------------------------------------------------------------------
-def trim_tailing_whitespace( text, reduce_emptiness = False ):
+def trim_tailing_whitespace( text, _reduce_emptiness = False ):
     """
     Trim tailing white space from each line and
     reduce number of successive empty lines up to one (depends on argument).
     """
-#   -----------------------------------
-    def _reduce( line ):
-        empty = _reduce.empty
-        _reduce.empty = not line
-        return not empty or not _reduce.empty
-
 #   ---------------
-    content = [ x.rstrip() for x in text.splitlines()]
-    if reduce_emptiness:
-        _reduce.empty = False
-        content = filter( _reduce, content )
-    return '\n'.join( content ) + '\n'
+    if _reduce_emptiness:
+        def _filter( line ):
+            empty = _filter.empty
+            _filter.empty = not line.strip()
+            return not empty or not _filter.empty
+
+        _filter.empty = False
+    else:
+        def _filter( _ ):
+            return True
+
+    return '\n'.join([ x.rstrip() for x in text.splitlines() if _filter( x )]) + '\n'
 
 
 #   * * * * * * * * * * * * * * * * * *
@@ -253,7 +254,7 @@ def trim_tailing_whitespace( text, reduce_emptiness = False ):
 
 #   ---------------------------------------------------------------------------
 def _plain( st ):
-    return ( '' if st is None else str( st ))
+    return '' if st is None else str( st )
 
 #   -----------------------------------
 #   Based on 'str' AST notes
@@ -283,7 +284,7 @@ class ATOM( BASE_STR ):
 
 #   -----------------------------------
     def is_valid_c_id( self ):
-        return ( self.find( '-' ) == -1 )
+        return self.find( '-' ) == -1
 
 #   ---------------------------------------------------------------------------
 class REMARK( BASE_STR ):
@@ -341,7 +342,7 @@ class PLAIN( BASE_STR ):
             return PLAIN( indent.join( ln )
             , ( indent + self.indent ) if isinstance( self.indent, str ) else self.indent, self.trim )
         else:
-            return ( self )
+            return self
 
 #   -----------------------------------
 #   Based on 'list' AST notes
@@ -358,7 +359,7 @@ class BASE_LIST( list ):
 
 #   -----------------------------------
     def __str__( self ):
-        return ''.join( map( _plain, self ))
+        return ''.join( map( _plain, self ))                                                                           #pylint: disable=W0141
 
 #   ---------------------------------------------------------------------------
 class LIST( BASE_LIST ):
@@ -727,7 +728,7 @@ re_CHR = re.compile( r"^'(?:\\.|[^\\'])*'" )
 
 #   ---------------------------------------------------------------------------
 def _ord( sou, pos = 0 ):
-    return ( ord( sou[ pos ]) if pos < len( sou ) else None )
+    return ord( sou[ pos ]) if pos < len( sou ) else None
 
 #   ---------------------------------------------------------------------------
 def _while_in( sou, pool ):
@@ -742,7 +743,7 @@ def _unq( st ):
     try:
         return literal_eval( st )
     except:                                                                                                            #pylint: disable=W0702
-        return ( st )
+        return st
 
 #   ---------------------------------------------------------------------------
 def _import_source( lib ):
@@ -1700,7 +1701,7 @@ def ps_atom( sou, depth = 0 ):
     i = 0
     if _ord( sou, 0 ) in ps_LETTER:
         i = 1
-        while _ord( sou, i ) in ( ps_LETTER | ps_FIGURE ):
+        while _ord( sou, i ) in ps_LETTER | ps_FIGURE:
             i += 1
 
     return ( sou[ i: ], ATOM( sou[ :i ]) if i else None )
@@ -1915,7 +1916,7 @@ class INFIX_CLOSURE( object ):
 
 #   -----------------------------------
     def __eq__( self, other ):
-        return ( isinstance( other, self.__class__ ) and ( self.tree == other.tree ) and ( self.env == other.env ))
+        return isinstance( other, self.__class__ ) and ( self.tree == other.tree ) and ( self.env == other.env )
 
 #   ---------------------------------------------------------------------------
 class COND_CLOSURE( object ):
@@ -1954,7 +1955,7 @@ class SET_CLOSURE( object ):
 
 #   -----------------------------------
     def __eq__( self, other ):
-        return ( isinstance( other, self.__class__ ) and ( self.form == other.form ) and ( self.env == other.env ))
+        return isinstance( other, self.__class__ ) and ( self.form == other.form ) and ( self.env == other.env )
 
 #   ---------------------------------------------------------------------------
 class BUILTIN( object ):
@@ -2234,7 +2235,7 @@ builtin_special.update({
 
 #   ---------------------------------------------------------------------------
 def _plain_back( st ):
-    return ( '()' if st == [] else str( st ))
+    return '()' if st == [] else str( st )
 
 #   ---------------------------------------------------------------------------
 def _is_term( node ):                                                                                                  #pylint: disable=R0911
@@ -2479,9 +2480,9 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
                             if isinstance( node.args[ 0 ], ATOM ) or isinstance( node.args[ 0 ], VAR ):
 #                               -- undefined or LATE_BOUNDED variable
-                                return ( 1 )
+                                return 1
 
-                            return ( 0 )
+                            return 0
 
 #   ---- APPLY -- BUILTIN -- function
                     if callable( node.fn.fn ):
@@ -2793,7 +2794,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                 if not node.ast:
                     return None
 
-                if ( any( isinstance( x, SET ) for x in node.ast )):
+                if any( isinstance( x, SET ) for x in node.ast ):
                     return EMBED( T( node.ast ))
 
 #               -- !? e.g. ($ \p.($...))

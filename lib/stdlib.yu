@@ -55,7 +55,7 @@
 ($!
 	($undef LINK_MODULE)
 )
-($macro undef  (name)($set ($name) 0)
+($macro undef (name)($set ($name) 0)
 #undef  ($name))
 
 ($!

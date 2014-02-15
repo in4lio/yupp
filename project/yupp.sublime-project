@@ -2,7 +2,7 @@
 	"folders":
 	[
 		{
-			"path": ".\\",
+			"path": "..\\",
 			"file_exclude_patterns": ["*.bak", "*.bat", "*.sublime*", "*.ico", "*.png", "*.git*", "_netrc", "args" ],
 			"folder_exclude_patterns": ["backup", "sublime_text", "object", "docs"]
 		}
@@ -11,14 +11,13 @@
 	{
 		"pylinter":
 		{
-			"pylint_rc": ".\\etc\\pylint.rc",
+			"pylint_rc": ".\\project\\pylint.rc",
 			"disable": [
 			  "C0103" // Invalid name "%s" (should match %s)
 			, "C0111" // Missing docstring
+			, "C0326" // Wrong number of spaces
 			, "I0011" // Locally disabling %s
 			, "W0105" // String statement has no effect
-			, "W0141" // Used builtin function %r
-			, "R0924" // Badly implemented Container
 			]
 		}
 	}

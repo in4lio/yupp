@@ -5,3 +5,6 @@
 *.h
 *.o
 *.py[cod]
+*.sublime-workspace
+
+.tags
