@@ -15,7 +15,7 @@ COPYRIGHT   = 'Copyright (c) 2011, 2013, 2014'
 AUTHORS     = 'Vitaly Kravtsov (in4lio@gmail.com)'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.6a7'
+VERSION     = '0.6a8'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -3151,7 +3151,7 @@ def _pp_file( fn ):
                 print OK
         else:
             if plain:
-#           -- AST in plain
+#               -- plain contains AST
                 fn_o = os.path.splitext( fn_o )[ 0 ] + E_AST
                 if TYPE_FILE:
                     print plain
@@ -3159,6 +3159,7 @@ def _pp_file( fn ):
                     print PP_O, PP_FILE % fn_o
 #               -- output file writing
                 shell_savetofile( fn_o, plain )
+                log.warn( 'result has been saved as AST file' )
 
     except IOError as e:
 #       -- e.g. file operation failure
@@ -3244,6 +3245,7 @@ def _pp( text ):                                                                
             plain = trim_tailing_whitespace( plain, PP_REDUCE_EMPTINESS )
         else:
             plain = _ast_readable( plain )
+            log.warn( 'unable to translate input in a plain text' )
         if trace.TRACE:
             trace.info( plain )
             trace.info( TR_DEEPEST, trace.deepest )

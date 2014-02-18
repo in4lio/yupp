@@ -10,9 +10,9 @@
     ___         __________________________________
     ___ VERSION __________________________________
 
-    yup.py      0.6a7
-                2014-02-14
-    python      2.7.5
+    yup.py      0.6a8
+                2014-02-17
+    python      2.7.6
 
     ___             ______________________________
     ___ WHAT IS IT? ______________________________
@@ -22,13 +22,13 @@
     yupp is intended to transform C programs before they are compiled.
     It can also be useful for more general purposes.
     An embedding of macro constructions into the source code occurs by
-    the use of "application form" e.g. ($e).
+    using an "application form" e.g. ($e).
 
     ___        ___________________________________
     ___ SYNTAX ___________________________________
 
     Basic syntactic forms of the language is a list, an application and
-    a lambda.
+    a lambda expression.
 
     list ::= '(' { form }0... ')'
 
@@ -42,7 +42,7 @@
 
     \p.($add p 1)
 
-    Syntactic forms can be nested within each other but only the application
+    Syntactic forms can be nested within each other but only an application
     form can be embedded into the source code directly.
 
     Any functions from "string", "operator" and "math" modules of Python
@@ -487,6 +487,7 @@
     An unsuccessful preprocessing ends with the error message.
     In failing to translate the preprocessor expressions into a plain
     text the evaluation result will be saved as ".ast" file.
+    Diagnostic messages are still not as useful as they should be.
 
     Sorry, but at the moment there is no other manual except a brief
     intro that can be found in yupp Blog (http://yup-py.blogspot.com/).
