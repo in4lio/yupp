@@ -15,7 +15,7 @@ COPYRIGHT   = 'Copyright (c) 2011, 2013, 2014'
 AUTHORS     = 'Vitaly Kravtsov (in4lio@gmail.com)'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.6a8'
+VERSION     = '0.6a9'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -747,7 +747,11 @@ def _unq( st ):
 
 #   ---------------------------------------------------------------------------
 def _import_source( lib ):
-#   TODO: look for libraries into specified directories
+#   -- prevent re-import
+    if lib in _import_source.done:
+#       -- library has already been imported
+        return ''
+
     lpath = lib
     if not os.path.isfile( lpath ):
 #       -- input file directory
@@ -770,6 +774,7 @@ def _import_source( lib ):
             sou = f.read().replace( '\r\n', '\n' )
         finally:
             f.close()
+        _import_source.done.append( lib )
     except:
         e_type, e, tb = sys.exc_info()
         raise e_type, 'ps_import: %s' % ( e ), tb
@@ -792,11 +797,14 @@ def echo__ps_( fn ):
     return wrapped
 
 #   ---------------------------------------------------------------------------
-def yuparse( sou ):
+def yuparse( sou, init = True ):
     """
     source ::= text EOF;
     """
 #   ---------------
+    if init:
+        _import_source.done = []
+
     if not sou:
         return TEXT([])
 
@@ -973,7 +981,7 @@ def ps_import( sou, depth = 0 ):
     if sou[ :1 ] != ')':
         raise SyntaxError( '%s: ")" expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
 
-    return ( sou[ 1: ], yuparse( _import_source( _unq( leg ))))
+    return ( sou[ 1: ], yuparse( _import_source( _unq( leg )), False ))
 
 #   ---------------------------------------------------------------------------
 @echo__ps_
@@ -2790,7 +2798,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     if not node.ast.startswith( '($' ):
                         node.ast = '($' + node.ast + ')'
 
-                node = yuparse( node.ast )
+                node = yuparse( node.ast, False )
                 if not node.ast:
                     return None
 

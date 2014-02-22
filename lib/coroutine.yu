@@ -18,14 +18,17 @@
 		}
 	[ )
 
-	void main( void )
+	int main( void )
 	{
 		for ( ; ; ) {
 			($coro-call A);
 			($coro-call B);
 		}
+		return 0;
 	}
 )
+
+($import "stdlib.yu")
 
 ($set __label_iter 0)
 
@@ -64,18 +67,18 @@ enum {
 }
 [\set )
 
-($macro coro-yield ()
-do { /* yield */
+($macro coro-yield ()($do ]
+	/* yield */
 	($set __label (L__($emit __label_iter inc)))
 	*co_p = &&($__label);
 	($&exit)
 	return CO_YIELD;
 
 	($__label):;
-} while ( 0 ))
+[ ))
 
-($macro coro-wait (cond)
-do { /* wait */
+($macro coro-wait (cond)($do ]
+	/* wait */
 	($set __label (L__($emit __label_iter inc)))
 	*co_p = &&($__label);
 
@@ -84,37 +87,37 @@ do { /* wait */
 		($&exit)
 		return CO_WAIT;
 	}
-} while ( 0 ))
+[ ))
 
-($macro coro-restart ()
-do { /* restart */
+($macro coro-restart ()($do ]
+	/* restart */
 	*co_p = NULL;
 	($&exit)
 	return CO_YIELD;
-} while ( 0 ))
+[ ))
 
-($macro coro-quit (name)
-do { /* quit */
+($macro coro-quit (name)($do ]
+	/* quit */
 	*co_p = &&L__END_($name);
 	($&exit)
 	return CO_END;
-} while ( 0 ))
+[ ))
 
 ($macro coro-call (name) coro_($name)( &co_($name) ))
 
-($macro coro-alive (thr) (( ($thr) ) < CO_END ))
+($macro coro-alive (coro) (( ($coro) ) < CO_END ))
 
-($macro coro-wait-coro (thr) ($coro-wait [!($coro-alive [($thr)])]))
+($macro coro-wait-coro (coro) ($coro-wait,,!($coro-alive,,($coro))))
 
 ($macro semaphore-init (name val) ($name) = ($val))
 
-($macro semaphore-acquire (name)
-do { /* acquire */
-	($coro-wait (` ($name) > 0 ));
+($macro semaphore-acquire (name)($do ]
+	/* acquire */
+	($coro-wait,, ($name) > 0 );
 	--($name);
-} while ( 0 ))
+[ ))
 
-($macro semaphore-release (name)
-do { /* release */
+($macro semaphore-release (name)($do ]
+	/* release */
 	++($name);
-} while ( 0 ))
+[ ))

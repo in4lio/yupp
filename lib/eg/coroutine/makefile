@@ -5,13 +5,13 @@
 #   |_|                   |_|
 #   yu-c makefile
 
-# -- binary name without extension
+# -- binary name (without extension)
 BIN = ulam
 
-# -- make map file option
+# -- creating MAP file
 MAP = 0
 
-# -- preprocessor
+# -- preprocessor (yupp)
 PP = python -u $(YUPP_HOME)/yup.py
 
 # -- compilers
@@ -49,7 +49,7 @@ D_BIN = .
 D_OBJ = object
 D_OBJ := $(if $(D_PLATFORM), $(D_OBJ)/$(D_PLATFORM), $(D_OBJ))
 
-# -- list, map directory
+# -- LIST and MAP directories
 D_MAP = object
 D_LIST = object
 
@@ -73,7 +73,7 @@ else
 E_BIN =
 endif
 
-# -- list, map suffix
+# -- LIST and MAP suffixes
 E_MAP = .map
 E_LIST = .listing
 
@@ -89,7 +89,7 @@ endif
 PPFLAGS = --pp-no-skip-c-comment -q $(addprefix -d, $(D_YU))
 
 # -- compiler flags
-CFLAGS = $(addprefix -I, $(D_H)) -O2 -W -Wall -Wno-comment
+CFLAGS = $(addprefix -I, $(D_H)) -O2 -W -Wall -Wno-comment -std=gnu99
 CXXFLAGS = $(addprefix -I, $(D_H)) -O2 -ffast-math -funroll-loops -fno-exceptions -fomit-frame-pointer -g -W -Wall -Wno-comment
 ASMFLAGS = -Wall
 
@@ -143,7 +143,7 @@ define wrap
 endef
 endif
 
-# -- remove
+# -- removal list
 R = $(D_BIN)/$(BIN)$(E_BIN) $(O) $(G_H) $(G_C) $(G_CXX)
 ifeq ($(MAP), 1)
 R := $(R) $(D_MAP)/$(BIN)$(E_MAP)
