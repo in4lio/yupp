@@ -11,11 +11,11 @@ http://github.com/in4lio/yupp/
 
 yup.py -- yupp in python
 """
-COPYRIGHT   = 'Copyright (c) 2011, 2013, 2014'
+COPYRIGHT   = 'Copyright (c) 2011, 13, 14'
 AUTHORS     = 'Vitaly Kravtsov (in4lio@gmail.com)'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.6a9'
+VERSION     = '0.7a1'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -233,9 +233,9 @@ def trim_tailing_whitespace( text, _reduce_emptiness = False ):
     """
 #   ---------------
     if _reduce_emptiness:
-        def _filter( line ):
+        def _filter( ln ):
             empty = _filter.empty
-            _filter.empty = not line.strip()
+            _filter.empty = not ln.strip()
             return not empty or not _filter.empty
 
         _filter.empty = False
@@ -252,16 +252,52 @@ def trim_tailing_whitespace( text, _reduce_emptiness = False ):
 #   *                                 *
 #   * * * * * * * * * * * * * * * * * *
 
+LOC_FORMAT = '\n  File "%s", line %d'
+LOC_TEXT_FORMAT = ': %s'
+
+#   ---------------------------------------------------------------------------
+def _loc_text( x ):
+    return LOC_TEXT_FORMAT % ( repr( x )[ :ERR_SLICE ])
+
 #   ---------------------------------------------------------------------------
 def _plain( st ):
     return '' if st is None else str( st )
 
+#   ---------------------------------------------------------------------------
+class SOURCE( str ):
+    """
+    Source code.
+    """
 #   -----------------------------------
-#   Based on 'str' AST notes
+    def __new__( cls, val, input_file = '', line = 1 ):
+        obj = str.__new__( cls, val )
+        if isinstance( val, SOURCE ):
+            obj.input_file = val.input_file
+            obj.line = val.line
+        else:
+            obj.input_file = input_file
+            obj.line = line
+        return obj
+
+#   -----------------------------------
+    def __getitem__( self, a ):
+        return SOURCE( str.__getitem__( self, a ), self.input_file, self.line )
+
+#   -----------------------------------
+    def __getslice__( self, a, b ):
+        return SOURCE( str.__getslice__( self, a, b ), self.input_file, self.line )
+
+#   -----------------------------------
+    def loc( self ):
+        st = LOC_FORMAT % ( self.input_file, self.line ) if self.input_file else ''
+        return st + _loc_text( self )
+
+#   -----------------------------------
+#   Based on string AST notes
 #   -----------------------------------
 
 #   ---------------------------------------------------------------------------
-class BASE_STR( str ):
+class BASE_STR( SOURCE ):
     """
     AST: (abstract node) for strings.
     """
@@ -345,7 +381,7 @@ class PLAIN( BASE_STR ):
             return self
 
 #   -----------------------------------
-#   Based on 'list' AST notes
+#   Based on list AST notes
 #   -----------------------------------
 
 #   ---------------------------------------------------------------------------
@@ -360,6 +396,10 @@ class BASE_LIST( list ):
 #   -----------------------------------
     def __str__( self ):
         return ''.join( map( _plain, self ))                                                                           #pylint: disable=W0141
+
+#   -----------------------------------
+    def loc( self ):
+        return _loc_text( self )
 
 #   ---------------------------------------------------------------------------
 class LIST( BASE_LIST ):
@@ -382,6 +422,10 @@ class FLOAT( float ):
     def __repr__( self ):
         return '%s(%s)' % ( self.__class__.__name__, float.__repr__( self ))
 
+#   -----------------------------------
+    def loc( self ):
+        return _loc_text( self )
+
 #   ---------------------------------------------------------------------------
 class INT( long ):
     """
@@ -390,6 +434,10 @@ class INT( long ):
 #   -----------------------------------
     def __repr__( self ):
         return '%s(%s)' % ( self.__class__.__name__, long.__repr__( self ))
+
+#   -----------------------------------
+    def loc( self ):
+        return _loc_text( self )
 
 #   -----------------------------------
 #   AST nodes without data
@@ -407,6 +455,10 @@ class BASE_MARK( object ):
 #   -----------------------------------
     def __eq__( self, other ):
         return isinstance( other, self.__class__ )
+
+#   -----------------------------------
+    def loc( self ):
+        return _loc_text( self )
 
 #   ---------------------------------------------------------------------------
 class LATE_BOUNDED( BASE_MARK ):
@@ -444,6 +496,10 @@ class BASE_CAP( object ):
 #   -----------------------------------
     def __eq__( self, other ):
         return isinstance( other, self.__class__ ) and ( self.ast == other.ast )
+
+#   -----------------------------------
+    def loc( self ):
+        return _loc_text( self )
 
 #   ---------------------------------------------------------------------------
 class EVAL( BASE_CAP ):
@@ -492,6 +548,10 @@ class TEXT( object ):
     def __eq__( self, other ):
         return isinstance( other, self.__class__ ) and ( self.ast == other.ast )
 
+#   -----------------------------------
+    def loc( self ):
+        return _loc_text( self )
+
 #   ---------------------------------------------------------------------------
 class VAR( object ):
     """
@@ -509,6 +569,10 @@ class VAR( object ):
 #   -----------------------------------
     def __eq__( self, other ):
         return isinstance( other, self.__class__ ) and ( self.reg == other.reg ) and ( self.atom == other.atom )
+
+#   -----------------------------------
+    def loc( self ):
+        return _loc_text( self )
 
 #   ---------------------------------------------------------------------------
 class APPLY( object ):
@@ -530,6 +594,10 @@ class APPLY( object ):
         return ( isinstance( other, self.__class__ ) and ( self.fn == other.fn ) and ( self.args == other.args )
         and ( self.named == other.named ))
 
+#   -----------------------------------
+    def loc( self ):
+        return _loc_text( self )
+
 #   ---------------------------------------------------------------------------
 class SET( object ):
     """
@@ -547,6 +615,10 @@ class SET( object ):
 #   -----------------------------------
     def __eq__( self, other ):
         return isinstance( other, self.__class__ ) and ( self.lval == other.lval ) and ( self.ast == other.ast )
+
+#   -----------------------------------
+    def loc( self ):
+        return _loc_text( self )
 
 #   ---------------------------------------------------------------------------
 class MACRO( object ):
@@ -568,6 +640,10 @@ class MACRO( object ):
         return ( isinstance( other, self.__class__ ) and ( self.name == other.name ) and ( self.pars == other.pars )
         and ( self.text == other.text ))
 
+#   -----------------------------------
+    def loc( self ):
+        return _loc_text( self )
+
 #   ---------------------------------------------------------------------------
 class EMIT( object ):
     """
@@ -586,6 +662,10 @@ class EMIT( object ):
     def __eq__( self, other ):
         return isinstance( other, self.__class__ ) and ( self.var == other.var ) and ( self.ast == other.ast )
 
+#   -----------------------------------
+    def loc( self ):
+        return _loc_text( self )
+
 #   ---------------------------------------------------------------------------
 class LAMBDA( object ):
     """
@@ -603,6 +683,10 @@ class LAMBDA( object ):
 #   -----------------------------------
     def __eq__( self, other ):
         return isinstance( other, self.__class__ ) and ( self.bound == other.bound ) and ( self.l_form == other.l_form )
+
+#   -----------------------------------
+    def loc( self ):
+        return _loc_text( self )
 
 #   ---------------------------------------------------------------------------
 class COND( object ):
@@ -623,6 +707,10 @@ class COND( object ):
     def __eq__( self, other ):
         return ( isinstance( other, self.__class__ ) and ( self.cond == other.cond ) and ( self.leg_1 == other.leg_1 )
         and ( self.leg_0 == other.leg_0 ))
+
+#   -----------------------------------
+    def loc( self ):
+        return _loc_text( self )
 
 
 #   * * * * * * * * * * * * * * * * * *
@@ -656,7 +744,8 @@ def ps_term( _ ):
     pass
 
 #   ---- EOL
-ps_EOL = frozenset([ ord( '\n' ), ord( '\r' )])
+EOL = '\n'
+ps_EOL = frozenset([ ord( EOL ), ord( '\r' )])
 #   ---- SPACE | TAB
 ps_SPACE = frozenset([ ord( ' ' ), ord( '\t' )])
 #   ---- any Roman letter | _
@@ -664,7 +753,7 @@ ps_LETTER = frozenset( range( ord( 'a' ), ord( 'z' ) + 1 ) + range( ord( 'A' ), 
 #   ---- any figure
 ps_FIGURE = frozenset( range( ord( '0' ), ord( '9' ) + 1 ) + [ ord( '-' )])
 #   ---- any printable character
-ps_ANY = frozenset([ ord( '\n' ), ord( '\r' ), ord( '\t' )] + range( ord( ' ' ), 256 ))
+ps_ANY = frozenset([ ord( EOL ), ord( '\r' ), ord( '\t' )] + range( ord( ' ' ), 256 ))
 #   ---- code mark
 ps_CODE = '($code'
 l_CODE = len( ps_CODE )
@@ -731,14 +820,6 @@ def _ord( sou, pos = 0 ):
     return ord( sou[ pos ]) if pos < len( sou ) else None
 
 #   ---------------------------------------------------------------------------
-def _while_in( sou, pool ):
-    i = 0
-    while _ord( sou, i ) in pool:
-        i += 1
-
-    return ( sou[ i: ], sou[ :i ] or None )
-
-#   ---------------------------------------------------------------------------
 def _unq( st ):
     try:
         return literal_eval( st )
@@ -750,7 +831,7 @@ def _import_source( lib ):
 #   -- prevent re-import
     if lib in _import_source.done:
 #       -- library has already been imported
-        return ''
+        return ( '', '' )
 
     lpath = lib
     if not os.path.isfile( lpath ):
@@ -771,7 +852,7 @@ def _import_source( lib ):
     try:
         f = open( lpath, 'r' )
         try:
-            sou = f.read().replace( '\r\n', '\n' )
+            sou = f.read().replace( '\r\n', EOL )
         finally:
             f.close()
         _import_source.done.append( lib )
@@ -779,7 +860,7 @@ def _import_source( lib ):
         e_type, e, tb = sys.exc_info()
         raise e_type, 'ps_import: %s' % ( e ), tb
 
-    return sou
+    return ( sou, lpath )
 
 #   ---------------------------------------------------------------------------
 def trace__ps_( name, sou, depth ):
@@ -808,6 +889,9 @@ def yuparse( sou, init = True ):
     if not sou:
         return TEXT([])
 
+    if not isinstance( sou, SOURCE ):
+        sou = SOURCE( sou )
+
     try:
         text = ps_text( sou, 0 )
         while sou:
@@ -820,7 +904,7 @@ def yuparse( sou, init = True ):
 #   ---- python exception
         arg = e.args[ 0 ] if e.args else None
         if not isinstance( arg, str ) or not arg.startswith( 'ps_' ) and not arg.startswith( 'python' ):
-            raise e_type, 'python: %s: %s' % ( e, repr( sou[ :ERR_SLICE ])), tb
+            raise e_type, 'python: %s' % ( e ) + sou.loc(), tb
 
 #   ---- raised exception
         else:
@@ -887,7 +971,7 @@ def ps_text( sou, depth = 0 ):
                 ast.append( leg )
                 continue
 #   ---- YIELD
-        yield ( sou, TEXT( ast, depth_pth_sq, depth_pth ))
+        yield ( sou[ : ], TEXT( ast, depth_pth_sq, depth_pth ))
 
 #   ---- plain
         if sou == _plain_ret and ast:
@@ -921,7 +1005,7 @@ def ps_set( sou, depth = 0 ):
 #   ---- atom
             ( sou, leg ) = ps_atom( sou, depth + 1 )
             if leg is None:
-                raise SyntaxError( '%s: name expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+                raise SyntaxError( '%s: name expected' % ( callee()) + sou.loc())
 
             lval.append( leg )
 #   ---- gap
@@ -934,7 +1018,7 @@ def ps_set( sou, depth = 0 ):
 #   ---- atom
         ( sou, leg ) = ps_atom( sou, depth + 1 )
         if leg is None:
-            raise SyntaxError( '%s: name expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+            raise SyntaxError( '%s: name expected' % ( callee()) + sou.loc())
 
         lval = leg
 #   ---- gap
@@ -942,7 +1026,7 @@ def ps_set( sou, depth = 0 ):
 #   ---- form
     ( sou, leg ) = ps_form( sou, depth + 1 )
     if leg is None:
-        raise SyntaxError( '%s: form expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+        raise SyntaxError( '%s: form expected' % ( callee()) + sou.loc())
 
 #   ---- gap
     ( sou, _ ) = ps_gap( sou, depth + 1 )
@@ -951,7 +1035,7 @@ def ps_set( sou, depth = 0 ):
         ( sou, _ ) = ps_gap( sou[ l_SET_T: ], depth + 1 )
 #   ---- )
     if sou[ :1 ] != ')':
-        raise SyntaxError( '%s: ")" expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+        raise SyntaxError( '%s: ")" expected' % ( callee()) + sou.loc())
 
     return ( sou[ 1: ], SET( lval, leg ))
 
@@ -971,7 +1055,7 @@ def ps_import( sou, depth = 0 ):
 #   ---- quoted
     ( sou, leg ) = ps_quoted( sou, depth + 1 )
     if leg is None:
-        raise SyntaxError( '%s: quoted expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+        raise SyntaxError( '%s: quoted expected' % ( callee()) + sou.loc())
 #   ---- gap
     ( sou, _ ) = ps_gap( sou, depth + 1 )
 #   ---- \import
@@ -979,9 +1063,9 @@ def ps_import( sou, depth = 0 ):
         ( sou, _ ) = ps_gap( sou[ l_IMPORT_T: ], depth + 1 )
 #   ---- )
     if sou[ :1 ] != ')':
-        raise SyntaxError( '%s: ")" expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+        raise SyntaxError( '%s: ")" expected' % ( callee()) + sou.loc())
 
-    return ( sou[ 1: ], yuparse( _import_source( _unq( leg )), False ))
+    return ( sou[ 1: ], yuparse( SOURCE( *_import_source( _unq( leg ))), False ))
 
 #   ---------------------------------------------------------------------------
 @echo__ps_
@@ -999,13 +1083,13 @@ def ps_macro( sou, depth = 0 ):
 #   ---- atom
     ( sou, name ) = ps_atom( sou, depth + 1 )
     if name is None:
-        raise SyntaxError( '%s: name expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+        raise SyntaxError( '%s: name expected' % ( callee()) + sou.loc())
 
 #   ---- gap
     ( sou, _ ) = ps_gap( sou, depth + 1 )
 #   ---- (
     if sou[ :1 ] != '(':
-        raise SyntaxError( '%s: "(" expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+        raise SyntaxError( '%s: "(" expected' % ( callee()) + sou.loc())
 
 #   ---- gap
     ( sou, _ ) = ps_gap( sou[ 1: ], depth + 1 )
@@ -1015,7 +1099,7 @@ def ps_macro( sou, depth = 0 ):
 #   ---- atom
         ( sou, leg ) = ps_atom( sou, depth + 1 )
         if leg is None:
-            raise SyntaxError( '%s: name expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+            raise SyntaxError( '%s: name expected' % ( callee()) + sou.loc())
 
         pars.append( leg )
 #   ---- gap
@@ -1049,7 +1133,7 @@ def ps_emit( sou, depth = 0 ):
 #   ---- variable
     ( sou, leg ) = ps_variable( sou, depth + 1 )
     if leg is None:
-        raise SyntaxError( '%s: variable expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+        raise SyntaxError( '%s: variable expected' % ( callee()) + sou.loc())
 
     var = leg
 #   ---- gap
@@ -1064,7 +1148,7 @@ def ps_emit( sou, depth = 0 ):
         ( sou, _ ) = ps_gap( sou[ l_EMIT_T: ], depth + 1 )
 #   ---- )
     if sou[ :1 ] != ')':
-        raise SyntaxError( '%s: ")" expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+        raise SyntaxError( '%s: ")" expected' % ( callee()) + sou.loc())
 
     return ( sou[ 1: ], EMIT( var, leg ))
 
@@ -1108,7 +1192,7 @@ def ps_application( sou, depth = 0 ):
 #   ---- function
     ( sou, func ) = ps_function( sou, depth + 1 )
     if func is None:
-        raise SyntaxError( '%s: function expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+        raise SyntaxError( '%s: function expected' % ( callee()) + sou.loc())
 
 #   ---- ($set fn ::function::text)
     fn = ( func.atom if isinstance( func, VAR ) else None )
@@ -1142,7 +1226,7 @@ def ps_application( sou, depth = 0 ):
 #   ---- argument -- form
                 ( sou, form ) = ps_form( sou, depth + 1 )
                 if form is None:
-                    raise SyntaxError( '%s: form expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+                    raise SyntaxError( '%s: form expected' % ( callee()) + sou.loc())
 
                 named.append(( name, form ))
             else:
@@ -1161,14 +1245,14 @@ def ps_application( sou, depth = 0 ):
             else:
 #   ---- }0...
                 if embed:
-                    raise SyntaxError( '%s: unexpected "*": %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+                    raise SyntaxError( '%s: unexpected "*"' % ( callee()) + sou.loc())
 
                 break
 #   ---- gap
     ( sou, _ ) = ps_gap( sou, depth + 1 )
 #   ---- )
     if sou[ :1 ] != ')':
-        raise SyntaxError( '%s: ")" expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+        raise SyntaxError( '%s: ")" expected' % ( callee()) + sou.loc())
 
     return ( sou[ 1: ], EVAL( APPLY( func, args, named )) if _eval else APPLY( func, args, named ))
 
@@ -1204,7 +1288,7 @@ def ps_remark( sou, depth = 0 ):
 
             i += 1
 
-        raise SyntaxError( '%s: unclosed comment: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+        raise SyntaxError( '%s: unclosed comment' % ( callee()) + sou.loc())
 
     return ( sou, None )
 
@@ -1233,7 +1317,7 @@ def ps_plain( sou, pth_sq, pth, indent, depth = 0 ):
             raise EOFError( '%s: unexpected EOF:' % ( callee()))
 
         if symbol not in ps_ANY:
-            raise SyntaxError( '%s: forbidden character: %s' % ( callee(), repr( sou[ i:( ERR_SLICE + i )])))
+            raise SyntaxError( '%s: forbidden character' % ( callee()) + sou.loc())
 
 #   ---- ($switch ...
         if symbol == ord( '[' ):
@@ -1248,6 +1332,7 @@ def ps_plain( sou, pth_sq, pth, indent, depth = 0 ):
                 depth_pth -= 1
 #       -- calculate indent
         if symbol in ps_EOL:
+            sou.line += 1
             indent = ''
         elif symbol in ps_SPACE:
             if isinstance( indent, str ):
@@ -1285,7 +1370,7 @@ def ps_variable( sou, depth = 0 ):
         if leg is not None:
             return ( sou, VAR( LATE_BOUNDED(), leg ))
 
-        raise SyntaxError( '%s: late-bounded expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+        raise SyntaxError( '%s: late-bounded expected' % ( callee()) + sou.loc())
 
     else:
 #   ---- atom
@@ -1300,7 +1385,7 @@ def ps_variable( sou, depth = 0 ):
 #   ---- atom
             ( sou, leg ) = ps_atom( sou[ 2: ], depth + 1 )
             if leg is None:
-                raise SyntaxError( '%s: atom expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+                raise SyntaxError( '%s: atom expected' % ( callee()) + sou.loc())
 
         return ( sou, VAR( region, leg ))
 
@@ -1324,12 +1409,12 @@ def ps_lambda( sou, depth = 0 ):
 #   ---- variable
             ( sou, bound ) = ps_variable( sou, depth + 1 )
             if bound is None:
-                raise SyntaxError( '%s: variable expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+                raise SyntaxError( '%s: variable expected' % ( callee()) + sou.loc())
 #   ---- gap
             ( sou, _ ) = ps_gap( sou, depth + 1 )
 #   ---- )
             if sou[ :2 ] != ').':
-                raise SyntaxError( '%s: ")." expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+                raise SyntaxError( '%s: ")." expected' % ( callee()) + sou.loc())
 
 #   ---- gap
             ( sou, _ ) = ps_gap( sou[ 2: ], depth + 1 )
@@ -1341,7 +1426,7 @@ def ps_lambda( sou, depth = 0 ):
 #   ---- ...
                 if sou[ 1:4 ] == '...':
                     if late:
-                        raise SyntaxError( '%s: late bound with refuge: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+                        raise SyntaxError( '%s: late bound with refuge' % ( callee()) + sou.loc())
 
                     bound.append(( [], ATOM( '...' ), None ))
 #   ---- gap
@@ -1351,18 +1436,18 @@ def ps_lambda( sou, depth = 0 ):
 #   ---- name -- atom
                 ( sou, leg ) = ps_atom( sou[ 1: ], depth + 1 )
                 if leg is None:
-                    raise SyntaxError( '%s: name expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+                    raise SyntaxError( '%s: name expected' % ( callee()) + sou.loc())
 #   ---- :
                 if sou[ :1 ] == ':':
 #   ---- form
                     ( sou, form ) = ps_form( sou[ 1: ], depth + 1 )
                     if form is None:
-                        raise SyntaxError( '%s: form expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+                        raise SyntaxError( '%s: form expected' % ( callee()) + sou.loc())
                 else:
                     form = None
 #   ---- .
                 if sou[ :1 ] != '.':
-                    raise SyntaxError( '%s: "." expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+                    raise SyntaxError( '%s: "." expected' % ( callee()) + sou.loc())
 #   ---- ..
                 if sou[ :2 ] == '..':
                     late.append( leg )
@@ -1378,7 +1463,7 @@ def ps_lambda( sou, depth = 0 ):
 #   ---- l-form
         ( sou, leg ) = ps_l_form( sou, depth + 1 )
         if leg is None:
-            raise SyntaxError( '%s: l-form expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+            raise SyntaxError( '%s: l-form expected' % ( callee()) + sou.loc())
 
         return ( sou, LAMBDA( bound, leg ))
 
@@ -1423,7 +1508,7 @@ def ps_form( sou, depth = 0 ):
 #   ---- cond
             ( sou, cond ) = ps_former( sou, depth + 1 )
             if cond is None:
-                raise SyntaxError( '%s: former expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+                raise SyntaxError( '%s: former expected' % ( callee()) + sou.loc())
 
             form = None
 #   ---- gap
@@ -1435,7 +1520,7 @@ def ps_form( sou, depth = 0 ):
 #   ---- form
                 ( sou, form ) = ps_form( sou, depth + 1 )
                 if form is None:
-                    raise SyntaxError( '%s: form expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+                    raise SyntaxError( '%s: form expected' % ( callee()) + sou.loc())
 
             return ( sou, COND( cond, leg, form ))
 
@@ -1644,7 +1729,7 @@ def ps_list( sou, depth = 0 ):
 #   ---- form
             ( sou, leg ) = ps_form( sou, depth + 1 )
             if leg is None:
-                raise SyntaxError( '%s: form expected: %s' % ( callee(), repr( sou[ :ERR_SLICE ])))
+                raise SyntaxError( '%s: form expected' % ( callee()) + sou.loc())
 
             lst.append( EMBED( leg ) if embed else leg )
 #   ---- gap
@@ -1721,7 +1806,11 @@ def ps_space( sou, depth = 0 ):
     SPACE ::= [ '\t', ' ' ];
     """
 #   ---------------
-    return _while_in( sou, ps_SPACE )
+    i = 0
+    while _ord( sou, i ) in ps_SPACE:
+        i += 1
+
+    return ( sou[ i: ], sou[ :i ] or None )
 
 #   ---------------------------------------------------------------------------
 @echo__ps_
@@ -1731,6 +1820,7 @@ def ps_eol( sou, depth = 0 ):
     """
 #   ---------------
     if _ord( sou, 0 ) in ps_EOL:
+        sou.line += 1
         return ( sou[ 1: ], sou[ :1 ])
 
     return ( sou, None )
@@ -1742,7 +1832,18 @@ def ps_gap( sou, depth = 0 ):
     GAP ::= EOL + SPACE;
     """
 #   ---------------
-    return _while_in( sou, ps_SPACE | ps_EOL )
+    i = 0
+    while True:
+        symbol = _ord( sou, i )
+        if   symbol in ps_EOL:
+            sou.line += 1
+        elif symbol in ps_SPACE:
+            pass
+        else:
+            break
+        i += 1
+
+    return ( sou[ i: ], sou[ :i ] or None )
 
 #   ---------------------------------------------------------------------------
 @echo__ps_
@@ -1891,6 +1992,10 @@ class LAMBDA_CLOSURE( object ):
         return ( isinstance( other, self.__class__ ) and ( self.l_form == other.l_form ) and ( self.env == other.env )
         and ( self.late == other.late ) and ( self.default == other.default ))
 
+#   -----------------------------------
+    def loc( self ):
+        return _loc_text( self )
+
 #   ---------------------------------------------------------------------------
 class L_CLOSURE( LAMBDA_CLOSURE ):
     """
@@ -1926,6 +2031,10 @@ class INFIX_CLOSURE( object ):
     def __eq__( self, other ):
         return isinstance( other, self.__class__ ) and ( self.tree == other.tree ) and ( self.env == other.env )
 
+#   -----------------------------------
+    def loc( self ):
+        return _loc_text( self )
+
 #   ---------------------------------------------------------------------------
 class COND_CLOSURE( object ):
     """
@@ -1946,6 +2055,10 @@ class COND_CLOSURE( object ):
         return ( isinstance( other, self.__class__ ) and ( self.cond == other.cond ) and ( self.leg_1 == other.leg_1 )
         and ( self.leg_0 == other.leg_0 ))
 
+#   -----------------------------------
+    def loc( self ):
+        return _loc_text( self )
+
 #   ---------------------------------------------------------------------------
 class SET_CLOSURE( object ):
     """
@@ -1965,6 +2078,10 @@ class SET_CLOSURE( object ):
     def __eq__( self, other ):
         return isinstance( other, self.__class__ ) and ( self.form == other.form ) and ( self.env == other.env )
 
+#   -----------------------------------
+    def loc( self ):
+        return _loc_text( self )
+
 #   ---------------------------------------------------------------------------
 class BUILTIN( object ):
     """
@@ -1982,6 +2099,10 @@ class BUILTIN( object ):
 #   -----------------------------------
     def __eq__( self, other ):
         return isinstance( other, self.__class__ ) and ( self.atom == other.atom )
+
+#   -----------------------------------
+    def loc( self ):
+        return _loc_text( self )
 
 #   ---------------------------------------------------------------------------
 class BUILTIN_SPECIAL( BUILTIN ):
@@ -2146,6 +2267,10 @@ class ENV( dict ):
             env = env.parent
         return '%s(%s)' % ( self.__class__.__name__, ' '.join( result ))
 
+#   -----------------------------------
+    def loc( self ):
+        return _loc_text( self )
+
 #   ---------------------------------------------------------------------------
 class INFIX_VISITOR( NodeVisitor ):
     """
@@ -2185,11 +2310,13 @@ import string, operator, math, datetime                                         
 #   ---------------------------------------------------------------------------
 def yushell( input_file = None, output_file = None ):
     if input_file:
+        yushell.input_file = input_file
         yushell.input = os.path.basename( input_file )
         yushell.dirname = os.path.dirname( input_file )
         yushell.module = os.path.splitext( yushell.input )[ 0 ].replace( '-', '_' ).upper()
     else:
-        yushell.input = '<stdin>'
+        yushell.input_file = '<stdin>'
+        yushell.input = yushell.input_file
         yushell.dirname = ''
         yushell.module = 'UNTITLED'
     yushell.output = os.path.basename( output_file ) if output_file else '<stdout>'
@@ -2414,7 +2541,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                             t.append( yueval( SET_CLOSURE( node, x ), env, depth + 1 ))
                         else:
 #                           -- item is ignored
-                            log.warn( 'useless assign: %s', repr( node )[ :ERR_SLICE ])
+                            log.warn( 'useless assign' + node.loc())
                         break
 
 #   ---- T -- EMBED --> T
@@ -2457,15 +2584,15 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #   ---- APPLY -- BUILTIN
                 if isinstance( node.fn, BUILTIN ):
                     if node.named:
-                        raise SyntaxError( '%s: unexpected named argument of builtin function: %s' % ( _callee()
-                        , repr( node )[ :ERR_SLICE ]))
+                        raise SyntaxError( '%s: unexpected named argument of built-in function' % ( _callee())
+                        + node.loc())
 
 #   ---- APPLY -- BUILTIN_SPECIAL
                     if isinstance( node.fn, BUILTIN_SPECIAL ):
                         if node.fn.atom in [ 'lazy', 'repr' ]:
                             if len( node.args ) != 1:
-                                raise SyntaxError( '%s: only one argument expected: %s' % ( _callee()
-                                , repr( node )[ :ERR_SLICE ]))
+                                raise SyntaxError( '%s: only one argument expected' % ( _callee())
+                                + node.loc())
 
                             if not isinstance( node.args[ 0 ], VAR ):
 #                               -- argument is substituted
@@ -2475,16 +2602,16 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
                         if node.fn.atom == 'reduce':
                             if len( node.args ) < 2 and not isinstance( node.args[ 0 ], BUILTIN ):
-                                raise SyntaxError( '%s: unexpected arguments of "reduce": %s' % ( _callee()
-                                , repr( node )[ :ERR_SLICE ]))
+                                raise SyntaxError( '%s: unexpected arguments of "reduce"' % ( _callee())
+                                + node.loc())
 
                             if _is_term( node.args[ 1: ]):
                                 return node.fn.fn( node.args[ 0 ].fn, *node.args[ 1: ])
 
                         if node.fn.atom == 'isatom':
                             if len( node.args ) != 1:
-                                raise SyntaxError( '%s: only one argument expected: %s' % ( _callee()
-                                , repr( node )[ :ERR_SLICE ]))
+                                raise SyntaxError( '%s: only one argument expected' % ( _callee())
+                                + node.loc())
 
                             if isinstance( node.args[ 0 ], ATOM ) or isinstance( node.args[ 0 ], VAR ):
 #                               -- undefined or LATE_BOUNDED variable
@@ -2504,16 +2631,16 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
 #   ---- APPLY -- BUILTIN -- const
                     if node.args:
-                        raise TypeError( '%s: no arguments of constant expected: %s' % ( _callee()
-                        , repr( node )[ :ERR_SLICE ]))
+                        raise TypeError( '%s: no arguments of constant expected' % ( _callee())
+                        + node.loc())
 
                     return node.fn.fn
 
 #   ---- APPLY -- int | float | long (subscripting)
                 elif isinstance( node.fn, int ) or isinstance( node.fn, long ) or isinstance( node.fn, float ):
                     if node.named:
-                        raise SyntaxError( '%s: unexpected named argument of index function: %s' % ( _callee()
-                        , repr( node )[ :ERR_SLICE ]))
+                        raise SyntaxError( '%s: unexpected named argument of index function' % ( _callee())
+                        + node.loc())
 
                     if node.args:
                         if _is_term( node.args ):
@@ -2532,8 +2659,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #   ---- APPLY -- TEXT
                 elif isinstance( node.fn, TEXT ):
                     if node.args or node.named:
-                        raise TypeError( '%s: no arguments of text expected: %s' % ( _callee()
-                        , repr( node )[ :ERR_SLICE ]))
+                        raise TypeError( '%s: no arguments of text expected' % ( _callee())
+                        + node.loc())
 
                     node = node.fn
                     # fall through -- yueval( node )
@@ -2547,19 +2674,18 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         var, val = node.named.pop( 0 )
                         if var in node.fn.env:
                             if not isinstance( node.fn.env[ var ], BOUND ):
-                                log.warn( 'parameter "%s" already has value: %s', str( var )
-                                , repr( node )[ :ERR_SLICE ])
+                                log.warn( 'parameter "%s" already has value' + node.loc(), str( var ))
                             val = yueval( val, env, depth + 1 )
                         else:
-                            raise TypeError( '%s: function has no parameter "%s": %s' % ( _callee(), str( var )
-                            , repr( node )[ :ERR_SLICE ]))
+                            raise TypeError( '%s: function has no parameter "%s"' % ( _callee(), str( var ))
+                            + node.loc())
 
 #                   -- apply anonymous arguments
                     elif node.args:
                         var = node.fn.env.unassigned()
                         if var is NOT_FOUND:
 #                           -- no parameters
-                            log.warn( 'unused argument(s) %s: %s', repr( node.args ), repr( node )[ :ERR_SLICE ])
+                            log.warn( 'unused argument(s) %s' + node.loc(), repr( node.args ))
                             return yueval( node.fn, env, depth + 1 )
 
                         if var == __va_args__:
@@ -2626,8 +2752,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #   ---- APPLY -- list ("for each" loop)
                 elif isinstance( node.fn, list ):
                     if node.named:
-                        raise SyntaxError( '%s: unexpected named argument of foreach function: %s' % ( _callee()
-                        , repr( node )[ :ERR_SLICE ]))
+                        raise SyntaxError( '%s: unexpected named argument of foreach function' % ( _callee())
+                        + node.loc())
 
 #                   -- !? is it right without
 #                   if not _is_term( node.fn ):
@@ -2681,8 +2807,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
                         return node.atom
 
-                    raise TypeError( '%s: undefined variable "%s": %s' % ( _callee(), str( node.atom )
-                    , repr( node )[ :ERR_SLICE ]))
+                    raise TypeError( '%s: undefined variable "%s"' % ( _callee(), str( node.atom ))
+                    + node.loc())
 
 #   ---- VAR -- BOUND
                 if isinstance( val, BOUND ):
@@ -2702,7 +2828,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
                     node.bound = _list_to_bound( val )
                     if node.bound is NOT_FOUND:
-                        raise TypeError( '%s: illegal parameters list: %s' % ( _callee(), repr( node )[ :ERR_SLICE ]))
+                        raise TypeError( '%s: illegal parameters list' % ( _callee()) + node.loc())
 
 #   ---- LAMBDA -- VAR | list
                 d_late = {}
@@ -2751,8 +2877,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                             if len( val ) > i:
                                 env_l[ var ] = val[ i ]
                             else:
-                                log.warn( 'there is nothing to assign to "%s": %s', str( var )
-                                , repr( node )[ :ERR_SLICE ])
+                                log.warn( 'there is nothing to assign to "%s"' + node.loc(), str( var ))
                                 env_l[ var ] = None
                     else:
                         for var in node.lval:
@@ -2798,7 +2923,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     if not node.ast.startswith( '($' ):
                         node.ast = '($' + node.ast + ')'
 
-                node = yuparse( node.ast, False )
+                node = yuparse( SOURCE( node.ast ), False )
                 if not node.ast:
                     return None
 
@@ -2867,8 +2992,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
             elif isinstance( node, EMIT ):
                 val = env.lookup( node.var.reg, node.var.atom )
                 if val is NOT_FOUND:
-                    raise TypeError( '%s: undefined variable "%s": %s' % ( _callee(), str( node.var.atom )
-                    , repr( node )[ :ERR_SLICE ]))
+                    raise TypeError( '%s: undefined variable "%s"' % ( _callee(), str( node.var.atom ))
+                    + node.loc())
 
 #   ---- EMIT -- VAR -- BOUND
                 if isinstance( val, BOUND ):
@@ -2931,10 +3056,10 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
         if ( not isinstance( arg, str )
         or not arg.startswith( 'yueval' ) and not arg.startswith( 'python' ) and not arg.startswith( 'ps_' )):
             if isinstance( arg, str ) and arg.startswith( 'maximum recursion depth' ):
-                raise e_type, 'yueval: %s' % e, tb
+                raise e_type, 'yueval: %s' % ( e ), tb
             else:
 #               -- this 'raise' expr. could be cause of new exception when maximum recursion depth is exceeded
-                raise e_type, 'python: %s: %s' % ( e, repr( node )[ :ERR_SLICE ]), tb
+                raise e_type, 'python: %s' % ( e ) + node.loc(), tb
 
 #   ---- raised exception
         else:
@@ -3216,7 +3341,7 @@ def _pp( text ):                                                                
         if TR2F:
             trace.info( text )
         trace.deepest = 0
-        ast = yuparse( text.replace( '\r\n', '\n' ))
+        ast = yuparse( SOURCE( text.replace( '\r\n', EOL ), yushell.input_file ))
 
         if trace.TRACE:
             trace.info( repr( ast ))
