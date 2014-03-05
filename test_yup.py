@@ -716,7 +716,8 @@ def test( kit, t ):                                                             
                 trace.info( ___title___( 'test %d' % ( i )))
             trace.deepest = 0
 #   ---- parse
-            ast = yuparse( text )
+            yushell( text )
+            ast = yuparse( yushell.text, yushell.input_file )
 
             print repr( ast ), '\n'
             if TR2F:
@@ -813,4 +814,4 @@ if __name__ == '__main__':
 
     sys.exit( t_failed )
 
-#   -- EOF (3.5 s)
+#   -- EOF

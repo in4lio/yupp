@@ -15,7 +15,7 @@ COPYRIGHT   = 'Copyright (c) 2011, 13, 14'
 AUTHORS     = 'Vitaly Kravtsov (in4lio@gmail.com)'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.7a1'
+VERSION     = '0.7a2'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -253,11 +253,28 @@ def trim_tailing_whitespace( text, _reduce_emptiness = False ):
 #   * * * * * * * * * * * * * * * * * *
 
 LOC_FORMAT = '\n  File "%s", line %d'
-LOC_TEXT_FORMAT = ': %s'
+LOC_LINE_FORMAT = '\n  %s\n  %s'
+LOC_REPR_FORMAT = ': %s'
 
 #   ---------------------------------------------------------------------------
-def _loc_text( x ):
-    return LOC_TEXT_FORMAT % ( repr( x )[ :ERR_SLICE ])
+def _loc_repr( x ):
+    return LOC_REPR_FORMAT % ( repr( x )[ :ERR_SLICE ])
+
+#   ---------------------------------------------------------------------------
+def _loc( input_file, pos ):
+    if input_file == yushell.input_file:
+        sou = yushell.text
+    else:
+#           -- located in library
+        with open( input_file ) as f:
+            sou = f.read()
+    eol = sou.find( EOL, pos )
+    if eol == -1:
+        eol = len( sou )
+    lns = sou[ :eol ].splitlines()
+    ln = lns[ -1 ].lstrip()
+    lnp = ' ' * ( pos - eol + len( ln )) + '^'
+    return LOC_FORMAT % ( input_file, len( lns )) + LOC_LINE_FORMAT % ( ln, lnp )
 
 #   ---------------------------------------------------------------------------
 def _plain( st ):
@@ -269,28 +286,27 @@ class SOURCE( str ):
     Source code.
     """
 #   -----------------------------------
-    def __new__( cls, val, input_file = '', line = 1 ):
+    def __new__( cls, val, input_file = '', pos = 0 ):
         obj = str.__new__( cls, val )
         if isinstance( val, SOURCE ):
             obj.input_file = val.input_file
-            obj.line = val.line
+            obj.pos = val.pos
         else:
             obj.input_file = input_file
-            obj.line = line
+            obj.pos = pos
         return obj
 
 #   -----------------------------------
     def __getitem__( self, a ):
-        return SOURCE( str.__getitem__( self, a ), self.input_file, self.line )
+        return SOURCE( str.__getitem__( self, a ), self.input_file, self.pos + a )
 
 #   -----------------------------------
     def __getslice__( self, a, b ):
-        return SOURCE( str.__getslice__( self, a, b ), self.input_file, self.line )
+        return SOURCE( str.__getslice__( self, a, b ), self.input_file, self.pos + a )
 
 #   -----------------------------------
     def loc( self ):
-        st = LOC_FORMAT % ( self.input_file, self.line ) if self.input_file else ''
-        return st + _loc_text( self )
+        return _loc( self.input_file, self.pos ) if self.input_file else _loc_repr( self )
 
 #   -----------------------------------
 #   Based on string AST notes
@@ -399,7 +415,7 @@ class BASE_LIST( list ):
 
 #   -----------------------------------
     def loc( self ):
-        return _loc_text( self )
+        return _loc_repr( self )
 
 #   ---------------------------------------------------------------------------
 class LIST( BASE_LIST ):
@@ -424,7 +440,7 @@ class FLOAT( float ):
 
 #   -----------------------------------
     def loc( self ):
-        return _loc_text( self )
+        return _loc_repr( self )
 
 #   ---------------------------------------------------------------------------
 class INT( long ):
@@ -437,14 +453,23 @@ class INT( long ):
 
 #   -----------------------------------
     def loc( self ):
-        return _loc_text( self )
+        return _loc_repr( self )
+
+#   ---------------------------------------------------------------------------
+class BASE_OBJECT( object ):
+    """
+    AST: (abstract node) for various objects
+    """
+#   -----------------------------------
+    def loc( self ):
+        return _loc_repr( self )
 
 #   -----------------------------------
 #   AST nodes without data
 #   -----------------------------------
 
 #   ---------------------------------------------------------------------------
-class BASE_MARK( object ):
+class BASE_MARK( BASE_OBJECT ):
     """
     AST: (abstract node) for marks.
     """
@@ -455,10 +480,6 @@ class BASE_MARK( object ):
 #   -----------------------------------
     def __eq__( self, other ):
         return isinstance( other, self.__class__ )
-
-#   -----------------------------------
-    def loc( self ):
-        return _loc_text( self )
 
 #   ---------------------------------------------------------------------------
 class LATE_BOUNDED( BASE_MARK ):
@@ -481,7 +502,7 @@ class COMMENT( BASE_MARK ):
 #   -----------------------------------
 
 #   ---------------------------------------------------------------------------
-class BASE_CAP( object ):
+class BASE_CAP( BASE_OBJECT ):
     """
     AST: (abstract node) for captions.
     """
@@ -496,10 +517,6 @@ class BASE_CAP( object ):
 #   -----------------------------------
     def __eq__( self, other ):
         return isinstance( other, self.__class__ ) and ( self.ast == other.ast )
-
-#   -----------------------------------
-    def loc( self ):
-        return _loc_text( self )
 
 #   ---------------------------------------------------------------------------
 class EVAL( BASE_CAP ):
@@ -530,7 +547,7 @@ class EMBED( BASE_CAP ):
 #   -----------------------------------
 
 #   ---------------------------------------------------------------------------
-class TEXT( object ):
+class TEXT( BASE_OBJECT ):
     """
     AST: TEXT([ SET | MACRO | APPLY | STR | REMARK | PLAIN ], number, number ) <-- ']' ... '['
     """
@@ -548,12 +565,8 @@ class TEXT( object ):
     def __eq__( self, other ):
         return isinstance( other, self.__class__ ) and ( self.ast == other.ast )
 
-#   -----------------------------------
-    def loc( self ):
-        return _loc_text( self )
-
 #   ---------------------------------------------------------------------------
-class VAR( object ):
+class VAR( BASE_OBJECT ):
     """
     AST: VAR( LATE_BOUNDED | [ ATOM ], ATOM ) <-- id '::' id | '&' id | id
     """
@@ -570,20 +583,18 @@ class VAR( object ):
     def __eq__( self, other ):
         return isinstance( other, self.__class__ ) and ( self.reg == other.reg ) and ( self.atom == other.atom )
 
-#   -----------------------------------
-    def loc( self ):
-        return _loc_text( self )
-
 #   ---------------------------------------------------------------------------
-class APPLY( object ):
+class APPLY( BASE_OBJECT ):
     """
     AST: APPLY( form, [ form ], [( ATOM, form )]) <-- '($' ... ')'
     """
 #   -----------------------------------
-    def __init__( self, fn, args, named ):
+    def __init__( self, fn, args, named, input_file = None, pos = None ):                                              #pylint: disable=R0913
         self.fn = fn
         self.args = args
         self.named = named
+        self.input_file = input_file
+        self.pos = pos
 
 #   -----------------------------------
     def __repr__( self ):
@@ -596,10 +607,10 @@ class APPLY( object ):
 
 #   -----------------------------------
     def loc( self ):
-        return _loc_text( self )
+        return _loc( self.input_file, self.pos ) if self.input_file else _loc_repr( self )
 
 #   ---------------------------------------------------------------------------
-class SET( object ):
+class SET( BASE_OBJECT ):
     """
     AST: SET( ATOM | [ ATOM ], form ) <-- '($set' ... ')'
     """
@@ -616,12 +627,8 @@ class SET( object ):
     def __eq__( self, other ):
         return isinstance( other, self.__class__ ) and ( self.lval == other.lval ) and ( self.ast == other.ast )
 
-#   -----------------------------------
-    def loc( self ):
-        return _loc_text( self )
-
 #   ---------------------------------------------------------------------------
-class MACRO( object ):
+class MACRO( BASE_OBJECT ):
     """
     AST: MACRO( ATOM, [ ATOM ], str ) <-- '($macro' ... ')'
     """
@@ -640,12 +647,8 @@ class MACRO( object ):
         return ( isinstance( other, self.__class__ ) and ( self.name == other.name ) and ( self.pars == other.pars )
         and ( self.text == other.text ))
 
-#   -----------------------------------
-    def loc( self ):
-        return _loc_text( self )
-
 #   ---------------------------------------------------------------------------
-class EMIT( object ):
+class EMIT( BASE_OBJECT ):
     """
     AST: EMIT( ATOM, form ) <-- '($emit' ... ')'
     """
@@ -662,12 +665,8 @@ class EMIT( object ):
     def __eq__( self, other ):
         return isinstance( other, self.__class__ ) and ( self.var == other.var ) and ( self.ast == other.ast )
 
-#   -----------------------------------
-    def loc( self ):
-        return _loc_text( self )
-
 #   ---------------------------------------------------------------------------
-class LAMBDA( object ):
+class LAMBDA( BASE_OBJECT ):
     """
     AST: LAMBDA([([ ATOM ], ATOM, form )], TEXT | APPLY | LIST | INFIX) <-- [ '\\' _ '..' ] '\\' _ ':' _ '.' '(' ... ')'
     """
@@ -684,12 +683,8 @@ class LAMBDA( object ):
     def __eq__( self, other ):
         return isinstance( other, self.__class__ ) and ( self.bound == other.bound ) and ( self.l_form == other.l_form )
 
-#   -----------------------------------
-    def loc( self ):
-        return _loc_text( self )
-
 #   ---------------------------------------------------------------------------
-class COND( object ):
+class COND( BASE_OBJECT ):
     """
     AST: COND( former, former, form ) <-- _ '?' _ '|' _
     """
@@ -707,10 +702,6 @@ class COND( object ):
     def __eq__( self, other ):
         return ( isinstance( other, self.__class__ ) and ( self.cond == other.cond ) and ( self.leg_1 == other.leg_1 )
         and ( self.leg_0 == other.leg_0 ))
-
-#   -----------------------------------
-    def loc( self ):
-        return _loc_text( self )
 
 
 #   * * * * * * * * * * * * * * * * * *
@@ -829,14 +820,14 @@ def _unq( st ):
 #   ---------------------------------------------------------------------------
 def _import_source( lib ):
 #   -- prevent re-import
-    if lib in _import_source.done:
+    if lib in yuparse.imported:
 #       -- library has already been imported
-        return ( '', '' )
+        return ( '', '', '' )
 
     lpath = lib
     if not os.path.isfile( lpath ):
 #       -- input file directory
-        lpath = os.path.join( yushell.dirname, lib )
+        lpath = os.path.join( os.path.dirname( yushell.input_file ), lib )
         if not os.path.isfile( lpath ):
 #           -- yupp lib directory
             if '__file__' in globals():
@@ -845,22 +836,18 @@ def _import_source( lib ):
 #               -- specially for Web Console
                 lpath = os.path.join( './lib', lib )
 #           -- specified directory
-            for dirname in DIRECTORY:
+            for d in DIRECTORY:
                 if os.path.isfile( lpath ):
                     break
-                lpath = os.path.join( dirname, lib )
+                lpath = os.path.join( d, lib )
     try:
-        f = open( lpath, 'r' )
-        try:
+        with open( lpath, 'r' ) as f:
             sou = f.read().replace( '\r\n', EOL )
-        finally:
-            f.close()
-        _import_source.done.append( lib )
     except:
         e_type, e, tb = sys.exc_info()
         raise e_type, 'ps_import: %s' % ( e ), tb
 
-    return ( sou, lpath )
+    return ( sou, lpath, lib )
 
 #   ---------------------------------------------------------------------------
 def trace__ps_( name, sou, depth ):
@@ -878,20 +865,21 @@ def echo__ps_( fn ):
     return wrapped
 
 #   ---------------------------------------------------------------------------
-def yuparse( sou, init = True ):
+def yuparse( sou, input_file, lib = None ):
     """
     source ::= text EOF;
     """
 #   ---------------
-    if init:
-        _import_source.done = []
+    if lib is None:
+#       -- reset list of imported
+        yuparse.imported = []
+    elif lib:
+        yuparse.imported.append( lib )
 
     if not sou:
         return TEXT([])
 
-    if not isinstance( sou, SOURCE ):
-        sou = SOURCE( sou )
-
+    sou = SOURCE( sou, input_file )
     try:
         text = ps_text( sou, 0 )
         while sou:
@@ -1065,7 +1053,7 @@ def ps_import( sou, depth = 0 ):
     if sou[ :1 ] != ')':
         raise SyntaxError( '%s: ")" expected' % ( callee()) + sou.loc())
 
-    return ( sou[ 1: ], yuparse( SOURCE( *_import_source( _unq( leg ))), False ))
+    return ( sou[ 1: ], yuparse( *_import_source( _unq( leg ))))
 
 #   ---------------------------------------------------------------------------
 @echo__ps_
@@ -1183,6 +1171,7 @@ def ps_application( sou, depth = 0 ):
         return ps_infix( sou, depth + 1 )
 
     sou = sou[ 2: ]
+    pos = sou.pos - 1
 #   ---- $
     _eval = sou[ :1 ] == '$'
     if _eval:
@@ -1254,7 +1243,8 @@ def ps_application( sou, depth = 0 ):
     if sou[ :1 ] != ')':
         raise SyntaxError( '%s: ")" expected' % ( callee()) + sou.loc())
 
-    return ( sou[ 1: ], EVAL( APPLY( func, args, named )) if _eval else APPLY( func, args, named ))
+    _apply = APPLY( func, args, named, sou.input_file, pos )
+    return ( sou[ 1: ], EVAL( _apply ) if _eval else _apply )
 
 #   ---------------------------------------------------------------------------
 @echo__ps_
@@ -1332,7 +1322,6 @@ def ps_plain( sou, pth_sq, pth, indent, depth = 0 ):
                 depth_pth -= 1
 #       -- calculate indent
         if symbol in ps_EOL:
-            sou.line += 1
             indent = ''
         elif symbol in ps_SPACE:
             if isinstance( indent, str ):
@@ -1820,7 +1809,6 @@ def ps_eol( sou, depth = 0 ):
     """
 #   ---------------
     if _ord( sou, 0 ) in ps_EOL:
-        sou.line += 1
         return ( sou[ 1: ], sou[ :1 ])
 
     return ( sou, None )
@@ -1833,14 +1821,7 @@ def ps_gap( sou, depth = 0 ):
     """
 #   ---------------
     i = 0
-    while True:
-        symbol = _ord( sou, i )
-        if   symbol in ps_EOL:
-            sou.line += 1
-        elif symbol in ps_SPACE:
-            pass
-        else:
-            break
+    while _ord( sou, i ) in ps_EOL | ps_SPACE:
         i += 1
 
     return ( sou[ i: ], sou[ :i ] or None )
@@ -1969,7 +1950,7 @@ class BOUND( BASE_MARK ):
     pass
 
 #   ---------------------------------------------------------------------------
-class LAMBDA_CLOSURE( object ):
+class LAMBDA_CLOSURE( BASE_OBJECT ):
     """
     AST: (abstract node) for lambda and macro closures.
     """
@@ -1992,10 +1973,6 @@ class LAMBDA_CLOSURE( object ):
         return ( isinstance( other, self.__class__ ) and ( self.l_form == other.l_form ) and ( self.env == other.env )
         and ( self.late == other.late ) and ( self.default == other.default ))
 
-#   -----------------------------------
-    def loc( self ):
-        return _loc_text( self )
-
 #   ---------------------------------------------------------------------------
 class L_CLOSURE( LAMBDA_CLOSURE ):
     """
@@ -2013,7 +1990,7 @@ class M_CLOSURE( LAMBDA_CLOSURE ):
     pass
 
 #   ---------------------------------------------------------------------------
-class INFIX_CLOSURE( object ):
+class INFIX_CLOSURE( BASE_OBJECT ):
     """
     AST: INFIX_CLOSURE( tree, ENV ) <-- INFIX
     """
@@ -2031,12 +2008,8 @@ class INFIX_CLOSURE( object ):
     def __eq__( self, other ):
         return isinstance( other, self.__class__ ) and ( self.tree == other.tree ) and ( self.env == other.env )
 
-#   -----------------------------------
-    def loc( self ):
-        return _loc_text( self )
-
 #   ---------------------------------------------------------------------------
-class COND_CLOSURE( object ):
+class COND_CLOSURE( BASE_OBJECT ):
     """
     AST: COND_CLOSURE( former, former, form ) <-- COND
     """
@@ -2055,12 +2028,8 @@ class COND_CLOSURE( object ):
         return ( isinstance( other, self.__class__ ) and ( self.cond == other.cond ) and ( self.leg_1 == other.leg_1 )
         and ( self.leg_0 == other.leg_0 ))
 
-#   -----------------------------------
-    def loc( self ):
-        return _loc_text( self )
-
 #   ---------------------------------------------------------------------------
-class SET_CLOSURE( object ):
+class SET_CLOSURE( BASE_OBJECT ):
     """
     AST: SET_CLOSURE( form, ENV ) <-- SET
     """
@@ -2078,12 +2047,8 @@ class SET_CLOSURE( object ):
     def __eq__( self, other ):
         return isinstance( other, self.__class__ ) and ( self.form == other.form ) and ( self.env == other.env )
 
-#   -----------------------------------
-    def loc( self ):
-        return _loc_text( self )
-
 #   ---------------------------------------------------------------------------
-class BUILTIN( object ):
+class BUILTIN( BASE_OBJECT ):
     """
     AST: BUILTIN( ATOM, fn )
     """
@@ -2099,10 +2064,6 @@ class BUILTIN( object ):
 #   -----------------------------------
     def __eq__( self, other ):
         return isinstance( other, self.__class__ ) and ( self.atom == other.atom )
-
-#   -----------------------------------
-    def loc( self ):
-        return _loc_text( self )
 
 #   ---------------------------------------------------------------------------
 class BUILTIN_SPECIAL( BUILTIN ):
@@ -2269,7 +2230,7 @@ class ENV( dict ):
 
 #   -----------------------------------
     def loc( self ):
-        return _loc_text( self )
+        return self.order[ 0 ].loc() if self.order else _loc_repr( self )
 
 #   ---------------------------------------------------------------------------
 class INFIX_VISITOR( NodeVisitor ):
@@ -2294,7 +2255,7 @@ class LAZY( BASE_CAP ):
         return _plain( self.ast )
 
 #   ---------------------------------------------------------------------------
-class SKIPREST( BASE_MARK ):
+class SKIP( BASE_MARK ):
     """
     Skip the rest of text.
     """
@@ -2308,18 +2269,15 @@ class SKIPREST( BASE_MARK ):
 import string, operator, math, datetime                                                                                #pylint: disable=W0402
 
 #   ---------------------------------------------------------------------------
-def yushell( input_file = None, output_file = None ):
+def yushell( text = None, input_file = None, output_file = None ):
+    yushell.text = text.replace( '\r\n', EOL ) if text else ''
+    yushell.input_file = input_file if input_file else '<stdin>'
+    yushell.output_file = output_file if output_file else '<stdout>'
+
     if input_file:
-        yushell.input_file = input_file
-        yushell.input = os.path.basename( input_file )
-        yushell.dirname = os.path.dirname( input_file )
-        yushell.module = os.path.splitext( yushell.input )[ 0 ].replace( '-', '_' ).upper()
+        yushell.module = os.path.splitext( os.path.basename( yushell.input_file ))[ 0 ].replace( '-', '_' ).upper()
     else:
-        yushell.input_file = '<stdin>'
-        yushell.input = yushell.input_file
-        yushell.dirname = ''
         yushell.module = 'UNTITLED'
-    yushell.output = os.path.basename( output_file ) if output_file else '<stdout>'
 
 yushell()
 
@@ -2333,12 +2291,12 @@ builtin.update( vars( operator ))
 builtin.update( vars( math ))
 builtin.update({
                                                                                                                        #pylint: disable=W0142
-    '__FILE__': lambda : '"%s"' % yushell.input,
-    '__OUTPUT_FILE__': lambda : '"%s"' % yushell.output,
+    '__FILE__': lambda : '"%s"' % os.path.basename( yushell.input_file ),
+    '__OUTPUT_FILE__': lambda : '"%s"' % os.path.basename( yushell.output_file ),
     '__MODULE_NAME__': lambda : ATOM( yushell.module ),
     '__TITLE__': lambda : PLAIN( _title_template % {
       'app': APP, 'version': VERSION
-    , 'input': yushell.input, 'output': yushell.output
+    , 'input': os.path.basename( yushell.input_file ), 'output': os.path.basename( yushell.output_file )
     , 'time': datetime.datetime.now().strftime( '%Y-%m-%d %H:%M' )
     }),
     'car': lambda l : LIST( l[ :1 ]),
@@ -2363,7 +2321,7 @@ builtin_special = dict()
 builtin_special.update({
     'isatom': None,
     'lazy': lambda val : LIST( LAZY( x ) for x in val ) if isinstance( val, list ) else LAZY( val ),
-    'skip': SKIPREST(),
+    'skip': SKIP(),
     'reduce': reduce,
     'repr': repr
 })
@@ -2526,8 +2484,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #                       -- skip
                         continue
 
-#   ---- T -- SKIPREST
-                    if isinstance( x, SKIPREST ):
+#   ---- T -- SKIP
+                    if isinstance( x, SKIP ):
                         break
 
 #   ---- T -- ENV
@@ -2541,7 +2499,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                             t.append( yueval( SET_CLOSURE( node, x ), env, depth + 1 ))
                         else:
 #                           -- item is ignored
-                            log.warn( 'useless assign' + node.loc())
+                            log.warn( 'useless assign' + x.loc())
                         break
 
 #   ---- T -- EMBED --> T
@@ -2584,15 +2542,15 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #   ---- APPLY -- BUILTIN
                 if isinstance( node.fn, BUILTIN ):
                     if node.named:
-                        raise SyntaxError( '%s: unexpected named argument of built-in function' % ( _callee())
-                        + node.loc())
+                        raise TypeError( '%s: unexpected named argument of built-in function' % ( _callee())
+                        + node.named[ 0 ][ 0 ].loc())
 
 #   ---- APPLY -- BUILTIN_SPECIAL
                     if isinstance( node.fn, BUILTIN_SPECIAL ):
                         if node.fn.atom in [ 'lazy', 'repr' ]:
                             if len( node.args ) != 1:
-                                raise SyntaxError( '%s: only one argument expected' % ( _callee())
-                                + node.loc())
+                                raise TypeError( '%s: only one argument expected' % ( _callee())
+                                + node.fn.atom.loc())
 
                             if not isinstance( node.args[ 0 ], VAR ):
 #                               -- argument is substituted
@@ -2602,16 +2560,16 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
                         if node.fn.atom == 'reduce':
                             if len( node.args ) < 2 and not isinstance( node.args[ 0 ], BUILTIN ):
-                                raise SyntaxError( '%s: unexpected arguments of "reduce"' % ( _callee())
-                                + node.loc())
+                                raise TypeError( '%s: unexpected arguments of "reduce"' % ( _callee())
+                                + node.fn.atom.loc())
 
                             if _is_term( node.args[ 1: ]):
                                 return node.fn.fn( node.args[ 0 ].fn, *node.args[ 1: ])
 
                         if node.fn.atom == 'isatom':
                             if len( node.args ) != 1:
-                                raise SyntaxError( '%s: only one argument expected' % ( _callee())
-                                + node.loc())
+                                raise TypeError( '%s: only one argument expected' % ( _callee())
+                                + node.fn.atom.loc())
 
                             if isinstance( node.args[ 0 ], ATOM ) or isinstance( node.args[ 0 ], VAR ):
 #                               -- undefined or LATE_BOUNDED variable
@@ -2632,15 +2590,15 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #   ---- APPLY -- BUILTIN -- const
                     if node.args:
                         raise TypeError( '%s: no arguments of constant expected' % ( _callee())
-                        + node.loc())
+                        + node.fn.atom.loc())
 
                     return node.fn.fn
 
 #   ---- APPLY -- int | float | long (subscripting)
                 elif isinstance( node.fn, int ) or isinstance( node.fn, long ) or isinstance( node.fn, float ):
                     if node.named:
-                        raise SyntaxError( '%s: unexpected named argument of index function' % ( _callee())
-                        + node.loc())
+                        raise TypeError( '%s: unexpected named argument of index function' % ( _callee())
+                        + node.named[ 0 ][ 0 ].loc())
 
                     if node.args:
                         if _is_term( node.args ):
@@ -2658,6 +2616,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
 #   ---- APPLY -- TEXT
                 elif isinstance( node.fn, TEXT ):
+#                   -- !? (unreachable code)
                     if node.args or node.named:
                         raise TypeError( '%s: no arguments of text expected' % ( _callee())
                         + node.loc())
@@ -2674,17 +2633,16 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         var, val = node.named.pop( 0 )
                         if var in node.fn.env:
                             if not isinstance( node.fn.env[ var ], BOUND ):
-                                log.warn( 'parameter "%s" already has value' + node.loc(), str( var ))
+                                log.warn( 'parameter "%s" is already assigned with value' + var.loc(), str( var ))
                             val = yueval( val, env, depth + 1 )
                         else:
                             raise TypeError( '%s: function has no parameter "%s"' % ( _callee(), str( var ))
-                            + node.loc())
+                            + var.loc())
 
 #                   -- apply anonymous arguments
                     elif node.args:
                         var = node.fn.env.unassigned()
                         if var is NOT_FOUND:
-#                           -- no parameters
                             log.warn( 'unused argument(s) %s' + node.loc(), repr( node.args ))
                             return yueval( node.fn, env, depth + 1 )
 
@@ -2752,8 +2710,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #   ---- APPLY -- list ("for each" loop)
                 elif isinstance( node.fn, list ):
                     if node.named:
-                        raise SyntaxError( '%s: unexpected named argument of foreach function' % ( _callee())
-                        + node.loc())
+                        raise TypeError( '%s: unexpected named argument of foreach function' % ( _callee())
+                        + node.named[ 0 ][ 0 ].loc())
 
 #                   -- !? is it right without
 #                   if not _is_term( node.fn ):
@@ -2768,8 +2726,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         lst.append( x )
                     return lst
 
-#   ---- APPLY -- SKIPREST
-                elif isinstance( node.fn, SKIPREST ):
+#   ---- APPLY -- SKIP
+                elif isinstance( node.fn, SKIP ):
                     return node.fn
 
 #   ---- APPLY -- None
@@ -2808,7 +2766,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         return node.atom
 
                     raise TypeError( '%s: undefined variable "%s"' % ( _callee(), str( node.atom ))
-                    + node.loc())
+                    + node.atom.loc())
 
 #   ---- VAR -- BOUND
                 if isinstance( val, BOUND ):
@@ -2826,9 +2784,10 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #                       -- unreducible
                         return node
 
+                    bound_atom = node.bound.atom
                     node.bound = _list_to_bound( val )
                     if node.bound is NOT_FOUND:
-                        raise TypeError( '%s: illegal parameters list' % ( _callee()) + node.loc())
+                        raise TypeError( '%s: illegal parameters list' % ( _callee()) + bound_atom.loc())
 
 #   ---- LAMBDA -- VAR | list
                 d_late = {}
@@ -2877,7 +2836,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                             if len( val ) > i:
                                 env_l[ var ] = val[ i ]
                             else:
-                                log.warn( 'there is nothing to assign to "%s"' + node.loc(), str( var ))
+                                log.warn( 'there is nothing to assign to "%s"' + var.loc(), str( var ))
                                 env_l[ var ] = None
                     else:
                         for var in node.lval:
@@ -2923,7 +2882,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     if not node.ast.startswith( '($' ):
                         node.ast = '($' + node.ast + ')'
 
-                node = yuparse( SOURCE( node.ast ), False )
+                node = yuparse( node.ast, '', '' )
                 if not node.ast:
                     return None
 
@@ -2993,7 +2952,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                 val = env.lookup( node.var.reg, node.var.atom )
                 if val is NOT_FOUND:
                     raise TypeError( '%s: undefined variable "%s"' % ( _callee(), str( node.var.atom ))
-                    + node.loc())
+                    + node.var.atom.loc())
 
 #   ---- EMIT -- VAR -- BOUND
                 if isinstance( val, BOUND ):
@@ -3223,11 +3182,8 @@ def shell_backup( fn ):
 
 #   ---------------------------------------------------------------------------
 def shell_savetofile( fn, text ):
-    f = open( fn, 'wb' )
-    try:
+    with open( fn, 'wb' ) as f:
         f.write( text )
-    finally:
-        f.close()
 
 #   ---------------------------------------------------------------------------
 def _output_fn( fn ):
@@ -3257,18 +3213,15 @@ def _pp_file( fn ):
     result = False
     try:
 #       -- input file reading
-        f = open( fn, 'r' )
-        try:
+        with open( fn, 'r' ) as f:
             text = f.read()
-        finally:
-            f.close()
         if not QUIET:
             print PP_I, PP_FILE % fn
 #       -- output file naming
         fn_o = _output_fn( fn )
 #       -- preprocessing
-        yushell( fn, fn_o )
-        result, plain = _pp( text )
+        yushell( text, fn, fn_o )
+        result, plain = _pp()
         print
         if result:
             if TYPE_FILE:
@@ -3308,8 +3261,8 @@ def _pp_test( text, echo = True ):
 
     if echo:
         print PP_I, text
-    yushell()
-    result, plain = _pp( text )
+    yushell( text )
+    result, plain = _pp()
     print
     print PP_O, plain
     if result:
@@ -3319,17 +3272,17 @@ def _pp_test( text, echo = True ):
 
 #   ---------------------------------------------------------------------------
 def _pp_text( text, text_source = None ):
-    yushell( text_source )
-    result, plain = _pp( text )
+    yushell( text, text_source )
+    result, plain = _pp()
     print
     print plain
     if result:
         print OK
 
 #   ---------------------------------------------------------------------------
-def _pp( text ):                                                                                                       #pylint: disable=R0915
+def _pp():                                                                                                             #pylint: disable=R0915
     """
-    return yueval( yuparse( text ))
+    return yueval( yuparse( yushell.text ))
     (also tracing and logging)
     """
 #   ---------------
@@ -3339,9 +3292,9 @@ def _pp( text ):                                                                
 #   -- parse
     try:
         if TR2F:
-            trace.info( text )
+            trace.info( yushell.text )
         trace.deepest = 0
-        ast = yuparse( SOURCE( text.replace( '\r\n', EOL ), yushell.input_file ))
+        ast = yuparse( yushell.text, yushell.input_file )
 
         if trace.TRACE:
             trace.info( repr( ast ))
