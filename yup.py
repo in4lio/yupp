@@ -15,7 +15,7 @@ COPYRIGHT   = 'Copyright (c) 2011, 13, 14'
 AUTHORS     = 'Vitaly Kravtsov (in4lio@gmail.com)'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.7a2'
+VERSION     = '0.7a3'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -252,29 +252,45 @@ def trim_tailing_whitespace( text, _reduce_emptiness = False ):
 #   *                                 *
 #   * * * * * * * * * * * * * * * * * *
 
-LOC_FORMAT = '\n  File "%s", line %d'
-LOC_LINE_FORMAT = '\n  %s\n  %s'
-LOC_REPR_FORMAT = ': %s'
+LOC_FILE = '\n  File "%s", line %d'
+LOC_MACRO = '\n  Macro "%s", line %d'
+LOC_LINE = '\n    %s'
+LOC_REPR = ': %s'
 
 #   ---------------------------------------------------------------------------
 def _loc_repr( x ):
-    return LOC_REPR_FORMAT % ( repr( x )[ :ERR_SLICE ])
+    return LOC_REPR % ( repr( x )[ :ERR_SLICE ])
 
 #   ---------------------------------------------------------------------------
-def _loc( input_file, pos ):
-    if input_file == yushell.input_file:
-        sou = yushell.text
+def _loc( input_file, pos, pointer = True ):
+    result = ''
+    decl, sou = yushell.source[ input_file ]
+    if input_file.isdigit():
+#       -- location is into a macro
+        call = yushell.macro[ int( input_file )]
+        if call:
+#           -- location of call
+            result += _loc( call.input_file, call.pos, False )
+#       -- location of macro
+        result += _loc( decl.input_file, decl.pos, False )
+        format = LOC_MACRO
     else:
-#           -- located in library
-        with open( input_file ) as f:
-            sou = f.read()
+        if not decl:
+            decl = input_file
+        format = LOC_FILE
+#   -- location of target
     eol = sou.find( EOL, pos )
     if eol == -1:
         eol = len( sou )
     lns = sou[ :eol ].splitlines()
+    result += format % ( decl, len( lns ))
     ln = lns[ -1 ].lstrip()
-    lnp = ' ' * ( pos - eol + len( ln )) + '^'
-    return LOC_FORMAT % ( input_file, len( lns )) + LOC_LINE_FORMAT % ( ln, lnp )
+    result += LOC_LINE % ( ln )
+    if pointer:
+#       -- pointer to target
+        lnp = ' ' * ( pos - eol + len( ln )) + '^'
+        result += LOC_LINE % ( lnp )
+    return result
 
 #   ---------------------------------------------------------------------------
 def _plain( st ):
@@ -523,8 +539,11 @@ class EVAL( BASE_CAP ):
     """
     AST: EVAL( APPLY ) <-- '($$' ... ')'
     """
-#   ---------------
-    pass
+#   -----------------------------------
+    def __init__( self, ast, decl = None, call = None ):
+        BASE_CAP.__init__( self, ast )
+        self.decl = decl
+        self.call = call
 
 #   ---------------------------------------------------------------------------
 class INFIX( BASE_CAP ):
@@ -820,26 +839,16 @@ def _unq( st ):
 #   ---------------------------------------------------------------------------
 def _import_source( lib ):
 #   -- prevent re-import
-    if lib in yuparse.imported:
+    if lib in yushell.source:
 #       -- library has already been imported
-        return ( '', '', '' )
+        return '<null>'
 
     lpath = lib
     if not os.path.isfile( lpath ):
-#       -- input file directory
-        lpath = os.path.join( os.path.dirname( yushell.input_file ), lib )
-        if not os.path.isfile( lpath ):
-#           -- yupp lib directory
-            if '__file__' in globals():
-                lpath = os.path.join( os.path.dirname( os.path.realpath( __file__ )), 'lib', lib )
-            else:
-#               -- specially for Web Console
-                lpath = os.path.join( './lib', lib )
-#           -- specified directory
-            for d in DIRECTORY:
-                if os.path.isfile( lpath ):
-                    break
-                lpath = os.path.join( d, lib )
+        for d in yushell.directory:
+            lpath = os.path.join( d, lib )
+            if os.path.isfile( lpath ):
+                break
     try:
         with open( lpath, 'r' ) as f:
             sou = f.read().replace( '\r\n', EOL )
@@ -847,7 +856,8 @@ def _import_source( lib ):
         e_type, e, tb = sys.exc_info()
         raise e_type, 'ps_import: %s' % ( e ), tb
 
-    return ( sou, lpath, lib )
+    yushell.source[ lib ] = ( lpath, sou )
+    return lib
 
 #   ---------------------------------------------------------------------------
 def trace__ps_( name, sou, depth ):
@@ -865,21 +875,16 @@ def echo__ps_( fn ):
     return wrapped
 
 #   ---------------------------------------------------------------------------
-def yuparse( sou, input_file, lib = None ):
+def yuparse( input_file ):
     """
     source ::= text EOF;
     """
 #   ---------------
-    if lib is None:
-#       -- reset list of imported
-        yuparse.imported = []
-    elif lib:
-        yuparse.imported.append( lib )
-
-    if not sou:
+    source = yushell.source[ input_file ][ 1 ]
+    if not source:
         return TEXT([])
 
-    sou = SOURCE( sou, input_file )
+    sou = SOURCE( source, input_file )
     try:
         text = ps_text( sou, 0 )
         while sou:
@@ -1053,7 +1058,7 @@ def ps_import( sou, depth = 0 ):
     if sou[ :1 ] != ')':
         raise SyntaxError( '%s: ")" expected' % ( callee()) + sou.loc())
 
-    return ( sou[ 1: ], yuparse( *_import_source( _unq( leg ))))
+    return ( sou[ 1: ], yuparse( _import_source( _unq( leg ))))
 
 #   ---------------------------------------------------------------------------
 @echo__ps_
@@ -1244,7 +1249,7 @@ def ps_application( sou, depth = 0 ):
         raise SyntaxError( '%s: ")" expected' % ( callee()) + sou.loc())
 
     _apply = APPLY( func, args, named, sou.input_file, pos )
-    return ( sou[ 1: ], EVAL( _apply ) if _eval else _apply )
+    return ( sou[ 1: ], EVAL( _apply, SOURCE( '<string>', sou.input_file, pos + 1 )) if _eval else _apply )
 
 #   ---------------------------------------------------------------------------
 @echo__ps_
@@ -1961,6 +1966,7 @@ class LAMBDA_CLOSURE( BASE_OBJECT ):
         self.env.parent = None
         self.late = late or {}
         self.default = default or {}
+        self.call = None
 
 #   -----------------------------------
     def __repr__( self ):
@@ -1984,10 +1990,12 @@ class L_CLOSURE( LAMBDA_CLOSURE ):
 #   ---------------------------------------------------------------------------
 class M_CLOSURE( LAMBDA_CLOSURE ):
     """
-    AST: M_CLOSURE( text, ENV( { par: BOUND } )) <-- MACRO( name, pars, text )
+    AST: M_CLOSURE( text, ENV( { par: BOUND } ), decl ) <-- MACRO( name, pars, text )
     """
-#   ---------------
-    pass
+#   -----------------------------------
+    def __init__( self, l_form, env, decl ):
+        LAMBDA_CLOSURE.__init__( self, l_form, env )
+        self.decl = decl
 
 #   ---------------------------------------------------------------------------
 class INFIX_CLOSURE( BASE_OBJECT ):
@@ -2269,17 +2277,21 @@ class SKIP( BASE_MARK ):
 import string, operator, math, datetime                                                                                #pylint: disable=W0402
 
 #   ---------------------------------------------------------------------------
-def yushell( text = None, input_file = None, output_file = None ):
-    yushell.text = text.replace( '\r\n', EOL ) if text else ''
-    yushell.input_file = input_file if input_file else '<stdin>'
-    yushell.output_file = output_file if output_file else '<stdout>'
-
-    if input_file:
-        yushell.module = os.path.splitext( os.path.basename( yushell.input_file ))[ 0 ].replace( '-', '_' ).upper()
-    else:
-        yushell.module = 'UNTITLED'
-
-yushell()
+def yushell( text, _input = None, _output = None ):
+    yushell.input_file = os.path.basename( _input ) if _input else '<stdin>'
+    yushell.output_file = os.path.basename( _output ) if _output else '<stdout>'
+    yushell.source = { '<null>': ( '', '' ), yushell.input_file: ( _input, text.replace( '\r\n', EOL ))}
+    yushell.macro = []
+    yushell.module = os.path.splitext( yushell.input_file )[ 0 ].replace( '-', '_' ).upper() if _input else 'UNTITLED'
+#   -- yupp lib directory
+    yushell.directory = [ os.path.join( os.path.dirname( os.path.realpath( __file__ )), 'lib' )
+        if '__file__' in globals() else './lib' ]
+#   -- input file directory
+    if _input:
+        yushell.directory.insert( 0, os.path.dirname( _input ))
+#   -- specified directories
+    yushell.directory.extend( DIRECTORY )
+    return yushell.input_file
 
 _title_template = r"""/*  %(output)s was generated by %(app)s %(version)s
     out of %(input)s at %(time)s
@@ -2291,12 +2303,12 @@ builtin.update( vars( operator ))
 builtin.update( vars( math ))
 builtin.update({
                                                                                                                        #pylint: disable=W0142
-    '__FILE__': lambda : '"%s"' % os.path.basename( yushell.input_file ),
-    '__OUTPUT_FILE__': lambda : '"%s"' % os.path.basename( yushell.output_file ),
+    '__FILE__': lambda : '"%s"' % yushell.input_file,
+    '__OUTPUT_FILE__': lambda : '"%s"' % yushell.output_file,
     '__MODULE_NAME__': lambda : ATOM( yushell.module ),
     '__TITLE__': lambda : PLAIN( _title_template % {
       'app': APP, 'version': VERSION
-    , 'input': os.path.basename( yushell.input_file ), 'output': os.path.basename( yushell.output_file )
+    , 'input': yushell.input_file, 'output': yushell.output_file
     , 'time': datetime.datetime.now().strftime( '%Y-%m-%d %H:%M' )
     }),
     'car': lambda l : LIST( l[ :1 ]),
@@ -2536,6 +2548,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
 #   ---- APPLY
             elif isinstance( node, APPLY ):
+                _call = node.fn.atom if isinstance( node.fn, VAR ) else None
+
                 node.fn = yueval( node.fn, env, depth + 1 )
                 node.args = yueval( node.args, env, depth + 1 )
 
@@ -2628,6 +2642,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #                           --> yueval( apply( yueval( apply( yueval( form ) yueval( arg0 ))) yueval( arg1 )))
 #   ---- APPLY -- M_CLOSURE
                 elif isinstance( node.fn, LAMBDA_CLOSURE ):
+                    node.fn.call = _call
 #                   -- apply named arguments
                     if node.named:
                         var, val = node.named.pop( 0 )
@@ -2856,7 +2871,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #   ---- MACRO --> ENV( None, ( name, M_CLOSURE( text, ENV( None, [( par, BOUND )]))))
             elif isinstance( node, MACRO ):
                 return ENV( None, [( node.name, M_CLOSURE( node.text, ENV( None
-                , zip( node.pars, [ BOUND()] * len( node.pars )))))])
+                , zip( node.pars, [ BOUND()] * len( node.pars ))), node.name ))])
 
 #   ---- M_CLOSURE --> EVAL
             elif isinstance( node, M_CLOSURE ):
@@ -2866,7 +2881,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
                 for var, val in node.env.xlocal():
                     node.l_form = node.l_form.replace( '($' + str( var ) + ')', _plain_back( val ))
-                node = EVAL( node.l_form )
+                node = EVAL( node.l_form, node.decl, node.call )
                 # fall through -- yueval( node )
 
 #   ---- EVAL --> EMBED
@@ -2882,7 +2897,10 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     if not node.ast.startswith( '($' ):
                         node.ast = '($' + node.ast + ')'
 
-                node = yuparse( node.ast, '', '' )
+                yushell.macro.append( node.call )
+                _macro = str( len( yushell.macro ) - 1 )
+                yushell.source[ _macro ] = ( node.decl, node.ast )
+                node = yuparse( _macro )
                 if not node.ast:
                     return None
 
@@ -3282,7 +3300,7 @@ def _pp_text( text, text_source = None ):
 #   ---------------------------------------------------------------------------
 def _pp():                                                                                                             #pylint: disable=R0915
     """
-    return yueval( yuparse( yushell.text ))
+    return yueval( yuparse( yushell.input_file ))
     (also tracing and logging)
     """
 #   ---------------
@@ -3292,9 +3310,9 @@ def _pp():                                                                      
 #   -- parse
     try:
         if TR2F:
-            trace.info( yushell.text )
+            trace.info( yushell.source[ yushell.input_file ][ 1 ])
         trace.deepest = 0
-        ast = yuparse( yushell.text, yushell.input_file )
+        ast = yuparse( yushell.input_file )
 
         if trace.TRACE:
             trace.info( repr( ast ))

@@ -10,8 +10,8 @@
     ___         __________________________________
     ___ VERSION __________________________________
 
-    yup.py      0.7a2
-                2014-03-05
+    yup.py      0.7a3
+                2014-03-11
     python      2.7.6
 
     ___             ______________________________
@@ -487,7 +487,6 @@
     An unsuccessful preprocessing ends with the error message.
     In failing to translate the preprocessor expressions into a plain
     text the evaluation result will be saved as ".ast" file.
-    Diagnostic messages are still not as useful as they should be.
 
     Sorry, but at the moment there is no other manual except a brief
     intro that can be found in yupp Blog (http://yup-py.blogspot.com/).
