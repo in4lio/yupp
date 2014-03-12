@@ -1,5 +1,5 @@
 {
-	"cmd": ["gpp", "${file}", "-o", "${file_path}\\\\${file_base_name}.exe"],
+	"cmd": ["gcc", "-std=gnu99", "${file}", "-o", "${file_path}\\\\${file_base_name}.exe"],
 	"file_regex": "^(..[^:]*):([0-9]+):?([0-9]+)?:? (.*)$",
 	"working_dir": "${file_path}",
 	"selector": "source.c, source.c++",
@@ -7,7 +7,12 @@
 	[
 		{
 			"name": "Run",
-			"cmd": ["gpp", "${file}", "-o", "${file_path}\\\\${file_base_name}.exe", "&", "${file_path}\\\\${file_base_name}.exe"],
+			"cmd": ["gcc", "-std=gnu99", "${file}", "-o", "${file_path}\\\\${file_base_name}.exe", "&", "${file_path}\\\\${file_base_name}.exe"],
+			"shell": true
+		},
+		{
+			"name": "CPP",
+			"cmd": ["gcc", "-E", "${file}", "-o", "${file_path}\\\\${file_base_name}.i.${file_extension}"],
 			"shell": true
 		}
 	],
