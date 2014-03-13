@@ -15,7 +15,7 @@ COPYRIGHT   = 'Copyright (c) 2011, 13, 14'
 AUTHORS     = 'Vitaly Kravtsov (in4lio@gmail.com)'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.7a3'
+VERSION     = '0.7b1'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -273,17 +273,17 @@ def _loc( input_file, pos, pointer = True ):
             result += _loc( call.input_file, call.pos, False )
 #       -- location of macro
         result += _loc( decl.input_file, decl.pos, False )
-        format = LOC_MACRO
+        fmt = LOC_MACRO
     else:
         if not decl:
             decl = input_file
-        format = LOC_FILE
+        fmt = LOC_FILE
 #   -- location of target
     eol = sou.find( EOL, pos )
     if eol == -1:
         eol = len( sou )
     lns = sou[ :eol ].splitlines()
-    result += format % ( decl, len( lns ))
+    result += fmt % ( decl, len( lns ))
     ln = lns[ -1 ].lstrip()
     result += LOC_LINE % ( ln )
     if pointer:
@@ -480,6 +480,20 @@ class BASE_OBJECT( object ):
     def loc( self ):
         return _loc_repr( self )
 
+#   ---------------------------------------------------------------------------
+class BASE_OBJECT_LOCATED( object ):
+    """
+    AST: (abstract node) for various objects with position
+    """
+#   -----------------------------------
+    def __init__( self, input_file, pos ):
+        self.input_file = input_file
+        self.pos = pos
+
+#   -----------------------------------
+    def loc( self ):
+        return _loc( self.input_file, self.pos ) if self.input_file else _loc_repr( self )
+
 #   -----------------------------------
 #   AST nodes without data
 #   -----------------------------------
@@ -514,11 +528,11 @@ class COMMENT( BASE_MARK ):
     pass
 
 #   -----------------------------------
-#   Caption AST nodes
+#   AST nodes with caption
 #   -----------------------------------
 
 #   ---------------------------------------------------------------------------
-class BASE_CAP( BASE_OBJECT ):
+class CAPTION( object ):
     """
     AST: (abstract node) for captions.
     """
@@ -535,26 +549,28 @@ class BASE_CAP( BASE_OBJECT ):
         return isinstance( other, self.__class__ ) and ( self.ast == other.ast )
 
 #   ---------------------------------------------------------------------------
-class EVAL( BASE_CAP ):
+class EVAL( BASE_OBJECT, CAPTION ):
     """
     AST: EVAL( APPLY ) <-- '($$' ... ')'
     """
 #   -----------------------------------
     def __init__( self, ast, decl = None, call = None ):
-        BASE_CAP.__init__( self, ast )
+        CAPTION.__init__( self, ast )
         self.decl = decl
         self.call = call
 
 #   ---------------------------------------------------------------------------
-class INFIX( BASE_CAP ):
+class INFIX( BASE_OBJECT_LOCATED, CAPTION ):
     """
     AST: INFIX( exp ) <-- '{' ... '}'
     """
-#   ---------------
-    pass
+#   -----------------------------------
+    def __init__( self, ast, input_file = None, pos = None ):
+        BASE_OBJECT_LOCATED.__init__( self, input_file, pos )
+        CAPTION.__init__( self, ast )
 
 #   ---------------------------------------------------------------------------
-class EMBED( BASE_CAP ):
+class EMBED( BASE_OBJECT, CAPTION ):
     """
     AST: EMBED( form ) <-- '*' _
     """
@@ -603,17 +619,16 @@ class VAR( BASE_OBJECT ):
         return isinstance( other, self.__class__ ) and ( self.reg == other.reg ) and ( self.atom == other.atom )
 
 #   ---------------------------------------------------------------------------
-class APPLY( BASE_OBJECT ):
+class APPLY( BASE_OBJECT_LOCATED ):
     """
     AST: APPLY( form, [ form ], [( ATOM, form )]) <-- '($' ... ')'
     """
 #   -----------------------------------
     def __init__( self, fn, args, named, input_file = None, pos = None ):                                              #pylint: disable=R0913
+        BASE_OBJECT_LOCATED.__init__( self, input_file, pos )
         self.fn = fn
         self.args = args
         self.named = named
-        self.input_file = input_file
-        self.pos = pos
 
 #   -----------------------------------
     def __repr__( self ):
@@ -623,10 +638,6 @@ class APPLY( BASE_OBJECT ):
     def __eq__( self, other ):
         return ( isinstance( other, self.__class__ ) and ( self.fn == other.fn ) and ( self.args == other.args )
         and ( self.named == other.named ))
-
-#   -----------------------------------
-    def loc( self ):
-        return _loc( self.input_file, self.pos ) if self.input_file else _loc_repr( self )
 
 #   ---------------------------------------------------------------------------
 class SET( BASE_OBJECT ):
@@ -1764,7 +1775,7 @@ def ps_infix( sou, depth = 0 ):
             ( rest, leg ) = text.next()
 #   ---- }
             if rest[ :1 ] == '}':
-                return ( rest[ 1: ], INFIX( leg ))
+                return ( rest[ 1: ], INFIX( leg, sou.input_file, sou.pos ))
 
 #   ---- (${}
     elif sou[ :l_INFIX ] == ps_INFIX:
@@ -1774,7 +1785,7 @@ def ps_infix( sou, depth = 0 ):
             ( rest, leg ) = text.next()
 #   ---- ) & ($eq depth_pth 0)
             if ( rest[ :1 ] == ')' ) and ( leg.depth_pth == 0 ):
-                return ( rest[ 1: ], INFIX( leg ))
+                return ( rest[ 1: ], INFIX( leg, sou.input_file, sou.pos + 1 ))
 
     return ( sou, None )
 
@@ -1998,12 +2009,13 @@ class M_CLOSURE( LAMBDA_CLOSURE ):
         self.decl = decl
 
 #   ---------------------------------------------------------------------------
-class INFIX_CLOSURE( BASE_OBJECT ):
+class INFIX_CLOSURE( BASE_OBJECT_LOCATED ):
     """
     AST: INFIX_CLOSURE( tree, ENV ) <-- INFIX
     """
 #   -----------------------------------
-    def __init__( self, tree, env, text ):
+    def __init__( self, tree, env, text, input_file = None, pos = None ):                                              #pylint: disable=R0913
+        BASE_OBJECT_LOCATED.__init__( self, input_file, pos )
         self.tree = tree
         self.env = env
         self.text = text
@@ -2092,13 +2104,13 @@ class T( BASE_LIST ):
         self.indent = indent
 
 #   ---------------------------------------------------------------------------
-class TRIM( BASE_CAP ):
+class TRIM( BASE_OBJECT, CAPTION ):
     """
     AST: TRIM( form, indent )
     """
 #   -----------------------------------
     def __init__( self, ast, indent ):
-        BASE_CAP.__init__( self, ast )
+        CAPTION.__init__( self, ast )
         self.indent = indent if indent else ''
 
 #   -----------------------------------
@@ -2254,7 +2266,7 @@ class INFIX_VISITOR( NodeVisitor ):
         self.names.add( node.id )
 
 #   ---------------------------------------------------------------------------
-class LAZY( BASE_CAP ):
+class LAZY( BASE_OBJECT, CAPTION ):
     """
     AST: LAZY( form ) <-- '($lazy' ... ')'
     """
@@ -2594,8 +2606,12 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #   ---- APPLY -- BUILTIN -- function
                     if callable( node.fn.fn ):
                         if _is_term( node.args ):
-#   TODO: check arguments count
-                            val = node.fn.fn( *node.args )
+                            try:
+                                val = node.fn.fn( *node.args )
+                            except:
+                                e_type, e, tb = sys.exc_info()
+                                raise e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb
+
                             return int( val ) if isinstance( val, bool ) else val
 
 #                       -- unreducible
@@ -2941,8 +2957,13 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #                   -- unreducible
                     return node
 
+                try:
+                    tree = parse( node.ast.lstrip(), mode = 'eval' )
+                except:
+                    e_type, e, tb = sys.exc_info()
+                    raise e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb
+
                 infix_visitor = INFIX_VISITOR()
-                tree = parse( node.ast.lstrip(), mode = 'eval' )
                 infix_visitor.visit( tree )
 
                 env_l = ENV()
@@ -2951,7 +2972,9 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     if val is not NOT_FOUND:
                         env_l[ ATOM( name )] = VAR( [], ATOM( name ))
 
-                node = INFIX_CLOSURE( tree, env_l, node.ast )
+                input_file = node.input_file
+                pos = node.pos
+                node = INFIX_CLOSURE( tree, env_l, node.ast, input_file, pos )
                 # fall through -- yueval( node )
 
 #   ---- INFIX_CLOSURE
@@ -2961,9 +2984,13 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #                   -- unreducible
                     return node
 
-                code = compile( node.tree, '', 'eval' )
-                                                                                                                       #pylint: disable=W0142
-                return eval( code, dict( globals(), **builtin ), node.env )
+                try:
+                    code = compile( node.tree, '', 'eval' )
+                    return eval( code, dict( globals(), **builtin ), node.env )                                        #pylint: disable=W0142
+
+                except:
+                    e_type, e, tb = sys.exc_info()
+                    raise e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb
 
 #   ---- EMIT
             elif isinstance( node, EMIT ):

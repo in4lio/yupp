@@ -10,8 +10,8 @@
     ___         __________________________________
     ___ VERSION __________________________________
 
-    yup.py      0.7a3
-                2014-03-11
+    yup.py      0.7b1
+                2014-03-13
     python      2.7.6
 
     ___             ______________________________
@@ -499,7 +499,7 @@
     ___         __________________________________
     ___ TESTKIT __________________________________
 
-    yupp is currently in an alpha stage. The file called "test_yup.py"
+    yupp is currently in a beta stage. The file called "test_yup.py"
     contains a number of smoke tests.
     The program still needs testing and optimization (especially
     the eval-apply cycle). Also you can face problems when using recursion
