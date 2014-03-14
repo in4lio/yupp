@@ -148,7 +148,7 @@
         )
 
     ($! the enclosing of the source code into the loop
-        with reverse square brackets - ][ )
+        with reverse square brackets - ]<EOL> <EOL>[ )
 
     ($each-grade \i.]
 
@@ -170,7 +170,7 @@
 
     ($! the string substitution )
 
-        ($ "Give ($0) ($n)." \n ($0 mark) me )
+        ($ "Give ($0) ($p)." \p ($0 mark) me )
 
     "Give me 5."
 
