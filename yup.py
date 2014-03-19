@@ -15,7 +15,7 @@ COPYRIGHT   = 'Copyright (c) 2011, 13, 14'
 AUTHORS     = 'Vitaly Kravtsov (in4lio@gmail.com)'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.7b1'
+VERSION     = '0.7b2'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -2326,18 +2326,21 @@ builtin.update({
     'car': lambda l : LIST( l[ :1 ]),
     'cdr': lambda l : LIST( l[ 1: ]),
     'dec': lambda val : ( val - 1 ),
-    'getslice': lambda seq, *l : LIST( operator.getitem( seq, slice( *l ))),
+    'getslice': lambda seq, *x : LIST( operator.getitem( seq, slice( *x ))),
     'hex': hex,
     'inc': lambda val : ( val + 1 ),
+    'index': lambda l, val : l.index( val ) if val in l else -1,
     'islist': lambda l : isinstance( l, list ),
     'len': len,
     'list': lambda *l : LIST( l ),
     'print': lambda *l : sys.stdout.write( ' '.join(( _unq( x ) if isinstance( x, STR ) else str( x )) for x in l )),
-    'reversed': lambda l : LIST( reversed( l )),
     'q': lambda val : '"%s"' % str( val ),
     'range': lambda *l : LIST( range( *l )),
+    'reversed': lambda l : LIST( reversed( l )),
+    'rindex': lambda l, val : ( len( l ) - 1 ) - l[ ::-1 ].index( val ) if val in l else -1,
     'str': str,
     'sum': sum,
+    'typeof': lambda val : ATOM( val.__class__.__name__ ),
     'unq': _unq
 })
 
