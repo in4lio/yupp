@@ -10,8 +10,8 @@
     ___         __________________________________
     ___ VERSION __________________________________
 
-    yup.py      0.7b2
-                2014-03-19
+    yup.py      0.7b3
+                2014-04-10
     python      2.7.6
 
     ___             ______________________________
@@ -130,12 +130,12 @@
     ($! the macro definition )
 
         ($macro GRADE ( PAIRS )
-            ($set grade-name  ($ (($PAIRS)) \pair.($0 pair)))
-            ($set grade-value ($ (($PAIRS)) \pair.($1 pair)))
-            ($set each-grade  ($range ($len (($PAIRS)) )))
+            ($set GRADE-name  ($ (($PAIRS)) \pair.($0 pair)))
+            ($set GRADE-value ($ (($PAIRS)) \pair.($1 pair)))
+            ($set each-GRADE  ($range ($len (($PAIRS)) )))
         )
 
-    ($! the quoted form - (`form) )
+    ($! the quote - (`) )
 
         ($GRADE
             (`
@@ -150,9 +150,9 @@
     ($! the enclosing of the source code into the loop
         with reverse square brackets - ]<EOL> <EOL>[ )
 
-    ($each-grade \i.]
+    ($each-GRADE \i.]
 
-        int ($i grade-name) = ($i grade-value);
+        int ($i GRADE-name) = ($i GRADE-value);
     [ )
 
     int A = 5;
@@ -184,9 +184,9 @@
         NOT applicable in a loop )
 
         ($set i 0)
-        ($emit i inc) ($emit i dec) ($emit i inc) ($emit i)
+        ($emit i inc) ($emit i inc) ($emit i dec) ($emit i)
 
-    0 1 0 1
+    0 1 2 1
 
     ($! the iterator (modifier) of the list )
 
@@ -197,8 +197,8 @@
 
     ($! the late bound parameter - \p.. )
 
-        ($set app1 \p..\fn.\n.($fn n))
-        ($app1,,printf( ($q &p) );,,Hi!)
+        ($set a1 \p..\fn.\n.($fn n))
+        ($a1,,printf( ($q &p) );,,Hi!)
 
     printf( "Hi!" );
 
@@ -360,11 +360,10 @@
 
         ($__TITLE__)
 
-        #include <stddef.h>
-        #include <stdio.h>
+        ($import stdlib)
+        ($import coroutine)
 
-        ($import "stdlib.yu")
-        ($import "coroutine.yu")
+        #include <stdio.h>
 
         ($coro-h)
 
@@ -376,7 +375,7 @@
         #define PR_DOT  -2
         static int number = PR_NONE;  /* current state or prime number */
 
-        void spiral_init( void )
+        void init_spiral( void )
         {
             const int dp[ 4 ] = { -SQ, -1, SQ, 1 };  /* step up, left, down
                                                         and right */
@@ -467,7 +466,7 @@
                 ($coro-context ($i name)) = NULL;
 
             [ )
-            spiral_init();
+            init_spiral();
             while ( 1
                 ($each-D \i.]
                     && ($coro-alive ($coro-call ($i name)))

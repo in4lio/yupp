@@ -118,7 +118,7 @@ TEXT([PLAIN('\n'), APPLY(VAR([], ATOM('l')), [LIST([FLOAT(-0.123), INT(-48L), IN
 0,
 
 r"""
-($z {pi + e/2 - ($w) + len("hi{!}")} ($quotedHello()))
+($z {pi + e/2 - ($w) + len("hi{!}")} ($quoteHello()))
 ($macro m1 (a b) ($add a b))
 ($macro m2 () ]printf("Hello %s!", "Nike");[/*HACK:]*/)
 ($$ "(${f} {0} {1})" 2 3 \f sub)

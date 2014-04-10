@@ -1,10 +1,9 @@
 ($__TITLE__)
 
-#include <stddef.h>
-#include <stdio.h>
+($import stdlib)
+($import coroutine)
 
-($import "stdlib.yu")
-($import "coroutine.yu")
+#include <stdio.h>
 
 ($coro-h)
 
@@ -16,7 +15,7 @@ static int spiral[ SQ * SQ ] = { 0 };
 #define	PR_DOT  -2
 static int number = PR_NONE;  /* current state or prime number */
 
-void spiral_init( void )
+void init_spiral( void )
 {
 	const int dp[ 4 ] = { -SQ, -1, SQ, 1 };  /* step up, left, down and right */
 	int p = SQ * SQ / 2;  /* position in spiral */
@@ -106,7 +105,7 @@ int main( void )
 		($coro-context ($i name)) = NULL;
 
 	[ )
-	spiral_init();
+	init_spiral();
 	while ( 1
 		($each-D \i.]
 			&& ($coro-alive ($coro-call ($i name)))

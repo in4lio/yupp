@@ -443,7 +443,7 @@
 		<key>yupp-quoted</key>
 		<dict>
 			<key>begin</key>
-			<string>\(\$(macro(\s*[A-Za-z_][A-Za-z0-9_-]*\b)?|code|quoted|`)</string>
+			<string>\(\$(macro(\s*[A-Za-z_][A-Za-z0-9_-]*\b)?|code|quote|`)</string>
 			<key>beginCaptures</key>
 			<dict>
 				<key>1</key>

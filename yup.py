@@ -15,7 +15,7 @@ COPYRIGHT   = 'Copyright (c) 2011, 13, 14'
 AUTHORS     = 'Vitaly Kravtsov (in4lio@gmail.com)'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.7b2'
+VERSION     = '0.7b3'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -799,9 +799,9 @@ l_IMPORT = len( ps_IMPORT )
 #   ---- import tag
 ps_IMPORT_T = '\\import'
 l_IMPORT_T = len( ps_IMPORT_T )
-#   ---- quoted mark
-ps_QUOTED = '($quoted'
-l_QUOTED = len( ps_QUOTED )
+#   ---- quote mark
+ps_QUOTE = '($quote'
+l_QUOTE = len( ps_QUOTE )
 #   ---- backquote mark
 ps_BQUOTE = '(`'
 l_BQUOTE = len( ps_BQUOTE )
@@ -923,7 +923,7 @@ def ps_text( sou, depth = 0 ):
         | macro
         | comment
         | application
-        | quoted
+        | quote
         | remark
         | YIELD
         | plain
@@ -963,8 +963,8 @@ def ps_text( sou, depth = 0 ):
         if leg is not None:
             ast.append( leg )
             continue
-#   ---- quoted
-        ( sou, leg ) = ps_quoted( sou, depth + 1 )
+#   ---- quote
+        ( sou, leg ) = ps_quote( sou, depth + 1 )
         if leg is not None:
             ast.append( leg )
             continue
@@ -1047,7 +1047,7 @@ def ps_set( sou, depth = 0 ):
 @echo__ps_
 def ps_import( sou, depth = 0 ):
     """
-    import ::=  '($import' quoted { '\\import' } ')';
+    import ::=  '($import' ( quote | atom ) { '\\import' } ')';
     """
 #   ---------------
 #   ---- ($import
@@ -1056,10 +1056,15 @@ def ps_import( sou, depth = 0 ):
 
 #   ---- gap
     ( sou, _ ) = ps_gap( sou[ l_IMPORT: ], depth + 1 )
-#   ---- quoted
-    ( sou, leg ) = ps_quoted( sou, depth + 1 )
+#   ---- atom
+    ( sou, leg ) = ps_atom( sou, depth + 1 )
     if leg is None:
-        raise SyntaxError( '%s: quoted expected' % ( callee()) + sou.loc())
+#   ---- quote
+        ( sou, leg ) = ps_quote( sou, depth + 1 )
+        if leg is None:
+            raise SyntaxError( '%s: name of imported file expected' % ( callee()) + sou.loc())
+    else:
+        leg = "%s.yu" % ( leg )
 #   ---- gap
     ( sou, _ ) = ps_gap( sou, depth + 1 )
 #   ---- \import
@@ -1170,8 +1175,8 @@ def ps_application( sou, depth = 0 ):
     if sou[ :2 ] != '($':
         return ( sou, None )
 
-#   ---- ($quoted
-    if sou[ :l_QUOTED ] == ps_QUOTED:
+#   ---- ($quote
+    if sou[ :l_QUOTE ] == ps_QUOTE:
         return ( sou, None )
 
 #   ---- ($code
@@ -1479,11 +1484,11 @@ def ps_lambda( sou, depth = 0 ):
 def ps_value( sou, depth = 0 ):
     """
     value ::=
-          quoted
+          quote
         | number;
     """
 #   ---------------
-    ( sou, leg ) = ps_quoted( sou, depth + 1 )
+    ( sou, leg ) = ps_quote( sou, depth + 1 )
     if leg is not None:
         return ( sou, leg )
 
@@ -1844,12 +1849,12 @@ def ps_gap( sou, depth = 0 ):
 
 #   ---------------------------------------------------------------------------
 @echo__ps_
-def ps_quoted( sou, depth = 0 ):
+def ps_quote( sou, depth = 0 ):
     """
-    quoted ::=
+    quote ::=
           string
         | char
-        | ( '($quoted' | '(`' ) plain ')' & ($eq depth_pth 0);
+        | ( '($quote' | '(`' ) plain ')' & ($eq depth_pth 0);
     """
 #   ---------------
 #   ---- str
@@ -1864,8 +1869,8 @@ def ps_quoted( sou, depth = 0 ):
         leg = mch.group( 0 )
         return ( sou[ mch.end(): ], STR( leg ))
 
-#   ---- (` | ($quoted
-    pos = ( l_BQUOTE if sou[ :l_BQUOTE ] == ps_BQUOTE else l_QUOTED if sou[ :l_QUOTED ] == ps_QUOTED else 0 )
+#   ---- (` | ($quote
+    pos = ( l_BQUOTE if sou[ :l_BQUOTE ] == ps_BQUOTE else l_QUOTE if sou[ :l_QUOTE ] == ps_QUOTE else 0 )
     if pos:
         sou = sou[ pos: ]
         if sou[ :1 ] == ')':
@@ -2647,8 +2652,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
                     return node.fn
 
-#   ---- APPLY -- TEXT
-                elif isinstance( node.fn, TEXT ):
+#   ---- APPLY -- TEXT | T
+                elif isinstance( node.fn, TEXT ) or isinstance( node.fn, T ):
 #                   -- !? (unreachable code)
                     if node.args or node.named:
                         raise TypeError( '%s: no arguments of text expected' % ( _callee())

@@ -28,7 +28,7 @@
 	}
 )
 
-($import "stdlib.yu")
+($import stdlib)
 
 ($set __label_iter 0)
 

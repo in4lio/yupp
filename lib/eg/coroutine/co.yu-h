@@ -1,8 +1,8 @@
 ($__TITLE__)
 
-($import "stdlib.yu")
-($import "h.yu")
-($import "coroutine.yu")
+($import stdlib)
+($import h)
+($import coroutine)
 
 ($h-begin-named)
 

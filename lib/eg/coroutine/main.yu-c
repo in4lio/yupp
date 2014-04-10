@@ -1,12 +1,12 @@
 ($__TITLE__)
 
-($import "stdlib.yu")
-($import "h.yu")
-($import "coroutine.yu")
+($import stdlib)
+($import h)
+($import coroutine)
 
 ($implement co)
 
-#include <stddef.h>
+#include <stdio.h>
 #include "co.h"
 
 ($import "co-dict.yu")

@@ -11,23 +11,46 @@ BIN = ulam
 # -- creating MAP file
 MAP = 0
 
+ifeq ($(OS),Windows_NT)
+# -- platform (core)
+# ARM Cortex-M3: __MDKARM__
+# DOS: __DJGPP__
+# WIN32: __MINGW__
+# UNIX: __UNIX__
+PLATFORM = __MINGW__
+else
+PLATFORM = __UNIX__
+endif
+
 # -- preprocessor (yupp)
 PP = python -u $(YUPP_HOME)/yup.py
 
 # -- compilers
-CC = gcc
-
-ifeq ($(OS),Windows_NT)
-CXX = gxx
+ifeq ($(PLATFORM),__DJGPP__)
+CC = $(DJGPP_HOME)/bin/gcc.exe
+CXX = $(DJGPP_HOME)/bin/gxx.exe
 else
+CC = gcc
 CXX = g++
 endif
 
 # -- output subdirectory
-ifeq ($(OS),Windows_NT)
+ifeq ($(PLATFORM),__DJGPP__)
 D_PLATFORM = djgpp
 else
+
+ifeq ($(PLATFORM),__MINGW__)
 D_PLATFORM =
+else
+D_PLATFORM =
+endif
+
+endif
+
+# -- platform specific options
+ifeq ($(PLATFORM),__DJGPP__)
+BUFSIZE = 16k
+MINSTACK = 1024k
 endif
 
 # -- import directories
@@ -38,12 +61,14 @@ D_C = .
 D_CXX = $(D_C)
 D_ASM = .
 
+D_C := $(if $(D_PLATFORM), source/$(D_PLATFORM) $(D_C), $(D_C))
+
 # -- include directories
 D_H = $(D_C)
 
 # -- binary directory
 D_BIN = .
-#D_BIN := $(if $(D_PLATFORM), $(D_BIN)/$(D_PLATFORM), $(D_BIN))
+D_BIN := $(if $(D_PLATFORM), $(D_BIN)/$(D_PLATFORM), $(D_BIN))
 
 # -- object directory
 D_OBJ = object

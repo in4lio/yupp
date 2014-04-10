@@ -1,17 +1,16 @@
 ($__TITLE__)
 
-#include <stddef.h>
+($import "coroutine.yu")
+
 #include <stdio.h>
 #include "co.h"
-
-($import "coroutine.yu")
 
 static semaphore_t EOL;
 
 #define SQ  19  /* odd, square side length */
 static int spiral[ SQ * SQ ] = { 0 };
 
-void spiral_init( void )
+void init_spiral( void )
 {
 	const int dp[ 4 ] = { -SQ, -1, SQ, 1 };  /* step up, left, down and right */
 	int p = SQ * SQ / 2;  /* position in spiral */
@@ -44,7 +43,7 @@ int isprime( int n )
 
 int A_init( void )
 {
-	spiral_init();
+	init_spiral();
 	return ( CO_READY );
 }
 
