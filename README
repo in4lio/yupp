@@ -18,7 +18,7 @@
     ___ WHAT IS IT? ______________________________
 
     yupp is a text preprocessor which implements the macro language with
-    Lisp-like Polish notation syntax in fully parenthesized prefix form.
+    Lisp-like Polish notation syntax in fully parenthesized form.
     yupp is intended to transform C programs before they are compiled.
     It can also be useful for more general purposes.
     An embedding of macro constructions into the source code occurs by
