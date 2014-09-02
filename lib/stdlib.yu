@@ -98,3 +98,7 @@
 	[\body )
 }
 [\set )
+
+($set INT_MAX { sys.maxint })
+
+($set INT_MIN { -sys.maxint - 1 })
