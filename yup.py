@@ -2480,6 +2480,9 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
         return 'yueval'
 
 #   ---------------
+#   This is an experimental release of the eval-apply cycle, it's slightly theoretically incorrect and unstable,
+#   you may run into problems using a recursion or to face with a wrong scope of a name binding.
+#   TODO: fix what is described above
 #   TODO: region
                                                                                                                        #pylint: disable=E1103
     try:
