@@ -5,6 +5,7 @@
 	<key>fileTypes</key>
 	<array>
 		<string>yu-txt</string>
+		<string>yu-py</string>
 	</array>
 	<key>keyEquivalent</key>
 	<string>^~Y</string>
