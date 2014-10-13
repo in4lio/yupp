@@ -3,7 +3,7 @@
 #   |   |  _   _|   | |  _   _|
 #   |  _|_| |___ ___|_|___  |
 #   |_|                   |_|
-#   yu-c makefile
+#   makefile ( yupp, gcc )
 
 # -- binary name (without extension)
 BIN = ulam
@@ -19,11 +19,9 @@ ifeq ($(OS),Windows_NT)
 # UNIX: __UNIX__
 PLATFORM = __MINGW__
 else
+YUPP_HOME = ~/yupp
 PLATFORM = __UNIX__
 endif
-
-# -- preprocessor (yupp)
-PP = python -u $(YUPP_HOME)/yup.py
 
 # -- compilers
 ifeq ($(PLATFORM),__DJGPP__)
@@ -33,6 +31,9 @@ else
 CC = gcc
 CXX = g++
 endif
+
+# -- yupp preprocessor
+PP = python -u $(YUPP_HOME)/yup.py
 
 # -- output subdirectory
 ifeq ($(PLATFORM),__DJGPP__)
@@ -47,21 +48,16 @@ endif
 
 endif
 
-# -- platform specific options
-ifeq ($(PLATFORM),__DJGPP__)
-BUFSIZE = 16k
-MINSTACK = 1024k
-endif
-
 # -- yupp import directories
 D_YU =
 
 # -- source directories
 D_C = .
-D_CXX = $(D_C)
-D_ASM = .
 
 D_C := $(if $(D_PLATFORM), source/$(D_PLATFORM) $(D_C), $(D_C))
+
+D_CXX = $(D_C)
+D_ASM = .
 
 # -- include directories
 D_H = $(D_C)
@@ -99,6 +95,9 @@ else
 E_BIN =
 endif
 
+# -- binary full name
+F_BIN = $(D_BIN)/$(BIN)$(E_BIN)
+
 # -- LIST and MAP suffixes
 E_MAP = .map
 E_LIST = .listing
@@ -132,18 +131,8 @@ G_CXX = $(addsuffix $(E_CXX), $(basename $(S_YUCXX)))
 G_C = $(addsuffix $(E_C), $(basename $(S_YUC)))
 G_H = $(addsuffix $(E_H), $(basename $(S_YUH)))
 
-define uniq =
-	$(eval seen :=)
-	$(foreach _,$1,$(if $(filter $_,${seen}),,$(eval seen += $_)))
-	${seen}
-endef
-
 S_C = $(sort $(wildcard $(addsuffix /*$(E_C), $(D_C))) $(G_C))
-$(call uniq, $(S_C)) # remove duplicates
-
 S_CXX = $(sort $(wildcard $(addsuffix /*$(E_CXX), $(D_CXX))) $(G_CXX))
-$(call uniq, $(S_CXX)) # remove duplicates
-
 S_ASM = $(wildcard $(addsuffix /*$(E_ASM), $(D_ASM)))
 
 O_CXX = $(addprefix $(D_OBJ)/, $(addsuffix $(E_OBJ), $(basename $(notdir $(S_CXX)))))
@@ -160,9 +149,9 @@ O = $(O_CXX) $(O_C) $(O_ASM)
 ifeq ($(OS),Windows_NT)
 # -- too long command line workaround
 define wrap
-	echo $2 > .\args
-	$1 @.\args
-	del .\args
+	echo $2 > args
+	$1 @args
+	-rm args
 endef
 else
 define wrap
@@ -171,7 +160,7 @@ endef
 endif
 
 # -- removal list
-R = $(D_BIN)/$(BIN)$(E_BIN) $(O) $(G_H) $(G_C) $(G_CXX)
+R = $(F_BIN) $(O) $(G_H) $(G_C) $(G_CXX)
 ifeq ($(MAP),1)
 R := $(R) $(D_MAP)/$(BIN)$(E_MAP)
 endif
@@ -184,11 +173,9 @@ CLEAN = rm -rf $(R)
 endif
 
 # -- install
-ifeq ($(OS),Windows_NT)
-INSTALL =
-else
-INSTALL =
-endif
+define install
+
+endef
 
 # ---------------------------------
 #   make rules
@@ -203,32 +190,32 @@ vpath %$(E_YUC) $(D_C)
 # -- build project
 .PHONY: all
 
-all: $(D_BIN)/$(BIN)$(E_BIN)
+all: $(F_BIN)
 
-$(D_BIN)/$(BIN)$(E_BIN) : $(O)
+$(F_BIN): $(O)
 	$(call wrap,$(CC),$^ -o $@ $(LIBS) $(LFLAGS))
-	@echo "*** $(D_BIN)/$(BIN)$(E_BIN) ***"
+	@echo "*** $(F_BIN) ***"
 
-$(G_C) $(G_CXX) $(G_H) : $(S_YU)
+$(G_C) $(G_CXX) $(G_H): $(S_YU)
 
-$(G_C) : %$(E_C) : %$(E_YUC)
+$(G_C): %$(E_C): %$(E_YUC)
 	$(call wrap,$(PP),$(PPFLAGS) $<)
 
-$(G_CXX) : %$(E_CXX) : %$(E_YUCXX)
+$(G_CXX): %$(E_CXX): %$(E_YUCXX)
 	$(call wrap,$(PP),$(PPFLAGS) $<)
 
-$(G_H) : %$(E_H) : %$(E_YUH)
+$(G_H): %$(E_H): %$(E_YUH)
 	$(call wrap,$(PP),$(PPFLAGS) $<)
 
-$(S_C) $(S_CXX) : $(G_H)
+$(S_C) $(S_CXX): $(G_H)
 
-$(O_C) : $(D_OBJ)/%$(E_OBJ) : %$(E_C)
+$(O_C): $(D_OBJ)/%$(E_OBJ): %$(E_C)
 	$(call wrap,$(CC),$(CFLAGS) -c $< -o $@)
 
-$(O_CXX) : $(D_OBJ)/%$(E_OBJ) : %$(E_CXX)
+$(O_CXX): $(D_OBJ)/%$(E_OBJ): %$(E_CXX)
 	$(call wrap,$(CXX),$(CXXFLAGS) -c $< -o $@)
 
-$(O_ASM) : $(D_OBJ)/%$(E_OBJ) : %$(E_ASM)
+$(O_ASM): $(D_OBJ)/%$(E_OBJ): %$(E_ASM)
 	$(call wrap,$(CC),$(ASMFLAGS) -c $< -o $@)
 
 # -- remove temporary files
@@ -241,6 +228,6 @@ clean:
 .PHONY: install
 
 install:
-	$(INSTALL)
+	$(call install)
 
 # -- EOF
