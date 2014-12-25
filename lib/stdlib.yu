@@ -59,6 +59,12 @@
 #undef  ($name))
 
 ($!
+	($def-if LINK_MODULE)
+)
+($macro def-if (cond name)($set ($name) 1 ? ($cond) | 0)
+($if ($name) [#define ($name)]))
+
+($!
 	($skip-if-not LINK_MODULE)
 )
 ($macro skip-if (cond)($if ($cond) ($skip)))

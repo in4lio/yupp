@@ -2574,6 +2574,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
 #   ---- T -- ENV
                     if isinstance( x, ENV ):
+#                       -- !? SET scope is limited with current TEXT block...
                         if nx < len( node ):
                             if isinstance( node.indent, str ) and isinstance( node[ nx ], PLAIN ):
 #                               -- delete spacing

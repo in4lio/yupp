@@ -1,0 +1,5 @@
+[
+    {
+        "keys": ["ctrl+shift+y"], "command": "open_source"
+    }
+]
