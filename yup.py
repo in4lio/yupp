@@ -11,12 +11,12 @@ http://github.com/in4lio/yupp/
 
 yup.py -- yupp in python
 """
-COPYRIGHT   = 'Copyright (c) 2011, 13, 14'
+COPYRIGHT   = 'Copyright (c) 2011, 13, 14, 15'
 HOLDER      = 'Vitaly Kravtsov'
 EMAIL       = 'in4lio@gmail.com'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.7b7'
+VERSION     = '0.7b9'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -81,6 +81,14 @@ PP_REDUCE_EMPTINESS_HELP = """
 reduce the number of successive empty lines up to one
 """
 PP_REDUCE_EMPTINESS = True
+
+#   -----------------------------------
+#   WARN_UNBOUND_APPLICATION
+#   -----------------------------------
+WARN_UNBOUND_APPLICATION_HELP = """
+warning in case of application of an unbound atom
+"""
+WARN_UNBOUND_APPLICATION = True
 
 
 #   * * * * * * * * * * * * * * * * * *
@@ -340,17 +348,13 @@ class BASE_STR( SOURCE ):
 
 #   -----------------------------------
     def __eq__( self, other ):
-        return isinstance( other, self.__class__ ) and str.__eq__( self, other )
+        return isinstance( other, str ) and str.__eq__( self, other )
 
 #   ---------------------------------------------------------------------------
 class ATOM( BASE_STR ):
     """
     AST: ATOM( identifier ) <-- id
     """
-#   ---------------
-    def __eq__( self, other ):
-        return isinstance( other, str ) and str.__eq__( self, other )
-
 #   -----------------------------------
     def is_valid_c_id( self ):
         return self.find( '-' ) == -1
@@ -1812,7 +1816,7 @@ def ps_infix( sou, depth = 0 ):
         | '(${}' text ')' & ($eq depth_pth 0);
     """
 #   ---------------
-#   -- infix has been released as a python expression
+#   -- infix was released as a python expression
 #   ---- {
     if sou[ :1 ] == '{':
         text = ps_text( sou[ 1: ], depth + 1 )
@@ -2386,7 +2390,8 @@ builtin.update({
     'len': len,
     'list': lambda *l : LIST( l ),
     'print': lambda *l : sys.stdout.write( ' '.join(( _unq( x ) if isinstance( x, STR ) else str( x )) for x in l )),
-    'q': lambda val : '"%s"' % str( val ),
+    'q': lambda val : STR( '"%s"' % str( val )),
+    'qs': lambda val : STR( "'%s'" % str( val )),
     'range': lambda *l : LIST( range( *l )),
     'reversed': lambda l : LIST( reversed( l )),
     're-split': lambda regex, val : LIST( filter( None, re.split( regex, val ))),                                      #pylint: disable=W0141
@@ -2414,7 +2419,7 @@ def _plain_back( st ):
 #   ---------------------------------------------------------------------------
 def _is_term( node ):                                                                                                  #pylint: disable=R0911
     """
-    Check node is term.
+    Check AST is term.
     """
 #   ---------------
     if node is None:
@@ -2463,7 +2468,7 @@ def _list_to_bound( node ):
 #   ---------------------------------------------------------------------------
 def _list_eval_1( args, env, depth = 0 ):
     """
-    Evaluate first argument into the list.
+    Evaluate first argument of list.
     """
 #   ---------------
                                                                                                                        #pylint: disable=E1103
@@ -2522,9 +2527,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
         return 'yueval'
 
 #   ---------------
-#   This is an experimental release of the eval-apply cycle, it's slightly theoretically incorrect and unstable,
+#   TODO: This is an experimental release of the eval-apply cycle, it's slightly theoretically incorrect and unstable,
 #   you may run into problems using a recursion or to face with a wrong scope of a name binding.
-#   TODO: fix what is described above
 #   TODO: region
                                                                                                                        #pylint: disable=E1103
     try:
@@ -2725,7 +2729,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         var, val = node.named.pop( 0 )
                         if var in node.fn.env:
                             if not isinstance( node.fn.env[ var ], BOUND ):
-                                log.warn( 'parameter "%s" is already assigned with value' + var.loc(), str( var ))
+                                log.warn( 'parameter "%s" is already assigned with value' % ( str( var )) + var.loc())
                             val = yueval( val, env, depth + 1 )
                         else:
                             raise TypeError( '%s: function has no parameter "%s"' % ( _callee(), str( var ))
@@ -2735,7 +2739,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     elif node.args:
                         var = node.fn.env.unassigned()
                         if var is NOT_FOUND:
-                            log.warn( 'unused argument(s) %s' + node.loc(), repr( node.args ))
+                            log.warn( 'unused argument(s) %s' % ( repr( node.args )) + node.loc())
                             return yueval( node.fn, env, depth + 1 )
 
                         if var == __va_args__:
@@ -2777,6 +2781,15 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     node.fn = node.fn.ast
                     # fall through -- yueval( node )
 
+#   ---- APPLY -- ATOM
+                elif isinstance( node.fn, ATOM ):
+                    if node.named or node.args:
+                        raise TypeError( '%s: no arguments of unbound atom expected' % ( _callee())
+                        + node.fn.loc())
+                    if WARN_UNBOUND_APPLICATION:
+                        log.warn( 'application of unbound atom "%s"' % ( node.fn ) + node.fn.loc())
+                    return node.fn
+
 #   ---- APPLY -- str
                 elif isinstance( node.fn, str ):
 #                   -- have no arguments
@@ -2815,7 +2828,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         for arg in node.args:
                             fn = copy.deepcopy( arg )
                             x = yueval( APPLY( fn, [ x ], []), env, depth + 1 )
-                        lst.append( x )
+                        if x is not None:
+                            lst.append( x )
                     return lst
 
 #   ---- APPLY -- SKIP
@@ -2928,7 +2942,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                             if len( val ) > i:
                                 env_l[ var ] = val[ i ]
                             else:
-                                log.warn( 'there is nothing to assign to "%s"' + var.loc(), str( var ))
+                                log.warn( 'there is nothing to assign to "%s"' % ( str( var )) + node.loc())
                                 env_l[ var ] = None
                     else:
                         for var in node.lval:
@@ -3002,7 +3016,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
             elif isinstance( node, COND_CLOSURE ):
                 node.cond = yueval( node.cond, env, depth + 1 )
                 if not _is_term( node.cond ):
-#                   -- !? potential problem of infinite recursion...
+#                   -- FIXME !? potential problem of infinite recursion...
+#                   -- also it makes impossible to perform operations with side effect such as raising an exception
                     node.leg_1 = yueval( node.leg_1, env, depth + 1 )
                     node.leg_0 = yueval( node.leg_0, env, depth + 1 )
 #                   -- unreducible
@@ -3206,7 +3221,7 @@ TYPE_FILE = False
 LOG_LEVEL_SCALE = 10
 
 SYSTEM_EXIT_HELP = 'Also, arguments can be passed through the response file e.g. yup.py @FILE .' \
-' The preprocessor exit status is a negative number of unsuccessfully processed files' \
+' The preprocessor exit status is a number of unsuccessfully processed files multiplied by 4' \
 ' or an error of command line arguments (2) or a program execution error (1)' \
 ' or zero in case of successful execution.'
 
@@ -3256,9 +3271,14 @@ def shell_argparse():
     argp.add_argument( '--pp-reduce-emptiness', action = 'store_true', dest = 'pp_reduce_emptiness'
     , help = PP_REDUCE_EMPTINESS_HELP )
     argp.add_argument( '--pp-no-reduce-emptiness', action = 'store_false', dest = 'pp_reduce_emptiness' )
+#   -- warnings
+    argp.add_argument( '-Wunbound', '--warn-unbound-application', action = 'store_true'
+    , dest = 'warn_unbound_application', help = WARN_UNBOUND_APPLICATION_HELP )
+    argp.add_argument( '-Wno-unbound', '--warn-no-unbound-application', action = 'store_false'
+    , dest = 'warn_unbound_application' )
 
     argp.set_defaults( pp_skip_c_comment = PP_SKIP_C_COMMENT, pp_trim_app_indent = PP_TRIM_APP_INDENT
-    , pp_reduce_emptiness = PP_REDUCE_EMPTINESS )
+    , pp_reduce_emptiness = PP_REDUCE_EMPTINESS, warn_unbound_application = WARN_UNBOUND_APPLICATION )
 
     if ( len( sys.argv ) == 2 ) and sys.argv[ 1 ].startswith( '@' ):
 #       -- get arguments from response file
@@ -3359,7 +3379,7 @@ def _pp_file( fn ):
                     print PP_O, PP_FILE % fn_o
 #               -- output file writing
                 shell_savetofile( fn_o, plain )
-                log.warn( 'result has been saved as AST file' )
+                log.warn( 'result was saved as AST file' )
 
     except IOError as e:
 #       -- e.g. file operation failure
@@ -3445,7 +3465,7 @@ def _pp():                                                                      
             plain = trim_tailing_whitespace( plain, PP_REDUCE_EMPTINESS )
         else:
             plain = _ast_readable( plain )
-            log.warn( 'unable to translate input in a plain text' )
+            log.error( 'unable to translate input in plain text' )
         if trace.TRACE:
             trace.info( plain )
             trace.info( TR_DEEPEST, trace.deepest )
@@ -3488,6 +3508,7 @@ if __name__ == '__main__':
     PP_SKIP_C_COMMENT = shell.pp_skip_c_comment
     PP_TRIM_APP_INDENT = shell.pp_trim_app_indent
     PP_REDUCE_EMPTINESS = shell.pp_reduce_emptiness
+    WARN_UNBOUND_APPLICATION = shell.warn_unbound_application
     DIRECTORY = shell.directory
     OUTPUT_DIRECTORY = shell.output_directory
 
@@ -3507,9 +3528,9 @@ if __name__ == '__main__':
 #       -- input files preprocessing
         for path in shell.files:
             if not _pp_file( path ):
-                f_failed -= 1
+                f_failed += 1
 #       -- sys.exit() redefined in Web Console
-        sys.exit( f_failed )
+        sys.exit( f_failed << 2 )
 
     else:
 #       -- Read-Eval-Print Loop
