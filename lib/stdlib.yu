@@ -35,7 +35,7 @@
 ($!
 	($do,,foo(); bar(); )
 )
-($macro do(body)do {
+($macro do (body)do {
 ($body)
 } while ( 0 ))
 
