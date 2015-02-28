@@ -194,8 +194,6 @@ r"""
 TEXT([PLAIN('\n'), APPLY(VAR([], ATOM('print')), [TEXT([APPLY(VAR([], ATOM('e')), [], []), PLAIN(' 100.0 '), APPLY(VAR([], ATOM('len')), [STR('"We all live in a yellow submarine,"')], []), PLAIN('\n')], 0, 0)], []), PLAIN('\n'), APPLY(VAR([], ATOM('print')), [APPLY(VAR([], ATOM('add')), [INT(2L), INT(2L)], []), STR("'*'"), APPLY(VAR([], ATOM('mul')), [INT(2L), INT(2L)], []), STR("'='"), APPLY(VAR([], ATOM('mul')), [APPLY(VAR([], ATOM('add')), [INT(2L), INT(2L)], []), APPLY(VAR([], ATOM('mul')), [INT(2L), INT(2L)], [])], []), STR("'\\n'"), VAR([], ATOM('yellow')), VAR([], ATOM('submarine')), STR("'\\n'")], []), PLAIN('\n'), APPLY(LAMBDA([([], ATOM('p1'), None), ([], ATOM('p2'), None), ([], ATOM('p3'), None)], APPLY(VAR([], ATOM('add')), [APPLY(VAR([], ATOM('add')), [VAR([], ATOM('p1')), VAR([], ATOM('p2'))], []), VAR([], ATOM('p3'))], [])), [INT(1L), INT(2L), EMBED(LIST([INT(3L), INT(4L), INT(5L)])), INT(6L), INT(7L), EMBED(LIST([INT(8L), INT(9L), INT(10L), INT(11L), INT(12L), INT(13L), INT(14L), INT(15L)]))], []), PLAIN('\n'), APPLY(LAMBDA([([], ATOM('f'), None), ([], ATOM('a'), None)], APPLY(VAR([], ATOM('f')), [VAR([], ATOM('a'))], [])), [VAR([], ATOM('exp')), APPLY(VAR([], ATOM('e')), [], [])], []), PLAIN('\n'), APPLY(LAMBDA([([], ATOM('a'), None)], APPLY(LAMBDA([([], ATOM('p1'), None), ([], ATOM('p2'), None), ([], ATOM('p3'), None)], APPLY(VAR([], ATOM('add')), [APPLY(VAR([], ATOM('add')), [VAR([], ATOM('p1')), VAR([], ATOM('p2'))], []), VAR([], ATOM('p3'))], [])), [EMBED(VAR([], ATOM('a')))], [])), [LIST([INT(100L), INT(10L), INT(1L)])], []), PLAIN('\n'), APPLY(LAMBDA([([], ATOM('a'), None), ([], ATOM('...'), None)], APPLY(APPLY(VAR([], ATOM('lazy')), [VAR([], ATOM('__va_args__'))], []), [LAMBDA([([], ATOM('f'), None)], APPLY(VAR([], ATOM('f')), [VAR([], ATOM('a'))], []))], [])), [INT(9L), LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('sqrt')), [VAR([], ATOM('n'))], [])), LAMBDA([([], ATOM('n'), None)], TEXT([PLAIN(' '), APPLY(VAR([], ATOM('n')), [], []), PLAIN(' ')], 0, 0)), LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('pow')), [VAR([], ATOM('n')), INT(2L)], []))], []), PLAIN('\n'), APPLY(VAR([], ATOM('join')), [LIST([TEXT([PLAIN('(1),2')], 0, 0), TEXT([PLAIN('3,(4)')], 0, 0), TEXT([PLAIN('5,6')], 0, 0), APPLY(VAR([], ATOM('zfill')), [TEXT([PLAIN('7')], 0, 0), INT(3L)], [])]), TEXT([PLAIN(',')], 0, 0)], []), PLAIN('\n'), MACRO(ATOM('m'), [ATOM('c')], ' ($replace,,($c),,2,,_)'), PLAIN('\n'), APPLY(VAR([], ATOM('m')), [TEXT([PLAIN('1234256722')], 0, 0)], []), PLAIN('\n')], 0, 0),
 
 r"""
-
-
 10
 15.1542622415
 111
@@ -397,7 +395,6 @@ r"""
 TEXT([PLAIN('\n'), PLAIN('\n'), SET(ATOM('uprevst'), LAMBDA([([], ATOM('a'), None)], APPLY(VAR([], ATOM('upper')), [APPLY(VAR([], ATOM('reversed_string')), [VAR([], ATOM('a'))], [])], []))), PLAIN('\n#define '), APPLY(VAR([], ATOM('uprevst')), [VAR([], ATOM('hello'))], []), PLAIN('\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('dict'), [ATOM('id'), ATOM('cols'), ATOM('body')], '\n\t($set cols-($id) ($range ($len (($cols)) )))\n\t($set each-($id) ($range ($len (($body)) )))\n\t($set (($cols))\n\t\t($cols-($id) \\__i.($ (($body)) \\__var.($__i __var)))\n\t)\n'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('if'), LAMBDA([([], ATOM('cond'), None), ([], ATOM('then'), TEXT([], 0, 0)), ([], ATOM('else'), TEXT([], 0, 0))], APPLY(COND(VAR([], ATOM('cond')), VAR([], ATOM('then')), VAR([], ATOM('else'))), [], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('unfold'), LAMBDA([([], ATOM('count'), None), ([], ATOM('...'), None)], TEXT([PLAIN('\t'), SET(ATOM('__last'), APPLY(VAR([], ATOM('sub')), [APPLY(VAR([], ATOM('len')), [APPLY(VAR([], ATOM('lazy')), [VAR([], ATOM('__va_args__'))], [])], []), INT(1L)], [])), PLAIN('\n\t'), SET(ATOM('__func'), APPLY(VAR([], ATOM('__last')), [APPLY(VAR([], ATOM('lazy')), [VAR([], ATOM('__va_args__'))], [])], [])), PLAIN('\n\t'), APPLY(APPLY(VAR([], ATOM('range')), [VAR([], ATOM('count'))], []), [LAMBDA([([], ATOM('__i'), None)], APPLY(VAR([], ATOM('if')), [INFIX(TEXT([PLAIN(' __i < __last ')], 0, 0)), APPLY(VAR([], ATOM('__i')), [APPLY(VAR([], ATOM('lazy')), [VAR([], ATOM('__va_args__'))], [])], []), APPLY(VAR([], ATOM('__func')), [VAR([], ATOM('__i'))], [])], []))], [])], 0, 0))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('do'), [ATOM('body')], 'do {\n($body)\n} while ( 0 )'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('__EOL__'), COND(APPLY(VAR([], ATOM('not_')), [APPLY(VAR([], ATOM('isatom')), [VAR([], ATOM('EOL'))], [])], []), VAR([], ATOM('EOL')), TEXT([PLAIN('\n')], 0, 0))), PLAIN('\n'), SET(ATOM('define'), LAMBDA([([], ATOM('sig'), None), ([], ATOM('body'), None)], APPLY(VAR([], ATOM('join')), [APPLY(VAR([], ATOM('split')), [TEXT([PLAIN('#define '), APPLY(VAR([], ATOM('sig')), [], []), PLAIN(' '), APPLY(VAR([], ATOM('body')), [], [])], 0, 0), VAR([], ATOM('__EOL__'))], []), TEXT([PLAIN(' \\'), APPLY(VAR([], ATOM('__EOL__')), [], [])], 0, 0)], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('def'), [ATOM('name')], '($set ($name) 1)\n#define ($name)'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('undef'), [ATOM('name')], '($set ($name) 0)\n#undef  ($name)'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('def-if'), [ATOM('cond'), ATOM('name')], '($set ($name) 1 ? ($cond) | 0)\n($if ($name) [#define ($name)])'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('skip-if'), [ATOM('cond')], '($if ($cond) ($skip))'), PLAIN('\n'), MACRO(ATOM('skip-if-not'), [ATOM('cond')], '($if ($not_ ($cond)) ($skip))'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('BIN'), LAMBDA([([], ATOM('b'), None)], APPLY(VAR([], ATOM('atoi')), [VAR([], ATOM('b')), INT(2L)], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('BB'), LAMBDA([([], ATOM('...'), None)], APPLY(VAR([], ATOM('sum')), [APPLY(APPLY(VAR([], ATOM('range')), [APPLY(VAR([], ATOM('len')), [VAR([], ATOM('__va_args__'))], [])], []), [LAMBDA([([], ATOM('__i'), None)], INFIX(TEXT([PLAIN(' '), APPLY(VAR([], ATOM('BIN')), [APPLY(VAR([], ATOM('__i')), [APPLY(VAR([], ATOM('reversed')), [VAR([], ATOM('__va_args__'))], [])], [])], []), PLAIN(' << '), APPLY(VAR([], ATOM('__i')), [], []), PLAIN(' * 8 ')], 0, 0)))], [])], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('def-fn-argv'), LAMBDA([([], ATOM('type'), None), ([], ATOM('name'), None), ([ATOM('type'), ATOM('arg-begin'), ATOM('arg-count'), ATOM('arg-value'), ATOM('arg-end')], ATOM('body'), None)], TEXT([APPLY(VAR([], ATOM('type')), [], []), PLAIN(' '), APPLY(VAR([], ATOM('name')), [], []), PLAIN('( int argcnt, ... )\n{\n\t'), APPLY(VAR([], ATOM('body')), [], [(ATOM('type'), VAR([], ATOM('type'))), (ATOM('arg-begin'), TEXT([PLAIN('\t\tva_list argptr;\n\t\tva_start( argptr, argcnt );')], 0, 0)), (ATOM('arg-count'), TEXT([PLAIN('\t\targcnt')], 0, 0)), (ATOM('arg-value'), LAMBDA([([], ATOM('type'), None)], TEXT([PLAIN('\t\tva_arg( argptr, '), APPLY(VAR([], ATOM('type')), [], []), PLAIN(' )')], 0, 0))), (ATOM('arg-end'), TEXT([PLAIN('\t\tva_end( argptr );')], 0, 0))]), PLAIN('\n}')], 0, 0))), PLAIN('\n\n'), SET(ATOM('INT_MAX'), INFIX(TEXT([PLAIN(' sys.maxint ')], 0, 0))), PLAIN('\n\n'), SET(ATOM('INT_MIN'), INFIX(TEXT([PLAIN(' -sys.maxint - 1 ')], 0, 0))), PLAIN('\n'), PLAIN('\n'), APPLY(VAR([], ATOM('def-fn-argv')), [TEXT([PLAIN('    int result = 0;\n    '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-begin')), [], []), PLAIN('\n    while ( '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-count')), [], []), PLAIN('-- ) result += '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-value')), [VAR(LATE_BOUNDED(), ATOM('type'))], []), PLAIN(';\n    '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-end')), [], []), PLAIN('\n    return ( result );')], 0, 0)], [(ATOM('type'), VAR([], ATOM('int'))), (ATOM('name'), VAR([], ATOM('sumi')))]), PLAIN('\n')], 0, 0),
 
 r"""
-
 #define OLLEH
 
 int sumi( int argcnt, ... )
@@ -649,8 +646,6 @@ char ch = 1;
 float f[2] = { 0.2, 0.3, };
 int i[4] = { -10, 0, 10, 20, };
 
-
-
 char app[5] = "yupp";
 float release = 0.5;
 char pre = 'a';
@@ -660,8 +655,6 @@ printf("\n%s ", app);
 printf("%.1f", release);
 printf("%c", pre);
 printf("%d", number);
-
-
 
 char s[5] = "abc";
 char c = 'a';
@@ -763,7 +756,7 @@ def test( kit, t ):                                                             
                 plain = yueval( ast )
 
                 if isinstance( plain, str ):
-                    plain = trim_tailing_whitespace( plain )
+                    plain = reduce_emptiness( plain )
                     msg = plain
                 else:
                     msg = repr( plain )
