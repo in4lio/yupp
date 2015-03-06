@@ -1,0 +1,20 @@
+{
+	"cmd": ["make"],
+	"working_dir": "${file_path}",
+	"file_regex": "(?:^(..[^:]*):([0-9]+):?([0-9]+)?:? (.*)$)|(?:^[ ]*File \"(...*?)\", line ([0-9]*))",
+	"selector": "source.makefile",
+	"shell": true,
+	"variants":
+	[
+		{
+			"name": "Clean",
+			"cmd": ["make", "clean"],
+			"shell": true
+		},
+		{
+			"name": "Clean Binary",
+			"cmd": ["make", "clean-binary"],
+			"shell": true
+		}
+	]
+}

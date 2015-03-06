@@ -4,7 +4,7 @@ Copyright (c) 2015 Vitaly Kravtsov (in4lio@gmail.com)
 http://github.com/in4lio/yupp/
 """
 
-__version__ = 1.0
+__version__ = 1.2
 
 import os
 import json
@@ -35,8 +35,85 @@ def _bisect( a, x ):
     return lo
 
 
-class yu_browse( sublime_plugin.EventListener ):
+def search_file( fruit, dirs, inx ):
+    paths = file_data[ fruit ][ 'paths' ]
+    if paths[ inx ]:
+        return paths[ inx ]
 
+    fn = file_data[ fruit ][ 'files' ][ inx ]
+    if os.path.isfile( fn ):
+        p = os.path.abspath( fn )
+        paths[ inx ] = p
+        return p
+
+    for d in dirs:
+        p = os.path.normpath( os.path.join( d, fn ))
+        if os.path.isfile( p ):
+            paths[ inx ] = p
+            return p
+
+    for d in dirs:
+        p = os.path.normpath( os.path.join( d, os.path.basename( fn )))
+        if os.path.isfile( p ):
+            paths[ inx ] = p
+            return p
+
+    return ''
+
+
+def open_file( fn ):
+    # check browse (*.json)
+    fn_json = fn + '.json'
+    if os.path.isfile( fn_json ):
+        # load browse
+        with open( fn_json ) as f:
+            file_data[ fn ] = json.load( f )
+
+        # search for source files in fruit's directory
+        l_files = len( file_data[ fn ][ 'files' ])
+        dirs = [ os.path.dirname( fn )]
+        file_data[ fn ][ 'paths' ] = [ '' ] * l_files
+        for i in xrange( l_files ):
+            search_file( fn, dirs, i )
+
+        file_state[ fn ] = STATE_FRUIT
+
+        # check row (*.txt)
+        if os.path.isfile( fn + '.txt' ):
+            file_state[ fn ] = STATE_CHECK_RAW
+        return
+
+    # check source (*.yu-*)
+    b, e = os.path.splitext( fn )
+    fn_yu = b + '.yu'
+    if e:
+        fn_yu += '-' + e[ 1: ]
+    if os.path.isfile( fn_yu ):
+        file_state[ fn ] = STATE_NO_BROWSE
+        file_jump[ fn ] = fn_yu
+        file_state[ fn_yu ] = STATE_NO_BROWSE
+        file_jump[ fn_yu ] = fn
+        return
+
+
+def close_file( fn ):
+    if file_state[ fn ] == STATE_FRUIT:
+        for x in file_data[ fn ][ 'paths' ]:
+            file_state.pop( x, None )
+            file_data.pop( x, None )
+            file_jump.pop( x, None )
+
+    elif file_state[ fn ] == STATE_NO_BROWSE:
+        fn_yu = file_jump[ fn ]
+        file_state.pop( fn_yu, None )
+        file_jump.pop( fn_yu, None )
+
+    file_state.pop( fn, None )
+    file_data.pop( fn, None )
+    file_jump.pop( fn, None )
+
+
+class yu_browse( sublime_plugin.EventListener ):
     def on_load( self, view ):
         # what about reload!?
 
@@ -55,34 +132,7 @@ class yu_browse( sublime_plugin.EventListener ):
                     view.show_at_center( sublime.Region( min( file_jump[ fn ].keys())))
             return
 
-        # check browse (*.json)
-        fn_json = fn + '.json'
-        if os.path.isfile( fn_json ):
-            # load browse
-            with open( fn_json ) as f:
-                file_data[ fn ] = json.load( f )
-
-            d = os.path.dirname( fn )
-            files = file_data[ fn ][ 'files' ]
-            file_data[ fn ][ 'files' ] = [ search_file( d, x ) for x in files ]
-            file_state[ fn ] = STATE_FRUIT
-
-            # check row (*.txt)
-            if os.path.isfile( fn + '.txt' ):
-                file_state[ fn ] = STATE_CHECK_RAW
-            return
-
-        # check source (*.yu-*)
-        b, e = os.path.splitext( fn )
-        fn_yu = b + '.yu'
-        if e:
-            fn_yu += '-' + e[ 1: ]
-        if os.path.isfile( fn_yu ):
-            file_state[ fn ] = STATE_NO_BROWSE
-            file_jump[ fn ] = fn_yu
-            file_state[ fn_yu ] = STATE_NO_BROWSE
-            file_jump[ fn_yu ] = fn
-            return
+        open_file( fn )
 
     def on_close( self, view ):
         fn = view.file_name()
@@ -90,36 +140,10 @@ class yu_browse( sublime_plugin.EventListener ):
             # ignore file
             return
 
-        if file_state[ fn ] == STATE_FRUIT:
-            for x in file_data[ fn ][ 'files' ]:
-                file_state.pop( x, None )
-                file_data.pop( x, None )
-                file_jump.pop( x, None )
-
-        elif file_state[ fn ] == STATE_NO_BROWSE:
-            fn_yu = file_jump[ fn ]
-            file_state.pop( fn_yu, None )
-            file_jump.pop( fn_yu, None )
-
-        file_state.pop( fn, None )
-        file_data.pop( fn, None )
-        file_jump.pop( fn, None )
-
-
-def search_file( dir, fn ):
-    isfile = os.path.isfile( fn )
-    if os.path.isfile( fn ):
-        return os.path.abspath( fn )
-
-    fn = os.path.join( dir, fn )
-    if os.path.isfile( fn ):
-        return fn
-
-    return ''
+        close_file( fn )
 
 
 class OpenSourceCommand( sublime_plugin.TextCommand ):
-
     def goto( self, fn, pos ):
         view = self.view.window().open_file( fn )
         reg = sublime.Region( pos )
@@ -149,7 +173,6 @@ class OpenSourceCommand( sublime_plugin.TextCommand ):
             if state == STATE_FRUIT or state == STATE_CHECK_RAW:
                 browse = file_data[ fn ][ 'browse' ]
                 offset = file_data[ fn ][ 'offset' ]
-                files = file_data[ fn ][ 'files' ]
 
                 # search for position delta
                 i = _bisect( offset, pos )
@@ -166,32 +189,38 @@ class OpenSourceCommand( sublime_plugin.TextCommand ):
                 pos_fruit = pos
 
                 # search currect position in browse
-                i = _bisect( browse, pos + delta )
+                i = _bisect( browse, pos_fruit + delta )
                 if i == 0:
                     return
 
                 i -= 1
                 pos_found, inx, pos_to = browse[ i ]
-                fn_to = files[ inx ]
-                if ( i > 0 ) and ( browse[ i - 1 ][ 0 ] != pos_found ) and not fn_to.endswith( 'stdlib.yu' ):
+                dirs = self.view.window().folders()
+                # search for source file in project directories
+                fn_to = search_file( fn_fruit, dirs, inx )
+                if ( i > 0 ) and ( browse[ i - 1 ][ 0 ] != pos_found ) and ( pos_to > 0 ):
                     # relative shift only in case of single jump
-                    # and if source is not 'stdlib.yu'
-                    # ... unfortunately there is no way to locale source imported by eval of python expression
-                    pos_to += ( pos + delta - pos_found )
+                    # and if source is not ($macro)
+                    pos_to += ( pos_fruit + delta - pos_found )
+
+                pos_to = abs( pos_to )
+                file_jump[ fn_fruit ] = {}
                 file_jump[ fn_to ] = {}
                 if fn_to:
                     # jump back to fruit
                     file_state[ fn_to ] = STATE_SOURCE
-                    file_jump[ fn_to ][ pos_to ] = ( fn, pos )
+                    file_jump[ fn_to ][ pos_to ] = ( fn_fruit, pos_fruit )
                     fn = fn_to
                     pos = pos_to
                 i -= 1
                 while i >= 0:
                     pos_from, inx, pos_to = browse[ i ]
+                    pos_to = abs( pos_to )
+
                     if pos_from != pos_found:
                         break
 
-                    fn_to = files[ inx ]
+                    fn_to = search_file( fn_fruit, dirs, inx )
                     if fn_to:
                         # previous jump to source
                         file_state[ fn_to ] = STATE_SOURCE
@@ -203,10 +232,20 @@ class OpenSourceCommand( sublime_plugin.TextCommand ):
                     i -= 1
 
                 # first jump to source
-                if fn_fruit not in file_jump:
-                    file_jump[ fn_fruit ] = {}
                 file_jump[ fn_fruit ][ pos_fruit ] = ( fn, pos )
                 self.goto( fn, pos )
+
+
+class RefreshSourceCommand( sublime_plugin.TextCommand ):
+    def run( self, edit ):
+        fn = self.view.file_name()
+        if fn not in file_state:
+            # ignore file
+            return
+
+        print fn
+        close_file( fn )
+        open_file( fn )
 
 
 # class CursorPositionInStatus( sublime_plugin.EventListener ):

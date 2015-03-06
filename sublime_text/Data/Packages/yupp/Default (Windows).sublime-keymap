@@ -1,5 +1,8 @@
 [
     {
         "keys": ["ctrl+shift+y"], "command": "open_source"
+    },
+    {
+        "keys": ["ctrl+alt+y"], "command": "refresh_source"
     }
 ]
