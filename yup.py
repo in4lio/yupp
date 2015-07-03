@@ -16,7 +16,7 @@ HOLDER      = 'Vitaly Kravtsov'
 EMAIL       = 'in4lio@gmail.com'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.8b3'
+VERSION     = '0.8b4'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -241,75 +241,6 @@ def _ast_pretty( st ):
             i = b + 1
     result += st[ i: ]
     return result
-
-#   ---------------------------------------------------------------------------
-def reduce_emptiness( text ):
-    """
-    Reduce number of successive empty lines up to one
-    and trim tailing white space (depends on options).
-    """
-#   ---------------
-    if not PP_REDUCE_EMPTINESS:
-        return text
-
-    if isinstance( text, RESULT ):
-        lnlist = text.splitlines( True )
-
-#       -- find empty lines
-        empty = set()
-        for i, ln in enumerate( lnlist ):
-            ( rest, indent ) = ps_space( ln )
-            if rest == EOL:
-                empty.add( i )
-
-#       -- only reduce number of empty lines
-        result = ''
-        prev_empty = False
-        for i, ln in enumerate( lnlist ):
-            if i in empty:
-                if not prev_empty:
-                    result += ln
-                    prev_empty = True
-            else:
-                result += ln
-                prev_empty = False
-
-#       -- calculate offsets
-        offset = []
-        total = 0
-        _pos = pos = 0
-        prev_empty = False
-        for i, ln in enumerate( lnlist ):
-            if i in empty:
-                if prev_empty:
-#                   -- reduce number of empty lines
-                    total += len( ln )
-                    if pos == _pos:
-                        offset[ -1 ] = ( pos, total )
-                    else:
-                        offset.append(( pos, total ))
-                        _pos = pos
-                else:
-                    pos += len( ln )
-                    prev_empty = True
-            else:
-                pos += len( ln )
-                prev_empty = False
-
-#       -- merge with previous offsets
-        if text.offset:
-            offset = _merge_offset( text.offset, offset )
-
-        return RESULT( result, text.browse, offset )
-
-    def _filter( ln ):
-        empty = _filter.empty
-        _filter.empty = not ln.strip()
-        return not empty or not _filter.empty
-
-    _filter.empty = False
-
-    return '\n'.join([ x.rstrip() for x in text.splitlines() if _filter( x )]) + '\n'
 
 
 #   * * * * * * * * * * * * * * * * * *
@@ -2488,6 +2419,7 @@ class SKIP( BASE_MARK ):
 import string, operator, math, datetime, zlib                                                                          #pylint: disable=W0402
 
 SOURCE_EMPTY = '<null>'
+STEADY_TAB = '\xFF'
 
 #   ---------------------------------------------------------------------------
 def yushell( text, _input = None, _output = None ):
@@ -2549,6 +2481,7 @@ builtin.update({
     'str': str,
     'strlen': lambda val : len( _unq( val ) if isinstance( val, STR ) else str( val )),
     'sum': sum,
+    'tab': lambda : STEADY_TAB,
     'typeof': lambda val : ATOM( val.__class__.__name__ ),
     'unq': _unq
 })
@@ -3445,6 +3378,83 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
         else:
             raise e_type, e, tb
 
+#   ---------------------------------------------------------------------------
+def reduce_emptiness( text ):
+    """
+    Reduce number of successive empty lines up to one
+    and trim tailing white space (depends on options).
+    """
+#   ---------------
+    if not PP_REDUCE_EMPTINESS:
+        return text
+
+    if isinstance( text, RESULT ):
+        lnlist = text.splitlines( True )
+
+#       -- find empty lines
+        empty = set()
+        for i, ln in enumerate( lnlist ):
+            ( rest, indent ) = ps_space( ln )
+            if rest == EOL:
+                empty.add( i )
+
+#       -- only reduce number of empty lines
+        result = ''
+        prev_empty = False
+        for i, ln in enumerate( lnlist ):
+            if i in empty:
+                if not prev_empty:
+                    result += ln
+                    prev_empty = True
+            else:
+                result += ln
+                prev_empty = False
+
+#       -- calculate offsets
+        offset = []
+        total = 0
+        _pos = pos = 0
+        prev_empty = False
+        for i, ln in enumerate( lnlist ):
+            if i in empty:
+                if prev_empty:
+#                   -- reduce number of empty lines
+                    total += len( ln )
+                    if pos == _pos:
+                        offset[ -1 ] = ( pos, total )
+                    else:
+                        offset.append(( pos, total ))
+                        _pos = pos
+                else:
+                    pos += len( ln )
+                    prev_empty = True
+            else:
+                pos += len( ln )
+                prev_empty = False
+
+#       -- merge with previous offsets
+        if text.offset:
+            offset = _merge_offset( text.offset, offset )
+
+        return RESULT( result, text.browse, offset )
+
+    def _filter( ln ):
+        empty = _filter.empty
+        _filter.empty = not ln.strip()
+        return not empty or not _filter.empty
+
+    _filter.empty = False
+
+    return '\n'.join([ x.rstrip() for x in text.splitlines() if _filter( x )]) + '\n'
+
+#   ---------------------------------------------------------------------------
+def replace_steady( text ):
+    result = text.replace( STEADY_TAB, '\t' )
+    if isinstance( text, RESULT ):
+        return RESULT( result, text.browse, text.offset )
+
+    return result
+
 #   ---- cut here ----
 
 #   * * * * * * * * * * * * * * * * * *
@@ -3750,7 +3760,7 @@ def _pp():                                                                      
 
         result = isinstance( plain, str )
         if result:
-            plain = reduce_emptiness( plain )
+            plain = replace_steady( reduce_emptiness( plain ))
         else:
             plain = _ast_readable( plain )
             log.error( 'unable to translate input text into plain text' )
