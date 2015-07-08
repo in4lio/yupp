@@ -16,7 +16,7 @@ HOLDER      = 'Vitaly Kravtsov'
 EMAIL       = 'in4lio@gmail.com'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.8b4'
+VERSION     = '0.8b5'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -2468,6 +2468,7 @@ builtin.update({
     'hex': hex,
     'inc': lambda val : ( val + 1 ),
     'index': lambda l, val : l.index( val ) if val in l else -1,
+    'isdigit': lambda val : str( val ).isdigit(),
     'islist': lambda l : isinstance( l, list ),
     'len': len,
     'list': lambda *l : LIST( l ),
@@ -2481,7 +2482,7 @@ builtin.update({
     'str': str,
     'strlen': lambda val : len( _unq( val ) if isinstance( val, STR ) else str( val )),
     'sum': sum,
-    'tab': lambda : STEADY_TAB,
+    'TAB': lambda : STEADY_TAB,
     'typeof': lambda val : ATOM( val.__class__.__name__ ),
     'unq': _unq
 })
