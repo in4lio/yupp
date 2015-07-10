@@ -16,7 +16,7 @@ HOLDER      = 'Vitaly Kravtsov'
 EMAIL       = 'in4lio@gmail.com'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.8b5'
+VERSION     = '0.8b6'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -2460,8 +2460,11 @@ builtin.update({
     , 'input': yushell.input_file, 'output': yushell.output_file
     , 'time': datetime.datetime.now().strftime( '%Y-%m-%d %H:%M' )
     }),
+    'abs': abs,
     'car': lambda l : LIST( l[ :1 ]),
     'cdr': lambda l : LIST( l[ 1: ]),
+    'chr': chr,
+    'cmp': cmp,
     'crc32': lambda val : ( zlib.crc32( str( val )) & 0xffffffff ),
     'dec': lambda val : ( val - 1 ),
     'getslice': lambda seq, *x : LIST( operator.getitem( seq, slice( *x ))),
@@ -2472,6 +2475,8 @@ builtin.update({
     'islist': lambda l : isinstance( l, list ),
     'len': len,
     'list': lambda *l : LIST( l ),
+    'oct': oct,
+    'ord': ord,
     'print': lambda *l : sys.stdout.write( ' '.join(( _unq( x ) if isinstance( x, STR ) else str( x )) for x in l )),
     'q': lambda val : STR( '"%s"' % str( val )),
     'qs': lambda val : STR( "'%s'" % str( val )),
@@ -2479,6 +2484,7 @@ builtin.update({
     'reversed': lambda l : LIST( reversed( l )),
     're-split': lambda regex, val : LIST( filter( None, re.split( regex, val ))),                                      #pylint: disable=W0141
     'rindex': lambda l, val : ( len( l ) - 1 ) - l[ ::-1 ].index( val ) if val in l else -1,
+    'round': round,
     'str': str,
     'strlen': lambda val : len( _unq( val ) if isinstance( val, STR ) else str( val )),
     'sum': sum,
