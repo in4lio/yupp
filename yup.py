@@ -16,7 +16,7 @@ HOLDER      = 'Vitaly Kravtsov'
 EMAIL       = 'in4lio@gmail.com'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.8b6'
+VERSION     = '0.8b7'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -2419,6 +2419,7 @@ class SKIP( BASE_MARK ):
 import string, operator, math, datetime, zlib                                                                          #pylint: disable=W0402
 
 SOURCE_EMPTY = '<null>'
+STEADY_SPACE = '\xFE'
 STEADY_TAB = '\xFF'
 
 #   ---------------------------------------------------------------------------
@@ -2476,7 +2477,7 @@ builtin.update({
     'len': len,
     'list': lambda *l : LIST( l ),
     'oct': oct,
-    'ord': ord,
+    'ord': lambda val : ord( val ) if isinstance( val, STR ) else ord( str( val )),
     'print': lambda *l : sys.stdout.write( ' '.join(( _unq( x ) if isinstance( x, STR ) else str( x )) for x in l )),
     'q': lambda val : STR( '"%s"' % str( val )),
     'qs': lambda val : STR( "'%s'" % str( val )),
@@ -2485,6 +2486,7 @@ builtin.update({
     're-split': lambda regex, val : LIST( filter( None, re.split( regex, val ))),                                      #pylint: disable=W0141
     'rindex': lambda l, val : ( len( l ) - 1 ) - l[ ::-1 ].index( val ) if val in l else -1,
     'round': round,
+    'SPACE': lambda : STEADY_SPACE,
     'str': str,
     'strlen': lambda val : len( _unq( val ) if isinstance( val, STR ) else str( val )),
     'sum': sum,
@@ -3456,7 +3458,7 @@ def reduce_emptiness( text ):
 
 #   ---------------------------------------------------------------------------
 def replace_steady( text ):
-    result = text.replace( STEADY_TAB, '\t' )
+    result = text.replace( STEADY_TAB, '\t' ).replace( STEADY_SPACE, ' ' )
     if isinstance( text, RESULT ):
         return RESULT( result, text.browse, text.offset )
 

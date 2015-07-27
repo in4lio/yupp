@@ -60,7 +60,7 @@ D_CXX = $(D_C)
 D_ASM = .
 
 # -- include directories
-D_H = $(D_C)
+D_H = $(D_C) ../../
 
 # -- binary directory
 D_BIN = .
@@ -111,7 +111,7 @@ LFLAGS := $(LFLAGS) -Wl,-Map,$(D_MAP)/$(BIN)$(E_MAP)
 endif
 
 # -- preprocessor flags
-PPFLAGS = --pp-no-skip-c-comment -q $(addprefix -d, $(D_YU))
+PPFLAGS = -q --pp-browse -Wno-unbound $(addprefix -d, $(D_YU))
 
 # -- compiler flags
 CFLAGS = $(addprefix -I, $(D_H)) -O2 -W -Wall -Wno-comment -std=gnu99

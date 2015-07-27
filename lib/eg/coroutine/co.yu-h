@@ -2,7 +2,7 @@
 
 ($import stdlib)
 ($import h)
-($import coroutine)
+($import corolib)
 
 ($h-begin-named)
 

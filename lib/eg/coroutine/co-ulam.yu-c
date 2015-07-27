@@ -1,6 +1,6 @@
 ($__TITLE__)
 
-($import "coroutine.yu")
+($import corolib)
 
 #include <stdio.h>
 #include "co.h"
@@ -63,7 +63,7 @@ void A_uninit( void )
 		($coro-yield);
 	}
 [ \enter ]
-	static int i;
+	($coro-local) int i;
 [ )
 
 int B_init( void )
@@ -88,7 +88,7 @@ void B_uninit( void )
 		($coro-yield);
 	}
 [ \enter ]
-	static int i;
+	($coro-local) int i;
 [ )
 
 int C_init( void )

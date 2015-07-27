@@ -60,7 +60,7 @@ int isprime( int n )
 		($coro-yield);
 	}
 [ \enter ]
-	static int i;
+	($coro-local) int i;
 [ )
 
 ($coro-define L ]
