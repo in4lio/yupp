@@ -16,7 +16,7 @@ HOLDER      = 'Vitaly Kravtsov'
 EMAIL       = 'in4lio@gmail.com'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.8b7'
+VERSION     = '0.8b8'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -2431,6 +2431,8 @@ def yushell( text, _input = None, _output = None ):
     yushell.inclusion = []
     yushell.module = os.path.splitext( yushell.input_file )[ 0 ].replace( '-', '_' ).upper() if _input else 'UNTITLED'
     yushell.directory = []
+#   -- a list of built-in functions that can lead to a failed translation
+    yushell.hazard = []
 #   -- input file directory
     if _input:
         yushell.directory.append( os.path.dirname( _input ))
@@ -3341,6 +3343,10 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                 lst = LIST()
                 for i, x in enumerate( node ):
                     x = yueval( x, env, depth + 1 )
+#                   -- !? also LAMBDA_CLOSURE
+                    if isinstance( x, BUILTIN ):
+                        yushell.hazard.append( x.atom )
+
                     if x is None:
                         continue
 #   ---- LIST -- EMBED
@@ -3773,6 +3779,9 @@ def _pp():                                                                      
         else:
             plain = _ast_readable( plain )
             log.error( 'unable to translate input text into plain text' )
+            if yushell.hazard:
+                log.warn( 'the following usage of built-in function(s) can be the reason'
+                + ''.join( x.loc() for x in yushell.hazard ))
         if trace.TRACE:
             trace.info( plain )
             trace.info( TR_DEEPEST, trace.deepest )
