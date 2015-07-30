@@ -307,7 +307,8 @@ class SOURCE( str ):
 
 #   -----------------------------------
     def __getitem__( self, a ):
-        return SOURCE( str.__getitem__( self, a ), self.input_file, self.pos + a )
+        d = a if not isinstance( a, slice ) else a.start if a.start else 0
+        return SOURCE( str.__getitem__( self, a ), self.input_file, self.pos + d )
 
 #   -----------------------------------
     def __getslice__( self, a, b ):
@@ -2011,7 +2012,6 @@ class LAMBDA_CLOSURE( BASE_OBJECT ):
         return '%s(%s, %s, %s, %s)' % ( self.__class__.__name__, repr( self.l_form ), repr( self.env )
         , repr( self.late ), repr( self.default ))
 
-
 #   -----------------------------------
     def __eq__( self, other ):
         return ( isinstance( other, self.__class__ ) and ( self.l_form == other.l_form ) and ( self.env == other.env )
@@ -2464,13 +2464,13 @@ builtin.update({
     , 'time': datetime.datetime.now().strftime( '%Y-%m-%d %H:%M' )
     }),
     'abs': abs,
-    'car': lambda l : LIST( l[ :1 ]),
-    'cdr': lambda l : LIST( l[ 1: ]),
+    'car': lambda l : l[ :1 ],
+    'cdr': lambda l : l[ 1: ],
     'chr': chr,
     'cmp': cmp,
     'crc32': lambda val : ( zlib.crc32( str( val )) & 0xffffffff ),
     'dec': lambda val : ( val - 1 ),
-    'getslice': lambda seq, *x : LIST( operator.getitem( seq, slice( *x ))),
+    'getslice': lambda l, *sl : l[ slice( *( None if x == '' else x for x in sl ))],
     'hex': hex,
     'inc': lambda val : ( val + 1 ),
     'index': lambda l, val : l.index( val ) if val in l else -1,
@@ -2484,7 +2484,7 @@ builtin.update({
     'q': lambda val : STR( '"%s"' % str( val )),
     'qs': lambda val : STR( "'%s'" % str( val )),
     'range': lambda *l : LIST( range( *l )),
-    'reversed': lambda l : LIST( reversed( l )),
+    'reversed': lambda l : l[ ::-1 ],
     're-split': lambda regex, val : LIST( filter( None, re.split( regex, val ))),                                      #pylint: disable=W0141
     'rindex': lambda l, val : ( len( l ) - 1 ) - l[ ::-1 ].index( val ) if val in l else -1,
     'round': round,
