@@ -1,3 +1,4 @@
+### Built-in Functions
 
 &nbsp;&nbsp; | Various functions
 :--- | :---
