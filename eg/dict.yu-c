@@ -1,27 +1,39 @@
 ($__TITLE__)
-($set greeting "Hello world!\n")
 
-($set name    ( Pi      ch      Zu          ))
-($set type    ( double  char    float       ))
-($set default ( { pi }  '~'     { 355/113 } ))
-($set format  ( "%f"    "%c"    "%f"        ))
+($! This macro is already defined in the standard library - just use ($import stdlib). )
+($macro dict (id cols body)
+	($set cols-($id) ($range ($len (($cols)) )))
+	($set each-($id) ($range ($len (($body)) )))
+	($set (($cols))
+		($cols-($id) \i.($ (($body)) \var.($i var)))
+	)
+)
 
-($set each ($range ($len name)))
+($dict VAR
+	(` NAME     TYPE             LEN  DEFAULT  FORMAT   )
+	(`
+	(  app      char             5    "yupp"   "%s "    )
+	(  release  float            1    0.8      "%.1f"   )
+	(  pre      char             1    'b'      "%c"     )
+	(  number   (`unsigned int)  1    8        "%d"     )
+	)
+)
 
 #include <stdio.h>
 
-int main(void)
+int main( void )
 {
-	/* declare dict */
-	($each \i.]
-		($i type) ($i name) = ($i default);
+	/* Declare variables */
+	($each-VAR \i.]
+		($set dim [[ ($i LEN) ]] ? ($gt ($i LEN) 1))
+		($i TYPE) ($i NAME)($dim) = ($i DEFAULT);
 
 	[ )
-	printf(($greeting));
+	printf( ($"($0)\n" ($unq ($__FILE__))) );
 
-	/* print dict */
-	($each \i.]
-		printf(($i format), ($i name));
+	/* Print variables */
+	($each-VAR \i.]
+		printf( ($i FORMAT), ($i NAME) );
 
 	[ )
 	return 0;

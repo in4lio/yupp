@@ -383,7 +383,7 @@ source
 0,
 
 r"""
-($import "eg/export.py")
+($import "eg/lib.py")
 ($import { define_upper_reversed( 'uprevst' ) })
 #define ($uprevst hello)
 ($import "stdlib.yu")

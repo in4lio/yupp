@@ -1,0 +1,32 @@
+($set PROGRAM ]
+project
+[ )
+($set VERSION ]
+0.1
+[ )
+($set DESCRIPTION ]
+The example of an application
+[ )
+($set AUTHORS ]
+Vitaly Kravtsov (in4lio@gmail.com)
+[ )
+($set LICENSE ]
+See the LICENSE file.
+[ )
+($set URL ]
+
+[ )
+($set COMPILER ]
+gcc
+[ )
+
+($macro TITLE (brief)($__TITLE__)/**
+ *  \file  ($unq ($__OUTPUT_FILE__)) (($unq ($__FILE__)))
+ *  \brief  ($brief)
+ *  \author  ($AUTHORS)
+ *  \copyright  ($LICENSE)
+ */
+)
+
+($set EOL,,
+)

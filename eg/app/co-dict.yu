@@ -1,5 +1,5 @@
 ($dict CORO
-	(` name )
+	(` CORO )
 	(`
 	(  A    )
 	(  B    )

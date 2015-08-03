@@ -1,0 +1,61 @@
+($import "app.yu")
+($TITLE,,($DESCRIPTION).)
+
+($import h)
+($import corolib)
+
+#include <stdio.h>
+#include "co.h"
+
+($import "co-dict.yu")
+
+/**
+ *  \brief Initialize all coroutines.
+ */
+static void coro_init( void )
+{
+	($each-CORO \i.]
+		($coro-context-init ($i CORO));
+		($i CORO)_alive = ($i CORO)_init();
+
+	[ )
+}
+
+/**
+ *  \brief Uninitialize all coroutines.
+ */
+static void coro_uninit( void )
+{
+	($each-CORO \i.]
+		($i CORO)_uninit();
+
+	[ )
+}
+
+/**
+ *  \brief Call coroutines according to dictionary.
+ */
+static int coro_schedule( void )
+{
+	($each-CORO \i.]
+		if ( ($coro-alive [($i CORO)_alive]) ) ($i CORO)_alive = ($coro-call ($i CORO));
+
+	[ )
+	return ( 0
+	($each-CORO \i.]
+		|| ($coro-alive [($i CORO)_alive])
+
+	[ )
+	);
+}
+
+int main( void )
+{
+	coro_init();
+	for ( ; ; ) {
+		if ( coro_schedule() == 0 ) break;
+	}
+	coro_uninit();
+
+	return ( 0 );
+}

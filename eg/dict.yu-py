@@ -1,21 +1,21 @@
 ($import stdlib)
 
-($dict D
-	(` name        defval     format  )
+($dict VAR
+	(` NAME        DEFVAL     FORMAT  )
 	(`
 	(  var_string  "calgary"  "%s"    )
 	(  var_float   19.88      "%.2f"  )
-	(  var_int     11         "%d"    )
+	(  var_int     46         "%d"    )
 	)
 )
 
-($each-D \i.]
-	($i name) = ($i defval)
+($each-VAR \i.]
+	($i NAME) = ($i DEFVAL)
 
 [ )
 
 if __name__ == '__main__':
-	($each-D \i.]
-		print ($q,,($i name) = ($unq ($i format))) % ( ($i name) )
+	($each-VAR \i.]
+		print ($q,,($i NAME) = ($unq ($i FORMAT))) % ( ($i NAME) )
 
 	[ )

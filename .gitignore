@@ -1,9 +1,5 @@
 *.ast
 *.bak
-*.c
-*.exe
-*.o
+*.json*
 *.py[cod]
 *.sublime-workspace
-
-.tags

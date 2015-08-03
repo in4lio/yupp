@@ -1,7 +1,6 @@
 ($__TITLE__)
 
-($import stdlib)
-($import coroutine)
+($import corolib)
 
 #include <stdio.h>
 
@@ -46,7 +45,7 @@ int isprime( int n )
 	return 1;
 }
 
-/* Define coroutines. */
+/* Define coroutines */
 
 ($coro-define U ]
 	for ( i = 0; i < SQ * SQ; i++ ) {
@@ -97,7 +96,7 @@ int isprime( int n )
 	)
 )
 
-/* Print ULAM spiral. */
+/* Print ULAM spiral */
 
 int main( void )
 {

@@ -1,0 +1,32 @@
+($import "app.yu")
+($TITLE,,Coroutines declarations.)
+
+($import h)
+($import corolib)
+
+($h-begin-named)
+
+($extern-c-begin)
+
+($coro-h)
+
+($import "co-dict.yu")
+
+($each-CORO \i.]
+	($set C ($i CORO))
+	/** ($q C) coroutine local context. */
+	($h-extern-init,,($coro-context ($C)),,NULL)
+	/** ($q C) coroutine alive flag. */
+	($h-extern-init,,int ($C)_alive,,CO_SKIP)
+	/** ($q C) coroutine. */
+	extern ($coro-declare ($C));
+	/** Initialize ($q C) coroutine. */
+	extern int ($C)_init( void );
+	/** Uninitialize ($q C) coroutine. */
+	extern void ($C)_uninit( void );
+
+[ )
+
+($extern-c-end)
+
+($h-end)

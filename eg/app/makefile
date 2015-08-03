@@ -6,39 +6,43 @@
 #   makefile ( yupp, gcc )
 
 # -- binary name (without extension)
-BIN = ulam
+BIN = app
 
 # -- creating MAP file
 MAP = 0
 
-ifeq ($(OS),Windows_NT)
 # -- platform (core)
-# ARM Cortex-M3: __MDKARM__
-# DOS: __DJGPP__
+ifeq ($(OS),Windows_NT)
+# ARM Cortex-M: __CORTEX_M__
+# MSDOS: __DJGPP__
 # WIN32: __MINGW__
 # UNIX: __UNIX__
 PLATFORM = __MINGW__
 else
-YUPP_HOME = ~/yupp
+# UNIX
 PLATFORM = __UNIX__
 endif
 
+TOP = ../..
+
 # -- compilers
-ifeq ($(PLATFORM),__DJGPP__)
-CC = $(DJGPP_HOME)/bin/gcc.exe
-CXX = $(DJGPP_HOME)/bin/gxx.exe
-else
 CC = gcc
 CXX = g++
-endif
+LINK = $(CC)
 
 # -- yupp preprocessor
-PP = python -u $(YUPP_HOME)/yup.py
+YUPP_HOME = $(TOP)
 
-# -- output subdirectory
-ifeq ($(PLATFORM),__DJGPP__)
-D_PLATFORM = djgpp
+# -- perform preprocessing
+SKIP_PP = 0
+# -- skip preprocessing
+# SKIP_PP = 1
+
+ifeq ($(SKIP_PP),0)
+PP = python -u $(YUPP_HOME)/yup.py
 else
+PP = @echo makefile: warning: preprocessing step is skipped,
+endif
 
 ifeq ($(PLATFORM),__MINGW__)
 D_PLATFORM =
@@ -46,21 +50,16 @@ else
 D_PLATFORM =
 endif
 
-endif
-
 # -- yupp import directories
-D_YU =
+D_YU = .
 
 # -- source directories
-D_C = .
-
-D_C := $(if $(D_PLATFORM), source/$(D_PLATFORM) $(D_C), $(D_C))
-
+D_C = $(D_YU)
 D_CXX = $(D_C)
-D_ASM = .
+D_ASM = $(D_C)
 
 # -- include directories
-D_H = $(D_C) ../../
+D_H = $(D_C) $(YUPP_HOME)/lib
 
 # -- binary directory
 D_BIN = .
@@ -104,6 +103,11 @@ E_LIST = .listing
 
 # -- link options
 LIBS = -lm
+
+ifeq ($(PLATFORM),__MINGW__)
+# LIBS := $(LIBS) -lws2_32
+endif
+
 LFLAGS =
 
 ifeq ($(MAP),1)
@@ -114,7 +118,7 @@ endif
 PPFLAGS = -q --pp-browse -Wno-unbound $(addprefix -d, $(D_YU))
 
 # -- compiler flags
-CFLAGS = $(addprefix -I, $(D_H)) -O2 -W -Wall -Wno-comment -std=gnu99
+CFLAGS = $(addprefix -I, $(D_H)) -O2 -std=gnu99 -W -Wall -Wno-comment
 CXXFLAGS = $(addprefix -I, $(D_H)) -O2 -ffast-math -funroll-loops -fno-exceptions -fomit-frame-pointer -g -W -Wall -Wno-comment
 ASMFLAGS = -Wall
 
@@ -145,7 +149,7 @@ O = $(O_CXX) $(O_C) $(O_ASM)
 #   commands
 # ---------------------------------
 
-# -- compiler wrapper
+# -- wrap compiler arguments
 ifeq ($(OS),Windows_NT)
 # -- too long command line workaround
 define wrap
@@ -159,8 +163,34 @@ define wrap
 endef
 endif
 
+define cc
+	$(call wrap,$(CC),$(CFLAGS) -c $1 -o $2)
+endef
+
+define cxx
+	$(call wrap,$(CXX),$(CXXFLAGS) -c $1 -o $2)
+endef
+
+define asm
+	$(call wrap,$(CC),$(ASMFLAGS) -c $1 -o $2)
+endef
+
+define link
+	$(call wrap,$(LINK),$1 -o $2 $(LIBS) $(LFLAGS))
+endef
+
+# -- optional final tools
+define final
+endef
+
 # -- removal list
-R = $(F_BIN) $(O) $(G_H) $(G_C) $(G_CXX)
+R_BIN = $(F_BIN) $(O)
+R = $(R_BIN)
+
+ifeq ($(SKIP_PP),0)
+R := $(R) $(G_H) $(G_C) $(G_CXX)
+endif
+
 ifeq ($(MAP),1)
 R := $(R) $(D_MAP)/$(BIN)$(E_MAP)
 endif
@@ -171,6 +201,8 @@ CLEAN = rm -rf $(R)
 else
 CLEAN = rm -rf $(R)
 endif
+
+CLEAN_BIN = rm -rf $(R_BIN)
 
 # -- install
 define install
@@ -193,7 +225,8 @@ vpath %$(E_YUC) $(D_C)
 all: $(F_BIN)
 
 $(F_BIN): $(O)
-	$(call wrap,$(CC),$^ -o $@ $(LIBS) $(LFLAGS))
+	$(call link,$^,$@)
+	$(call final,$@)
 	@echo "*** $(F_BIN) ***"
 
 $(G_C) $(G_CXX) $(G_H): $(S_YU)
@@ -210,19 +243,30 @@ $(G_H): %$(E_H): %$(E_YUH)
 $(S_C) $(S_CXX): $(G_H)
 
 $(O_C): $(D_OBJ)/%$(E_OBJ): %$(E_C)
-	$(call wrap,$(CC),$(CFLAGS) -c $< -o $@)
+	$(call cc,$<,$@)
 
 $(O_CXX): $(D_OBJ)/%$(E_OBJ): %$(E_CXX)
-	$(call wrap,$(CXX),$(CXXFLAGS) -c $< -o $@)
+	$(call cxx,$<,$@)
 
 $(O_ASM): $(D_OBJ)/%$(E_OBJ): %$(E_ASM)
-	$(call wrap,$(CC),$(ASMFLAGS) -c $< -o $@)
+	$(call asm,$<,$@)
+
+# -- perform preprocessing only
+.PHONY: yupp
+
+yupp: $(G_C) $(G_CXX) $(G_H)
 
 # -- remove temporary files
 .PHONY: clean
 
 clean:
 	$(CLEAN)
+
+# -- remove binary files
+.PHONY: clean-binary
+
+clean-binary:
+	$(CLEAN_BIN)
 
 # -- install project
 .PHONY: install

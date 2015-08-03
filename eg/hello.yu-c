@@ -1,0 +1,29 @@
+($__TITLE__)
+
+($set greeting "Hello world!\n")
+
+($set name     ( Pi     ch		Zu        ))
+($set type     ( float  char    float     ))
+($set default  ( {pi}   '~'     {355/113} ))
+($set format   ( "%f"   "%c"    "%f"      ))
+
+($set each-VAR ($range ($len name)))
+
+#include <stdio.h>
+
+int main( void )
+{
+	/* Declare variables */
+	($each-VAR \i.]
+		($i type) ($i name) = ($i default);
+
+	[ )
+	printf( ($greeting) );
+
+	/* Print variables */
+	($each-VAR \i.]
+		printf( ($i format), ($i name) );
+
+	[ )
+	return 0;
+}

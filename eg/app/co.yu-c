@@ -1,11 +1,15 @@
-($__TITLE__)
+($import "app.yu")
+($TITLE,,Coroutines implementation.)
 
+($import h)
 ($import corolib)
+
+($implement-named)
 
 #include <stdio.h>
 #include "co.h"
 
-static semaphore_t EOL;
+static semaphore_t eol;
 
 #define SQ  19  /* odd, square side length */
 static int spiral[ SQ * SQ ] = { 0 };
@@ -78,13 +82,13 @@ void B_uninit( void )
 
 ($coro-define B ]
 	while ( ($coro-alive A_alive) ) {
-		($semaphore-acquire EOL);
+		($semaphore-acquire eol);
 		for ( i = 0; i < SQ - 1; i++ ) {
 			/* spacing */
 			printf( " " );
 			($coro-yield);
 		}
-		($semaphore-release EOL);
+		($semaphore-release eol);
 		($coro-yield);
 	}
 [ \enter ]
@@ -93,7 +97,7 @@ void B_uninit( void )
 
 int C_init( void )
 {
-	($semaphore-init EOL 1);
+	($semaphore-init eol 1);
 	return ( CO_READY );
 }
 
@@ -104,10 +108,10 @@ void C_uninit( void )
 
 ($coro-define C ]
 	while ( ($coro-alive A_alive) ) {
-		($semaphore-acquire EOL);
+		($semaphore-acquire eol);
 		/* line breaking */
 		printf( "\n" );
-		($semaphore-release EOL);
+		($semaphore-release eol);
 		($coro-yield);
 	}
 [ )
