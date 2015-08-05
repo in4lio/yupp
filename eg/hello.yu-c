@@ -2,7 +2,7 @@
 
 ($set greeting "Hello world!\n")
 
-($set name     ( Pi     ch		Zu        ))
+($set name     ( Pi     ch      Zu        ))
 ($set type     ( float  char    float     ))
 ($set default  ( {pi}   '~'     {355/113} ))
 ($set format   ( "%f"   "%c"    "%f"      ))

@@ -1,0 +1,60 @@
+($import stdlib)
+
+($dict INI
+	(` TYPE     VAR       DEFAULT                   )
+	(`
+	(  QDate    date      (`QDate::currentDate())   )
+	(  int      step      0                         )
+	(  QString  greeting  "Hello! Improving Pi..."  )
+	(  double   Pi        0.0                       )
+	)
+)
+
+#include <math.h>
+#include <QDate>
+#include <QSettings>
+#include <QDebug>
+
+($each-INI \i.]
+	($i TYPE) ini_($i VAR) = ($i DEFAULT);
+
+[ )
+
+void ini_load( const QString &fn )
+{
+	QSettings ini( fn, QSettings::IniFormat );
+
+	($each-INI \i.]
+		($set t ($i TYPE))
+		ini_($i VAR) = ini.value( ($q ($i VAR)), ini_($i VAR) ).to($if ($index t,,Q) ($capitalize t) ($cdr t))();
+	[ )
+}
+
+void ini_save( const QString &fn )
+{
+	QSettings ini( fn, QSettings::IniFormat );
+
+	($each-INI \i.]
+		ini.setValue( ($q ($i VAR)), ini_($i VAR) );
+
+	[ )
+}
+
+#define ini_file  ($"($0).ini" ($lower ($__MODULE_NAME__)))
+
+int main( void )
+{
+	ini_load( ini_file );
+
+	// Calc Pi using Leibniz formula, add one term of the series at a time... )))
+	ini_Pi += pow( -1, ini_step ) * 4.0 / ( ini_step * 2 + 1 );
+	++ini_step;
+
+	($each-INI \i.]
+		qDebug() << ini_($i VAR);
+
+	[ )
+	ini_save( ini_file );
+
+	return ( 0 );
+}
