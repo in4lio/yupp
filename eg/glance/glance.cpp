@@ -13,10 +13,11 @@ void ini_load( const QString &fn )
 {
 	QSettings ini( fn, QSettings::IniFormat );
 
-	ini_date = ini.value( "date", ini_date ).toDate();		
-	ini_step = ini.value( "step", ini_step ).toInt();		
-	ini_greeting = ini.value( "greeting", ini_greeting ).toString();		
+	ini_date = ini.value( "date", ini_date ).toDate();
+	ini_step = ini.value( "step", ini_step ).toInt();
+	ini_greeting = ini.value( "greeting", ini_greeting ).toString();
 	ini_Pi = ini.value( "Pi", ini_Pi ).toDouble();
+
 }
 
 void ini_save( const QString &fn )

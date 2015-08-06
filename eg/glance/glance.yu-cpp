@@ -27,6 +27,7 @@ void ini_load( const QString &fn )
 	($each-INI \i.]
 		($set t ($i TYPE))
 		ini_($i VAR) = ini.value( ($q ($i VAR)), ini_($i VAR) ).to($if ($index t,,Q) ($capitalize t) ($cdr t))();
+
 	[ )
 }
 

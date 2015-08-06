@@ -389,6 +389,14 @@ class PLAIN( BASE_STR ):
         return st
 
 #   -----------------------------------
+    def get_trimmed_with_browse( self ):
+        if PP_TRIM_APP_INDENT and self.trim:
+#           -- delete spacing after SET or MACRO
+            return self[ len( self ) - len( self.lstrip()): ]
+
+        return self
+
+#   -----------------------------------
     def add_indent( self, indent ):
         if self.indent is not None:
             ln = self.splitlines( True )
@@ -2651,6 +2659,10 @@ def _plain_with_browse( node ):                                                 
 #   ---- LAZY
     if isinstance( node, LAZY ):
         return _plain_with_browse( node.ast )
+
+#   ---- PLAIN
+    if isinstance( node, PLAIN ):
+        node = node.get_trimmed_with_browse()
 
 #   ---- SOURCE
     if isinstance( node, SOURCE ):
