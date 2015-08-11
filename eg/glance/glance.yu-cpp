@@ -25,8 +25,9 @@ void ini_load( const QString &fn )
 	QSettings ini( fn, QSettings::IniFormat );
 
 	($each-INI \i.]
-		($set t ($i TYPE))
-		ini_($i VAR) = ini.value( ($q ($i VAR)), ini_($i VAR) ).to($if ($index t,,Q) ($capitalize t) ($cdr t))();
+		($set T ($i TYPE))
+		($set F ($capitalize T) ? ($index T,,Q) | ($cdr T))
+		ini_($i VAR) = ini.value( ($q ($i VAR)), ini_($i VAR) ).to($F)();
 
 	[ )
 }
@@ -47,7 +48,7 @@ int main( void )
 {
 	ini_load( ini_file );
 
-	// Calc Pi using Leibniz formula, add one term of the series at a time... )))
+	// Calc Pi using Leibniz formula, add one term of the series at a time...
 	ini_Pi += pow( -1, ini_step ) * 4.0 / ( ini_step * 2 + 1 );
 	++ini_step;
 
