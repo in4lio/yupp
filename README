@@ -21,6 +21,11 @@
     Lisp-like Polish notation syntax in fully parenthesized form.
     yupp is intended to transform C programs before they are compiled.
     It can also be useful for more general purposes.
+
+    yupp allows to generate a readable, well-formatted text. The special
+    attention is paid to providing complete diagnostic information and
+    navigational capabilities.
+
     An embedding of macro constructions into the source code occurs by
     using an "application form" e.g. ($e).
 
@@ -53,7 +58,7 @@
     The following examples show various syntactic constructs of the macro
     language. Try them using yupp Web Console (http://yup-py.appspot.com/).
 
-    ($! this is a comment (won't be saved in the generated text))
+    ($! this is a comment, won't be saved in the generated text )
 
     ($! the atom binding )
 
@@ -63,23 +68,23 @@
 
         ($set abc (a 'B' 'C' 'D' 'E'))
 
-    ($! the atom binding with the lambda (the function definition))
+    ($! the atom binding with the lambda is a function definition )
 
         ($set inc \val.($add val 1))
 
-    ($! the application of the number (the subscripting))
+    ($! the application of the number is a subscripting )
 
         ($2 miss miss HIT miss)
 
     HIT
 
-    ($! get specific item of the list )
+    ($! getting the specific element of the list )
 
         ($0 abc)
 
     'A'
 
-    ($! the application of the list ("for each" loop))
+    ($! the application of the list is "for each" loop )
 
         ($(0 1 2) \i.($inc i))
 
@@ -89,11 +94,11 @@
 
         ($set mark (5 4 *(3 2) 1))
 
-    ($! the infix expression on Python - {} )
+    ($! infix expression on Python - {} )
 
         ($set four { 2 + 2 })
 
-    ($! the infix expression straight into the source code )
+    ($! infix expression straight into the source code )
 
         (${} sqrt(four))
 
@@ -112,7 +117,7 @@
 
     putchar('A'); putchar('B'); putchar('C'); putchar('D'); putchar('E');
 
-    ($! the code enclosing with square brackets )
+    ($! the source code enclosing with square brackets )
 
         ($mark \i.[($i), ])
 
@@ -152,8 +157,8 @@
         with reverse square brackets - ]<EOL> <EOL>[ )
 
     ($each-GRADE \i.]
-
         int ($i GRADE-name) = ($i GRADE-value);
+
     [ )
 
     int A = 5;
@@ -175,14 +180,14 @@
 
     "Give me 5."
 
-    ($! the string evaluation ($$) )
+    ($! the string evaluation - ($$) )
 
         ($ ($$'($($fn) ($0) ($1))' \fn (`mul) 5 5))
 
     25
 
     ($! the iterator (modifier) - experimental!
-        NOT applicable into a loop or a conditional expression )
+        NOT applicable into loop or conditional expression )
 
         ($set i 0)
         ($emit i inc) ($emit i inc) ($emit i dec) ($emit i)
@@ -215,7 +220,7 @@
 
     3.0 9 81.0
 
-    ($! take names of parameters from a list - \(list). )
+    ($! getting the parameter names from the list - \(list). )
 
     ___         __________________________________
     ___ EXAMPLE __________________________________
@@ -285,11 +290,12 @@
     In failing to translate the preprocessor expressions into a plain
     text the evaluation result will be saved as ".ast" file.
 
-    Sorry, but at the moment there is no other manual except a brief
-    intro that can be found in yupp Blog (http://yup-py.blogspot.com/).
+    Some additional information can be found in yupp Blog:
 
-    For more information about the preprocessor parameters, please get
-    help on the command-line interface:
+        http://yup-py.blogspot.com/
+
+    To learn more about the preprocessor parameters, please get help on
+    the command-line interface:
 
         python yup.py -h
 
