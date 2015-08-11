@@ -37,7 +37,7 @@ int main( void )
 {
 	ini_load( ini_file );
 
-	// Calc Pi using Leibniz formula, add one term of the series at a time...
+	// Calc Pi using Leibniz formula, add one term of the series
 	ini_Pi += pow( -1, ini_step ) * 4.0 / ( ini_step * 2 + 1 );
 	++ini_step;
 
