@@ -68,11 +68,11 @@
 
         ($set abc (a 'B' 'C' 'D' 'E'))
 
-    ($! the atom binding with the lambda is a function definition )
+    ($! a binding of the atom with the lambda is a function definition )
 
         ($set inc \val.($add val 1))
 
-    ($! the application of the number is a subscripting )
+    ($! an application of the number is a subscripting )
 
         ($2 miss miss HIT miss)
 
@@ -84,13 +84,13 @@
 
     'A'
 
-    ($! the application of the list is "for each" loop )
+    ($! an application of the list is "for each" loop )
 
         ($(0 1 2) \i.($inc i))
 
     123
 
-    ($! the embedding of one list into another - * list )
+    ($! the embedding of one list into another - *list )
 
         ($set mark (5 4 *(3 2) 1))
 
@@ -104,7 +104,7 @@
 
     2.0
 
-    ($! the conditional expression - consequent ? condition | alternative )
+    ($! conditional expression - consequent ? condition | alternative )
 
         ($set fact \n.($ 1 ? { n == 0 } | { ($fact { n - 1 }) * n }))
         ($fact 10)
@@ -327,6 +327,15 @@
 
     o   yupp Web Console:
         http://yup-py.appspot.com/
+
+    ___          _________________________________
+    ___ PROJECTS _________________________________
+
+    o   LEGO Mindstorms EV3 Debian C library:
+        https://github.com/in4lio/ev3dev-c/
+
+    o   predict - an embedded application framework:
+        https://github.com/in4lio/predict/
 
     ___     ______________________________________
     ___ GIT ______________________________________
