@@ -3,6 +3,15 @@ A glance at the yupp
 
 ![screenshot](pic/glance_01.png)
 
+The foregoing application of __dict__ equals to:
+
+```cpp
+($set each-INI (  0                        1     2                         3       ))
+($set TYPE     (  QDate                    int   QString                   double  ))
+($set VAR      (  date                     step  greeting                  Pi      ))
+($set DEFAULT  (  (`QDate::currentDate())  0     "Hello! Improving Pi..."  0.0     ))
+```
+
 ![screenshot](pic/glance_02.png)
 
 ```cpp
