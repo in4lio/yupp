@@ -1,9 +1,14 @@
 A glance at the yupp
 --------------------
 
+The following code snippet begins with import of the standard library.
+__stdlib.yu__ in particular contains __dict__ macro intended to define
+a series of lists that make it easy to generate repeating code structures
+by a dictionary.
+
 ![screenshot](pic/glance_01.png)
 
-The foregoing application of __dict__ equals to:
+The foregoing application of __dict__ macro corresponds to:
 
 ```cpp
 ($set each-INI (  0                        1     2                         3       ))
