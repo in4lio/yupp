@@ -1,7 +1,30 @@
 A glance at the yupp
 --------------------
 
-The following code snippet begins with import of the standard library.
+The source file of this example is [glance.yu-cpp](../eg/glance/glance.yu-cpp),
+the result file - [glance.cpp](../eg/glance/glance.cpp).
+
+Embedding of the preprocessor expressions into the source code (text) occurs
+using an __application form__ `($  )`.<br>
+The first element of an application is a function, that can be called with
+arguments, e.g. `($add 40 2)`.<br>
+The application `($!  )` is used for __comments__.
+
+Looking at the preprocessor expressions of this example, you will also meet
+other syntactic forms:
+* __simple lists__, e.g. `(0 1 2 3)`;
+* __quotes__ - irreducible expressions or strings without quotation marks -
+```(`  )```;
+* __source code insertions__ using square brackets `[  ]` or reverse square
+brackets `]<EOL>  <EOL>[`<br>
+(the insertions also can contain the preprocessor expressions);
+* __lambda expressions__ - expressions with parameters - `\a.\b.\c.(  )`.
+
+__Set form__ `($set  )` allows to bound an atom with a value, for example
+the decrement function definition is<br>
+`($set dec \p.($sub p 1))`.
+
+The following code snippet begins with `($import  )` of the standard library.
 The [stdlib.yu](../lib/stdlib.yu) in particular contains __dict__ macro
 intended to define a series of lists that make it easy to generate
 repeating code structures by a dictionary.
@@ -80,6 +103,3 @@ int main( void )
 	return ( 0 );
 }
 ```
-
-The source file of this example: [glance.yu-cpp](../eg/glance/glance.yu-cpp),
-the result: [glance.cpp](../eg/glance/glance.cpp).
