@@ -11,7 +11,7 @@ arguments, e.g. `($add 40 2)`.<br>
 The application `($! ... )` is used for __comments__.
 
 Looking at the preprocessor expressions of this example, you will also meet
-other syntactic forms:
+the following syntactic forms:
 * __simple lists__, e.g. `(0 1 2 3)`;
 * __quotes__ - irreducible expressions or strings without quotation marks -
 ```(` ... )```;
@@ -39,6 +39,14 @@ The foregoing application of __dict__ macro corresponds to:
 ($set VAR      (  date                     step  greeting                  Pi      ))
 ($set DEFAULT  (  (`QDate::currentDate())  0     "Hello! Improving Pi..."  0.0     ))
 ```
+
+The application of a list spawns a __cycle__, lambda expressions (or functions)
+passed as arguments will be applied to each element of the list, e.g.
+`($(2 1 0) \i.($pow 10 i))`.
+
+The application of a number retrieves an argument by index, or if the only
+argument is a list, retrieves an element from this list, e.g.
+`($2 (miss miss HIT miss))`.
 
 ![screenshot](pic/glance_02.png)
 
