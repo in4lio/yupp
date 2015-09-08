@@ -72,10 +72,11 @@ Another way to insert a short text into the preprocessor expressions is
 the double comma, e.g.<br>
 `($count,,Wild Wild World,,W)`.
 
-__Conditional expression__ contains: condition, alternative - an expression
-to be evaluated if the condition evaluates to zero (empty list `()`, empty code `[]`
-or empty quote ```(`)```) and consequent - an expression to be evaluated for
-other values of the condition - ```consequent ? condition | alternative```.
+__Conditional expression__ contains: __condition__, __alternative__ - an expression
+to be evaluated if the condition<br>
+evaluates to zero (empty list `()`, empty code `[]` or empty quote ```(`)```) and
+__consequent__ - an expression<br>
+to be evaluated for other values of the condition - ```consequent ? condition | alternative```.
 
 ![screenshot](pic/glance_03.png)
 
@@ -104,6 +105,9 @@ void ini_save( const QString &fn )
 
 }
 ```
+
+The function `($q ... )` encloses an argument in double quotes. For more information,
+please goto [Built-in Functions](../blob/master/doc/builtin.md).
 
 ![screenshot](pic/glance_04.png)
 
