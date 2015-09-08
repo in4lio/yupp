@@ -107,7 +107,13 @@ void ini_save( const QString &fn )
 ```
 
 The function `($q ... )` encloses an argument in double quotes. For more information,
-please goto [Built-in Functions](../blob/master/doc/builtin.md).
+please goto [Built-in Functions](../doc/builtin.md).
+
+__String formatting__ performs using the application of a string. If the replacement
+field in the string contains a number,<br>
+it refers to a positional argument, and if it contains an name, it refers to a named
+argument, e.g.<br>
+```($ "Give ($0) ($p)." me \p 5 )```.
 
 ![screenshot](pic/glance_04.png)
 
