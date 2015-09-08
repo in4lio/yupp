@@ -72,7 +72,14 @@ Another way to insert a short text into the preprocessor expressions is
 the double comma, e.g.<br>
 `($count,,Wild Wild World,,W)`.
 
+__Conditional expression__ contains: condition, alternative - an expression
+to be evaluated if the condition evaluates to zero (empty list `()`, empty code `[]`
+or empty quote ```(`)```) and consequent - an expression to be evaluated for
+other values of the condition - ```consequent ? condition | alternative```.
+
 ![screenshot](pic/glance_03.png)
+
+The above functions in unfolded form:
 
 ```cpp
 void ini_load( const QString &fn )
@@ -99,6 +106,8 @@ void ini_save( const QString &fn )
 ```
 
 ![screenshot](pic/glance_04.png)
+
+The foregoing code results in:
 
 ```cpp
 #define ini_file  "glance.ini"
