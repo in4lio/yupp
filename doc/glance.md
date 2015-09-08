@@ -25,8 +25,8 @@ the decrement function definition is<br>
 `($set dec \p.($sub p 1))`.
 
 The following code snippet begins with `($import ... )` of the standard library.
-The [stdlib.yu](../lib/stdlib.yu) in particular contains __dict__ macro
-intended to define a series of lists that make it easy to generate
+The [stdlib.yu](../lib/stdlib.yu) in particular contains<br>
+__dict__ macro intended to define a series of lists that make it easy to generate
 repeating code structures by a dictionary.
 
 ![screenshot](pic/glance_01.png)
@@ -41,14 +41,16 @@ The foregoing application of __dict__ macro corresponds to:
 ```
 
 The application of a list spawns a __cycle__, lambda expressions (or functions)
-passed as arguments will be applied to each element of the list, e.g.
-`($(2 1 0) \i.($pow 10 i))`.
+passed as arguments will be applied<br>
+to each element of the list, e.g. `($(2 1 0) \i.($pow 10 i))`.
 
 The application of a number retrieves an argument by index, or if the only
-argument is a list, retrieves an element from this list, e.g.
-`($2 (miss miss HIT miss))`.
+argument is a list, retrieves an element<br>
+from this list, e.g. `($2 (miss miss HIT miss))`.
 
 ![screenshot](pic/glance_02.png)
+
+The above snippet generates the following code:
 
 ```cpp
 #include <math.h>
@@ -61,6 +63,14 @@ int ini_step = 0;
 QString ini_greeting = "Hello! Improving Pi...";
 double ini_Pi = 0.0;
 ```
+
+You probably noticed a few weird using of square brackets. The construction
+`]<EOL> ... <EOL>[`<br>
+equals to ordinary `[ ... ]` but makes expressions, I dare say, more readable.
+
+Another way to insert a short text into the preprocessor expressions is
+the double comma, e.g.<br>
+`($count,,Wild Wild World,,W)`.
 
 ![screenshot](pic/glance_03.png)
 
