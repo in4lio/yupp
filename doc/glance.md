@@ -1,8 +1,9 @@
 A glance at the yupp
 --------------------
 
-The source file of this example is [glance.yu-cpp](../eg/glance/glance.yu-cpp),
-the result file - [glance.cpp](../eg/glance/glance.cpp).
+Here, I would like to offer you take a look at __yupp__ exploring the next
+example: [glance.yu-cpp](../eg/glance/glance.yu-cpp).<br>
+The result of preprocessing is [glance.cpp](../eg/glance/glance.cpp).
 
 Embedding of the preprocessor expressions into the source code (text) occurs
 using an __application form__ `($ ... )`.<br>
@@ -24,9 +25,9 @@ __Set form__ `($set ... )` allows to bound an atom with a value, for example
 the decrement function definition is<br>
 `($set dec \p.($sub p 1))`.
 
-The following code snippet begins with `($import ... )` of the standard library.
-The [stdlib.yu](../lib/stdlib.yu) in particular contains<br>
-__dict__ macro intended to define a series of lists that make it easy to
+The example begins with `($import ... )` of the standard library.
+The [stdlib.yu](../lib/stdlib.yu) in particular contains __dict__ macro<br>
+intended to define a series of lists that make it easy to
 generate repeating code structures by a dictionary.
 
 ![screenshot](pic/glance_01.png)
@@ -121,7 +122,7 @@ a named argument, e.g.<br>
 
 ![screenshot](pic/glance_04.png)
 
-The foregoing code results in:
+The foregoing snippet results in:
 
 ```cpp
 #define ini_file  "glance.ini"
