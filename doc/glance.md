@@ -26,8 +26,8 @@ the decrement function definition is<br>
 
 The following code snippet begins with `($import ... )` of the standard library.
 The [stdlib.yu](../lib/stdlib.yu) in particular contains<br>
-__dict__ macro intended to define a series of lists that make it easy to generate
-repeating code structures by a dictionary.
+__dict__ macro intended to define a series of lists that make it easy to
+generate repeating code structures by a dictionary.
 
 ![screenshot](pic/glance_01.png)
 
@@ -72,11 +72,12 @@ Another way to insert a short text into the preprocessor expressions is
 the double comma, e.g.<br>
 `($count,,Wild Wild World,,W)`.
 
-__Conditional expression__ contains: __condition__, __alternative__ - an expression
-to be evaluated if the condition<br>
-evaluates to zero (empty list `()`, empty code `[]` or empty quote ```(`)```) and
-__consequent__ - an expression<br>
-to be evaluated for other values of the condition - ```consequent ? condition | alternative```.
+__Conditional expression__ contains: __condition__,
+__alternative__ - an expression to be evaluated if the condition<br>
+evaluates to zero (empty list `()`, empty code `[]` or empty quote ```(`)```)
+and __consequent__ - an expression<br>
+to be evaluated for other values of the condition -
+```consequent ? condition | alternative```.
 
 ![screenshot](pic/glance_03.png)
 
@@ -106,14 +107,17 @@ void ini_save( const QString &fn )
 }
 ```
 
-The function `($q ... )` encloses an argument in double quotes. For more information,
-please goto [Built-in Functions](../doc/builtin.md).
+The function `($q ... )` encloses an argument in double quotes. For more
+information, please goto [Built-in Functions](../doc/builtin.md).
 
-__String formatting__ performs using the application of a string. If the replacement
-field in the string contains a number,<br>
-it refers to a positional argument, and if it contains an name, it refers to a named
-argument, e.g.<br>
-```($ "Give ($0) ($p)." me \p 5 )```.
+An unbound atoms (names) that are used in __dict__ (`QString`, `Pi` etc.)
+will be processed like quotes.
+
+__String formatting__ performs using the application of a string.
+If the replacement field in the string contains a number,<br>
+it refers to a positional argument, and if it contains an name, it refers to
+a named argument, e.g.<br>
+```($ "Lock, ($1) and ($p) Smoking ($0)" Barrels Stock \p 2 )```.
 
 ![screenshot](pic/glance_04.png)
 
