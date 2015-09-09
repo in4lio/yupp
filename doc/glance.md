@@ -1,12 +1,12 @@
 A glance at the yupp
 --------------------
 
-Here, I would like to offer you take a look at __yupp__ exploring the next
+Here, I would like to offer you take a look at __yupp__, exploring the next
 example: [glance.yu-cpp](../eg/glance/glance.yu-cpp).<br>
 The result of preprocessing is [glance.cpp](../eg/glance/glance.cpp).
 
-Embedding of the preprocessor expressions into the source code (text) occurs
-using an __application form__ `($ ... )`.<br>
+Embedding of the preprocessor expressions into the source code occurs using
+an __application form__ `($ ... )`.<br>
 The first element of an application is a function, that can be called with
 arguments, e.g. `($add 40 2)`.<br>
 The application `($! ... )` is used for __comments__.
@@ -26,8 +26,8 @@ the decrement function definition is<br>
 `($set dec \p.($sub p 1))`.
 
 The example begins with `($import ... )` of the standard library.
-The [stdlib.yu](../lib/stdlib.yu) in particular contains __dict__ macro<br>
-intended to define a series of lists that make it easy to
+The [stdlib.yu](../lib/stdlib.yu), in particular, contains __dict__<br>
+macro intended to define a series of lists that make it easy to
 generate repeating code structures by a dictionary.
 
 ![screenshot](pic/glance_01.png)
@@ -45,9 +45,12 @@ The application of a list spawns a __cycle__, lambda expressions (or functions)
 passed as arguments will be applied<br>
 to each element of the list, e.g. `($(2 1 0) \i.($pow 10 i))`.
 
-The application of a number retrieves an argument by index, or if the only
+The application of a number retrieves an argument by index, or if only one
 argument is a list, retrieves an element<br>
 from this list, e.g. `($2 (miss miss HIT miss))`.
+
+An unbound atoms (names) that are used in __dict__ (`QString`, `Pi` etc.)
+will be processed like quotes.
 
 ![screenshot](pic/glance_02.png)
 
@@ -69,7 +72,7 @@ You probably noticed a few weird using of square brackets. The construction
 `]<EOL> ... <EOL>[`<br>
 equals to ordinary `[ ... ]` but makes expressions, I dare say, more readable.
 
-Another way to insert a short text into the preprocessor expressions is
+Another way to insert a short piece of code into the preprocessor expressions is
 the double comma, e.g.<br>
 `($count,,Wild Wild World,,W)`.
 
@@ -111,14 +114,11 @@ void ini_save( const QString &fn )
 The function `($q ... )` encloses an argument in double quotes. For more
 information, please goto [Built-in Functions](../doc/builtin.md).
 
-An unbound atoms (names) that are used in __dict__ (`QString`, `Pi` etc.)
-will be processed like quotes.
-
 __String formatting__ performs using the application of a string.
 If the replacement field in the string contains a number,<br>
 it refers to a positional argument, and if it contains an name, it refers to
 a named argument, e.g.<br>
-```($ "Lock, ($1) and ($p) Smoking ($0)" Barrels Stock \p 2 )```.
+```($ "Lock, ($1) and ($p) Smoking ($0)" Barrels Stock \p 2)```.
 
 ![screenshot](pic/glance_04.png)
 
