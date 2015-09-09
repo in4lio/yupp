@@ -85,7 +85,7 @@ to be evaluated for other values of the condition -
 
 ![screenshot](pic/glance_03.png)
 
-The above functions in unfolded form:
+The above functions after preprocessing:
 
 ```cpp
 void ini_load( const QString &fn )
