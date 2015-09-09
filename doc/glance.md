@@ -112,8 +112,8 @@ void ini_save( const QString &fn )
 ```
 
 The function `($q ... )` encloses an argument in quotation marks. For more
-information, please<br>
-goto [Built-in Functions](../doc/builtin.md).
+information, please goto<br>
+[Built-in Functions](../doc/builtin.md).
 
 __String formatting__ performs using the application of a string.
 If the replacement field in the string contains<br>
