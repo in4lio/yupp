@@ -72,8 +72,8 @@ You probably noticed a few weird using of square brackets. The construction
 `]<EOL> ... <EOL>[`<br>
 equals to ordinary `[ ... ]` but makes expressions, I dare say, more readable.
 
-Another way to insert a short piece of code into the preprocessor expressions is
-the double comma, e.g.<br>
+Another way to insert a short piece of code into the preprocessor expressions
+is the double comma, e.g.<br>
 `($count,,Wild Wild World,,W)`.
 
 __Conditional expression__ contains: __condition__,
@@ -116,8 +116,8 @@ information, please goto [Built-in Functions](../doc/builtin.md).
 
 __String formatting__ performs using the application of a string.
 If the replacement field in the string contains a number,<br>
-it refers to a positional argument, and if it contains an name, it refers to
-a named argument, e.g.<br>
+it refers to a positional argument, and if it contains an name, it refers
+to a named argument, e.g.<br>
 ```($ "Lock, ($1) and ($p) Smoking ($0)" Barrels Stock \p 2)```.
 
 ![screenshot](pic/glance_04.png)
