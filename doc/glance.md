@@ -1,14 +1,14 @@
 A glance at the yupp
 --------------------
 
-Here, I would like to offer you take a look at __yupp__, exploring the next
+Here, I would like to offer you take a look at the __yupp__, exploring the next
 example: [glance.yu-cpp](../eg/glance/glance.yu-cpp).<br>
 The result of preprocessing is [glance.cpp](../eg/glance/glance.cpp).
 
 Embedding of the preprocessor expressions into the source code occurs using
 an __application form__ `($ ... )`.<br>
 The first element of an application is a function, that can be called with
-arguments, e.g. `($add 40 2)`.<br>
+arguments, e.g. `($div 22 7)`.<br>
 The application `($! ... )` is used for __comments__.
 
 Looking at the preprocessor expressions of this example, you will also meet
@@ -45,7 +45,7 @@ The application of a list spawns a __cycle__, lambda expressions (or functions)
 passed as arguments will be applied<br>
 to each element of the list, e.g. `($(2 1 0) \i.($pow 10 i))`.
 
-The application of a number retrieves an argument by index, or if only one
+The application of a number retrieves an argument by index, or if the only
 argument is a list, retrieves an element<br>
 from this list, e.g. `($2 (miss miss HIT miss))`.
 
@@ -85,7 +85,7 @@ to be evaluated for other values of the condition -
 
 ![screenshot](pic/glance_03.png)
 
-The above functions in unfolded form:
+The above functions after preprocessing:
 
 ```cpp
 void ini_load( const QString &fn )
@@ -111,13 +111,14 @@ void ini_save( const QString &fn )
 }
 ```
 
-The function `($q ... )` encloses an argument in double quotes. For more
-information, please goto [Built-in Functions](../doc/builtin.md).
+The function `($q ... )` encloses an argument in quotation marks. For more
+information, please goto<br>
+[Built-in Functions](../doc/builtin.md).
 
 __String formatting__ performs using the application of a string.
-If the replacement field in the string contains a number,<br>
-it refers to a positional argument, and if it contains an name, it refers
-to a named argument, e.g.<br>
+If the replacement field in the string contains<br>
+a number, it refers to a positional argument, and if it contains an name,
+it refers to a named argument, e.g.<br>
 ```($ "Lock, ($1) and ($p) Smoking ($0)" Barrels Stock \p 2)```.
 
 ![screenshot](pic/glance_04.png)
