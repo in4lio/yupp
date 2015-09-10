@@ -21,9 +21,9 @@ from yup import *                                                               
 #   *          T E S T K I T          *
 #   *                                 *
 #   * * * * * * * * * * * * * * * * * *
-#   Structure of kit items:
-#   -- to save trace flag (0 - none, 1 - yuparse, 2 - yueval, 3 - both)
-#   -- test source text
+#   Structure of record:
+#   -- trace storing (0 - none, 1 - yuparse, 2 - yueval, 3 - both)
+#   -- source text of test
 #   -- expected AST or exception
 #   -- expected result text or exception
 
@@ -366,7 +366,7 @@ Yes!
 }
 """
 ),(
-#   ---- 07 -- "yummy C preprocessor" O_O
+#   ---- 07 -- yummy C preprocessor)))
 0,
 
 r"""
