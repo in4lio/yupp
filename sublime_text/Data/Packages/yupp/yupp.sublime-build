@@ -1,5 +1,5 @@
 {
-	"cmd": ["python", "-u", "%YUPP_HOME%/yup.py", "--type-file", "$file"],
+	"cmd": ["python", "-u", "%YUPP_HOME%/yup.py", "--pp-browse", "--type-file", "$file"],
 	"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
 	"selector": "source.yupp, text.yupp",
 	"working_dir": "$project_path",
