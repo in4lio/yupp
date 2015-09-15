@@ -1,9 +1,9 @@
 A glance at the yupp
 --------------------
 
-Here, I would like to offer you take a look at the __yupp__, exploring the next
-example: [glance.yu-cpp](../eg/glance/glance.yu-cpp).<br>
-The result of preprocessing is [glance.cpp](../eg/glance/glance.cpp).
+Here you can get acquainted with __yupp__ by exploring a small example:
+[glance.yu-cpp](../eg/glance/glance.yu-cpp), the preprocessing<br>
+result is [glance.cpp](../eg/glance/glance.cpp).
 
 Embedding of the preprocessor expressions into the source code occurs using
 an __application form__ `($ ... )`.<br>
