@@ -22,14 +22,14 @@
     yupp is intended to transform C programs before they are compiled.
     It can also be useful for more general purposes.
 
-    yupp allows to generate a readable, well-formatted text. The special
+    yupp allows to generate a readable, well-formatted text. Special
     attention is paid to providing complete diagnostic information and
     navigational capabilities.
 
     Embedding of the preprocessor expressions into the source code occurs
     by using an "application form", e.g. ($e).
 
-    A small example with comments and pictures:
+    A small example with comments:
 
         https://github.com/in4lio/yupp/blob/master/doc/glance.md
 
@@ -280,7 +280,7 @@
 
         }
 
-    Some more examples can be found here:
+    Here you can find a few more examples:
 
         https://github.com/in4lio/yupp/tree/master/eg
 
