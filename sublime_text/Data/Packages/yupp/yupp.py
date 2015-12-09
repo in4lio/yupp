@@ -158,7 +158,6 @@ class yu_browse( sublime_plugin.EventListener ):
             return
 
         if file_mtime[ fn ] != os.path.getmtime( fn ):
-            print "!!! reload", fn
             close_file( fn )
             open_file( fn )
 
