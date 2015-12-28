@@ -1,9 +1,9 @@
-_in progress..._
+_under construction..._
 
 
 ###Standard Library (stdlib.yu)
 
-####__dict__ (macro)
+####dict
 
 Dictionary to generate repeated structures of code.
 
@@ -19,6 +19,80 @@ Dictionary to generate repeated structures of code.
 	)
 	($each-ID \i.($i id_N))
 ```
+
+####if, unless
+
+```cpp
+	($if cond [leg_T] [leg_F])
+```
+
+```cpp
+	($unless cond [leg_F] [leg_T])
+```
+
+####unfold
+
+```cpp
+	($unfold N [val_0] [val_1] [...] \n.(val_($n)))
+```
+
+####do
+
+```cpp
+	($do,,foo(); bar(); )
+```
+
+####define
+
+```cpp
+	($define,,array_length( x ),,( sizeof( x ) / sizeof(( x )[ 0 ])))
+```
+
+####def, undef
+
+```cpp
+	($def LINK_MODULE)
+```
+
+```cpp
+	($undef LINK_MODULE)
+```
+
+####def-if
+
+```cpp
+	($def-if LINK_MODULE)
+```
+
+####skip-if-not
+
+```cpp
+	($skip-if-not LINK_MODULE)
+```
+
+####BIN, BB
+
+```cpp
+	($BIN,,11001010110010100000)
+```
+
+```cpp
+	($BB,,10110011,,10110010,,10110001,,10110000)
+```
+
+####def-fn-argv
+
+```cpp
+	($def-fn-argv int sum ]
+		int result = 0;
+		($ &arg-begin)
+		while ( ($ &arg-count)-- ) result += ($ &arg-value &type);
+		($ &arg-end)
+		return ( result );
+	[ )
+```
+
+#### INT_MAX, INT_MIN
 
 
 ###Coroutines (corolib.yu)
