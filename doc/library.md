@@ -1,7 +1,8 @@
-_under construction..._
+_(in the process of creating...)_
 
 
-###Standard Library (stdlib.yu)
+Standard Library (stdlib.yu)
+----------------------------
 
 ####dict
 
@@ -95,7 +96,8 @@ Dictionary to generate repeated structures of code.
 #### INT_MAX, INT_MIN
 
 
-###Coroutines (corolib.yu)
+Coroutines (corolib.yu)
+-----------------------
 
 ```cpp
 	($coro-context A);
@@ -128,7 +130,8 @@ Dictionary to generate repeated structures of code.
 ```
 
 
-###Header Files Support (h.yu)
+Header Files Helper (h.yu)
+--------------------------
 
 ```cpp
 	($h-begin-named)
