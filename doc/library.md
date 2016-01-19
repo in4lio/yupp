@@ -21,8 +21,18 @@ repeating code structures by a dictionary.
 	)
 ```
 
-#####Example:
+#####Example
 
+![screenshot](pic/glance_01.png)
+
+The foregoing application of __dict__ macro corresponds to:
+
+```cpp
+($set each-INI (  0                        1     2                         3       ))
+($set TYPE     (  QDate                    int   QString                   double  ))
+($set VAR      (  date                     step  greeting                  Pi      ))
+($set DEFAULT  (  (`QDate::currentDate())  0     "Hello! Improving Pi..."  0.0     ))
+```
 
 ####if, unless
 
