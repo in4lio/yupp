@@ -6,20 +6,23 @@ Standard Library (stdlib.yu)
 
 ####dict
 
-Dictionary to generate repeated structures of code.
+__dict__ macro allows to define a series of lists that make it easy to generate
+repeating code structures by a dictionary.
 
 ```cpp
-	($dict ID
-		(` id_0       id_1       ... id_N )
+	($dict NAME
+		(` col_1_name   col_2_name     col_N_name  )
 		(`
-		(  id_0_val_0 id_1_val_0 ... id_N_val_0 )
-		(  id_0_val_1 id_1_val_1 ... id_N_val_1 )
-		                         ...
-		(  id_0_val_K id_1_val_K ... id_N_val_K )
+		(  col_1_val_1  col_2_val_1    col_N_val_1 )
+		(  col_1_val_2  col_2_val_2    col_N_val_2 )
+
+		(  col_1_val_M  col_2_val_M    col_N_val_M )
 		)
 	)
-	($each-ID \i.($i id_N))
 ```
+
+#####Example:
+
 
 ####if, unless
 
