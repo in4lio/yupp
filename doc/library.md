@@ -6,7 +6,7 @@ Standard Library (stdlib.yu)
 
 ####dict
 
-__dict__ macro allows to define a series of lists that make it easy to generate
+This macro allows to define a series of lists that make it easy to generate
 repeating code structures by a dictionary.
 
 ```cpp
@@ -21,7 +21,7 @@ repeating code structures by a dictionary.
 	)
 ```
 
-#####Example
+_For example:_
 
 ![screenshot](pic/glance_01.png)
 
