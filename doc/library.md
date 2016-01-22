@@ -34,6 +34,24 @@ The foregoing application of __dict__ macro corresponds to:
 ($set DEFAULT  (  (`QDate::currentDate())  0     "Hello! Improving Pi..."  0.0     ))
 ```
 
+The application of __each-INI__ spawns cycle from 0 to 3.
+
+![screenshot](pic/glance_02.png)
+
+The above snippet generates the following code:
+
+```cpp
+#include <math.h>
+#include <QDate>
+#include <QSettings>
+#include <QDebug>
+
+QDate ini_date = QDate::currentDate();
+int ini_step = 0;
+QString ini_greeting = "Hello! Improving Pi...";
+double ini_Pi = 0.0;
+```
+
 ####if, unless
 
 ```cpp
