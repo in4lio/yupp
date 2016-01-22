@@ -21,7 +21,7 @@ repeating code structures by a dictionary.
 	)
 ```
 
-_For example:_
+For example:
 
 ![screenshot](pic/glance_01.png)
 
@@ -107,6 +107,8 @@ The foregoing application of __dict__ macro corresponds to:
 ```
 
 #### INT_MAX, INT_MIN
+
+Minimal and maximal values of int32_t.
 
 
 Coroutines (corolib.yu)
