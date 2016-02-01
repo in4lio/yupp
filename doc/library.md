@@ -23,7 +23,7 @@ repeating code structures by a dictionary.
 
 For example:
 
-![screenshot](pic/glance_01.png)
+![screenshot](pic/library_01.png)
 
 The foregoing application of __dict__ macro corresponds to:
 
@@ -36,16 +36,11 @@ The foregoing application of __dict__ macro corresponds to:
 
 The application of __each-INI__ spawns cycle from 0 to 3.
 
-![screenshot](pic/glance_02.png)
+![screenshot](pic/library_02.png)
 
 The above snippet generates the following code:
 
 ```cpp
-#include <math.h>
-#include <QDate>
-#include <QSettings>
-#include <QDebug>
-
 QDate ini_date = QDate::currentDate();
 int ini_step = 0;
 QString ini_greeting = "Hello! Improving Pi...";
