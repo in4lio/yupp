@@ -1,5 +1,4 @@
-_(in the process of creating...)_
-
+_still in the process..._
 
 Standard Library (stdlib.yu)
 ----------------------------
@@ -25,7 +24,7 @@ For example:
 
 ![screenshot](pic/library_01.png)
 
-The foregoing application of __dict__ macro corresponds to:
+The foregoing application of ] `__dict__` macro corresponds to:
 
 ```cpp
 ($set each-INI (  0                        1     2                         3       ))
@@ -34,7 +33,7 @@ The foregoing application of __dict__ macro corresponds to:
 ($set DEFAULT  (  (`QDate::currentDate())  0     "Hello! Improving Pi..."  0.0     ))
 ```
 
-The application of __each-INI__ spawns cycle from 0 to 3.
+The application of `__each-INI__` spawns cycle from 0 to 3.
 
 ![screenshot](pic/library_02.png)
 
@@ -121,7 +120,7 @@ double ini_Pi = 0.0;
 
 #### INT_MAX, INT_MIN
 
-Minimal and maximal values of int32_t.
+Minimal and maximal values of `int32_t`.
 
 
 Coroutines (corolib.yu)
