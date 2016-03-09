@@ -2,7 +2,9 @@ _still in the process..._
 
 Standard Library (stdlib.yu)
 ----------------------------
-
+```
+($import stdlib)
+```
 ####dict
 
 This macro allows to define a series of lists that make it easy to generate
@@ -125,7 +127,9 @@ Minimal and maximal values of `int32_t`.
 
 Coroutines (corolib.yu)
 -----------------------
-
+```
+($import corolib)
+```
 ```cpp
 	($coro-context A);
 	($coro-context B);
@@ -159,7 +163,9 @@ Coroutines (corolib.yu)
 
 Header Files Helper (h.yu)
 --------------------------
-
+```
+($import h)
+```
 ```cpp
 	($h-begin-named)
 
