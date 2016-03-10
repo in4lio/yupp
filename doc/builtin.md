@@ -5,7 +5,7 @@
 `($__FILE__)` | Name of the current preprocessed file.
 `($__OUTPUT_FILE__)` | Name of the output file.
 `($__MODULE_NAME__)` | Return an uppercase base name of the current preprocessed file without extension. All hyphens are replaced with underscores.
-`($__TITLE__)` | Insert comment with file info.
+`($__TITLE__ dt)` | Insert comment with info about the file, without creation time if `dt == 0`.
 `($car list)` | Head of a list.
 `($cdr list)` | Tail of a list.
 `($chr x)` | Return a string of one character whose ASCII code is the integer `x`.
