@@ -11,7 +11,7 @@ http://github.com/in4lio/yupp/
 
 yup.py -- yupp in python
 """
-COPYRIGHT   = 'Copyright (c) 2011, 13, 14, 15'
+COPYRIGHT   = 'Copyright (c) 2011-2016'
 HOLDER      = 'Vitaly Kravtsov'
 EMAIL       = 'in4lio@gmail.com'
 DESCRIPTION = 'yet another C preprocessor'
