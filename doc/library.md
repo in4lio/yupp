@@ -1,4 +1,4 @@
-_still in the process..._
+_Sorry, still in the process..._
 
 Standard Library (stdlib.yu)
 ----------------------------
@@ -53,7 +53,9 @@ double ini_Pi = 0.0;
 Another way to write a conditional expression.
 
 ```cpp
-	($if cond [leg_T] [leg_F])
+($if ($eq 4 ($add 2 2)) [ALL RIGHT] [SMOKE DETECTED])
+
+ALL RIGHT
 ```
 
 ```cpp
@@ -69,6 +71,7 @@ as a parameter, to calculate missing members of the sequence.
 
 ```cpp
 ($unfold 7 A B C \n.($add n 1))
+
 ABC4567
 ```
 
