@@ -62,7 +62,7 @@ Another way to write a conditional expression.
 
 ####unfold
 
-This macro allows to unfold a sequence of specified number of elements (the first argument).<br>
+This macro allows to unfold a sequence of specified number of elements (the first argument).
 If the number of arguments is greater than two, the second argument is the first element
 of the sequence, and so on.
 The last argument is a lambda function with the sequence number as a parameter,
