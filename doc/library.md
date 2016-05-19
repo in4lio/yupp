@@ -39,7 +39,7 @@ The application of `each-INI` spawns cycle from 0 to 3.
 
 ![screenshot](pic/library_02.png)
 
-The above snippet generates the following code:
+This snippet generates the following code:
 
 ```cpp
 QDate ini_date = QDate::currentDate();
@@ -50,6 +50,8 @@ double ini_Pi = 0.0;
 
 ####if, unless
 
+Another way to write a conditional expression.
+
 ```cpp
 	($if cond [leg_T] [leg_F])
 ```
@@ -59,6 +61,11 @@ double ini_Pi = 0.0;
 ```
 
 ####unfold
+
+This macro allows to unfold a sequence of specified number of elements (the first argument).<br>
+The second argument is the first element of the sequence, and so on.<br>
+The last argument is a lambda function with the sequence number as a parameter,<br>
+to calculate the missing members of the sequence.
 
 ```cpp
 	($unfold N [val_0] [val_1] [...] \n.(val_($n)))
