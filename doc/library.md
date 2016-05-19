@@ -64,12 +64,12 @@ Another way to write a conditional expression.
 
 This macro allows to unfold a sequence of specified number of elements (the first argument).
 If the number of arguments is greater than two, the second argument is the first element
-of the sequence, and so on.
-The last argument is a lambda function with the sequence number as a parameter,
-to calculate missing members of the sequence. 
+of the sequence, and so on. The last argument is a lambda function with the sequence number
+as a parameter, to calculate missing members of the sequence.
 
 ```cpp
-	($unfold N [val_0] [val_1] [...] \n.(val_($n)))
+($unfold 7 A B C \n.($add n 1))
+ABC4567
 ```
 
 ####do
