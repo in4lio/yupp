@@ -63,9 +63,10 @@ Another way to write a conditional expression.
 ####unfold
 
 This macro allows to unfold a sequence of specified number of elements (the first argument).<br>
-The second argument is the first element of the sequence, and so on.<br>
+If the number of arguments is greater than two, the second argument is the first element
+of the sequence, and so on.
 The last argument is a lambda function with the sequence number as a parameter,
-to calculate missing members of the sequence.
+to calculate missing members of the sequence. 
 
 ```cpp
 	($unfold N [val_0] [val_1] [...] \n.(val_($n)))
