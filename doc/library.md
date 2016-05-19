@@ -59,7 +59,9 @@ ALL RIGHT
 ```
 
 ```cpp
-	($unless cond [leg_F] [leg_T])
+($unless ($eq 4 ($add 2 2)),,It's impossible!,,OK)
+
+OK
 ```
 
 ####unfold
