@@ -59,9 +59,9 @@ ALL RIGHT
 ```
 
 ```cpp
-($unless ($eq 4 ($add 2 2)),,It's impossible!,,OK)
+($unless ($eq 4 ($add 2 2)) "It's impossible!" "OK")
 
-OK
+"OK"
 ```
 
 ####unfold
