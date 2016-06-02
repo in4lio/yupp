@@ -82,16 +82,29 @@ The macro places an argument into the single-pass `do-while` statement. It's usu
 
 ```cpp
 ($do ]
-    foo(); bar();
+	foo(); bar();
 [ )
 
 do {
-    foo(); bar();
+	foo(); bar();
 } while ( 0 ))
 ```
 
 ####foo
 It does the same thing as `do` macro but using Statements in Expressions GNU Extension `({ })`.
+
+####define
+Define C macro `($define signature body)`.
+
+```cpp
+($define,,CLEAR_VAR( var, mask ),,($do ]
+	var &= ~( mask );
+[ ))
+
+#define CLEAR_VAR( var, mask ) do { \
+	var &= ~( mask ); \
+} while ( 0 )
+```
 
 ####def, undef
 
