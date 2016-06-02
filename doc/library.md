@@ -78,15 +78,16 @@ ABC4567
 ```
 
 ####do
+The macro places an argument into the single-pass `do-while` statement. It's usually used together with `define` macro.
 
 ```cpp
-	($do,,foo(); bar(); )
-```
+($do ]
+    foo(); bar();
+[ )
 
-####define
-
-```cpp
-	($define,,array_length( x ),,( sizeof( x ) / sizeof(( x )[ 0 ])))
+do {
+    foo(); bar();
+} while ( 0 ))
 ```
 
 ####def, undef
