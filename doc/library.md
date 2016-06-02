@@ -90,6 +90,9 @@ do {
 } while ( 0 ))
 ```
 
+####foo
+It does the same thing as `do` macro but using Statements in Expressions GNU Extension `({ })`.
+
 ####def, undef
 
 ```cpp
