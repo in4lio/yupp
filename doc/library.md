@@ -87,7 +87,7 @@ The macro places an argument into the single-pass `do-while` statement. It's usu
 
 do {
 	foo(); bar();
-} while ( 0 ))
+} while ( 0 )
 ```
 
 ####foo
