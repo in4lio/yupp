@@ -106,14 +106,22 @@ Define C macro `($define signature body)`.
 } while ( 0 )
 ```
 
-####def, undef
+####def
+Define empty C macro and bind the same *yupp* atom with `1`.
 
 ```cpp
-	($def LINK_MODULE)
+($def LINK_MODULE)
+
+#define LINK_MODULE
 ```
 
+####undef
+Undefine C macro and bind the same *yupp* atom with `0`.
+
 ```cpp
-	($undef LINK_MODULE)
+($undef LINK_MODULE)
+
+#undef  LINK_MODULE
 ```
 
 ####def-if
