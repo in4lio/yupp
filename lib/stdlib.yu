@@ -69,7 +69,7 @@
 #undef  ($name))
 
 ($!
-	($def-if LINK_MODULE)
+	($def-if LINK_MODULE LINK_MODULE_TEST)
 )
 ($macro def-if (cond name)($set ($name) 1 ? ($cond) | 0)
 ($if ($name) [#define ($name)]))
