@@ -107,7 +107,10 @@ Define C macro `($define signature body)`.
 ```
 
 ####def
-Define empty C macro and bind the same *yupp* atom with `1`.
+```cpp
+($def NAME)
+```
+Define empty C macro `NAME` and bind the same *yupp* atom with `1`.
 
 ```cpp
 ($def LINK_MODULE)
@@ -116,7 +119,10 @@ Define empty C macro and bind the same *yupp* atom with `1`.
 ```
 
 ####undef
-Undefine C macro and bind the same *yupp* atom with `0`.
+```cpp
+($undef NAME)
+```
+Undefine C macro `NAME` and bind the same *yupp* atom with `0`.
 
 ```cpp
 ($undef LINK_MODULE)
@@ -125,9 +131,13 @@ Undefine C macro and bind the same *yupp* atom with `0`.
 ```
 
 ####def-if
+```cpp
+(def-if COND NAME)
+```
+Define empty C macro `NAME` and bind the same *yupp* atom with `1` only if `cond` is true.
 
 ```cpp
-	($def-if LINK_MODULE)
+($def-if LINK_MODULE LINK_MODULE_TEST)
 ```
 
 ####skip-if-not
