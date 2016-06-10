@@ -78,6 +78,7 @@ ABC4567
 ```
 
 ####do
+
 The macro places an argument into the single-pass `do-while` statement. It's usually used together with `define` macro.
 
 ```cpp
@@ -91,9 +92,11 @@ do {
 ```
 
 ####foo
+
 It does the same thing as `do` macro but using Statements in Expressions GNU Extension `({ })`.
 
 ####define
+
 Define C macro `($define signature body)`.
 
 ```cpp
@@ -107,9 +110,11 @@ Define C macro `($define signature body)`.
 ```
 
 ####def
+
 ```cpp
 ($def NAME)
 ```
+
 Define empty C macro `NAME` and bind the same *yupp* atom with `1`.
 
 ```cpp
@@ -119,9 +124,11 @@ Define empty C macro `NAME` and bind the same *yupp* atom with `1`.
 ```
 
 ####undef
+
 ```cpp
 ($undef NAME)
 ```
+
 Undefine C macro `NAME` and bind the same *yupp* atom with `0`.
 
 ```cpp
@@ -131,20 +138,24 @@ Undefine C macro `NAME` and bind the same *yupp* atom with `0`.
 ```
 
 ####def-if
+
 ```cpp
 (def-if COND NAME)
 ```
-Define empty C macro `NAME` and bind the same *yupp* atom with `1` only if `cond` is true.
+
+Define empty C macro `NAME` and bind the same *yupp* atom with `1` only if `COND` is true.
 
 ```cpp
 ($def-if LINK_MODULE LINK_MODULE_TEST)
 ```
 
-####skip-if-not
+####skip-if, skip-if-not
 
 ```cpp
-	($skip-if-not LINK_MODULE)
+(skip-if COND)
 ```
+
+Skip the rest of the file depending on `COND`.
 
 ####BIN, BB
 
