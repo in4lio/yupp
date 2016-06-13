@@ -159,12 +159,16 @@ Skip the rest of the current file depending on `COND`.
 
 ####BIN, BB
 
-```cpp
-	($BIN,,11001010110010100000)
-```
+Binary representation of the number.
 
 ```cpp
-	($BB,,10110011,,10110010,,10110001,,10110000)
+($hex ($BIN,,11001010110010100000))
+
+0xcaca0
+
+($hex ($BB,,10110011,,10110010,,10110001,,10110000))
+
+0xb3b2b1b0L
 ```
 
 ####def-fn-argv
