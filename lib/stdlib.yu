@@ -91,7 +91,7 @@
 ($set BB \...($sum ($($range ($len __va_args__)) \__i.{ ($BIN ($__i ($reversed __va_args__))) << ($__i) * 8 })))
 
 ($!
-	($def-fn-argv int sum ]
+	($def-fn-argv int sumi ]
 		int result = 0;
 		($ &arg-begin)
 		while ( ($ &arg-count)-- ) result += ($ &arg-value &type);

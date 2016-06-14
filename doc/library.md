@@ -1,14 +1,9 @@
-_Sorry, still in the process..._
-
 Standard Library (stdlib.yu)
 ----------------------------
 ```
 ($import stdlib)
 ```
 ####dict
-
-This macro allows to define a series of lists that make it easy to generate
-repeating code structures by a dictionary.
 
 ```cpp
 	($dict NAME
@@ -21,6 +16,9 @@ repeating code structures by a dictionary.
 		)
 	)
 ```
+
+This macro allows to define a series of lists that make it easy to generate
+repeating code structures by a dictionary.
 
 For example:
 
@@ -173,19 +171,33 @@ Binary representation of the number.
 
 ####def-fn-argv
 
+Wrapper for variadic functions.
+
 ```cpp
-	($def-fn-argv int sum ]
-		int result = 0;
-		($ &arg-begin)
-		while ( ($ &arg-count)-- ) result += ($ &arg-value &type);
-		($ &arg-end)
-		return ( result );
-	[ )
+($def-fn-argv int sumi ]
+	int result = 0;
+	($ &arg-begin)
+	while ( ($ &arg-count)-- ) result += ($ &arg-value &type);
+	($ &arg-end)
+	return ( result );
+[ )
+
+int sumi( int argcnt, ... )
+{
+	int result = 0;
+	va_list argptr;
+	va_start( argptr, argcnt );
+	while ( argcnt-- ) result += va_arg( argptr, int );
+	va_end( argptr );
+	return ( result );
+}
 ```
 
 #### INT_MAX, INT_MIN
 
 Minimal and maximal values of `int32_t`.
+
+_Sorry, still in the process..._
 
 
 Coroutines (corolib.yu)
