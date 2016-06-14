@@ -20,10 +20,12 @@
 #define ($h-name)_EXT
 #define ($h-name)_EXT_INIT( dec, init ) \
 	dec = init
+#define ($h-name)_INL extern inline
 #else
 #define ($h-name)_EXT extern
 #define ($h-name)_EXT_INIT( dec, init ) \
 	extern dec
+#define ($h-name)_INL inline
 #endif
 
 #ifndef COMMA
@@ -60,3 +62,5 @@ extern "C" {
 
 ($macro h-extern ()($h-name)_EXT)
 ($macro h-extern-init ( dec init )($h-name)_EXT_INIT( ($dec), ($replace [($init)] [,] [ COMMA ]) );)
+($macro h-inline ()($h-name)_INL)
+
