@@ -6,15 +6,15 @@ Standard Library (stdlib.yu)
 ####dict
 
 ```cpp
-	($dict NAME
-		(` col_1_name   col_2_name     col_N_name  )
-		(`
-		(  col_1_val_1  col_2_val_1    col_N_val_1 )
-		(  col_1_val_2  col_2_val_2    col_N_val_2 )
+($dict NAME
+	(` col_1_name   col_2_name     col_N_name  )
+	(`
+	(  col_1_val_1  col_2_val_1    col_N_val_1 )
+	(  col_1_val_2  col_2_val_2    col_N_val_2 )
 
-		(  col_1_val_M  col_2_val_M    col_N_val_M )
-		)
+	(  col_1_val_M  col_2_val_M    col_N_val_M )
 	)
+)
 ```
 
 This macro allows to define a series of lists that make it easy to generate
@@ -197,7 +197,8 @@ int sumi( int argcnt, ... )
 
 Minimal and maximal values of `int32_t`.
 
-_Sorry, still in the process..._
+
+_Sorry, the others still in the process..._
 
 
 Coroutines (corolib.yu)
