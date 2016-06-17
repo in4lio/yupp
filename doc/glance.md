@@ -25,7 +25,7 @@ __Set form__ `($set ... )` allows to bound an atom with a value, for example
 the decrement function definition is<br>
 `($set dec \p.($sub p 1))`.
 
-The example begins with `($import ... )` of the standard library.
+The example begins with `($import ... )` of [__yupp__ Standard Library](../doc/library.md).
 The [stdlib.yu](../lib/stdlib.yu), in particular, contains __dict__<br>
 macro intended to define a series of lists that make it easy to
 generate repeating code structures by a dictionary.
