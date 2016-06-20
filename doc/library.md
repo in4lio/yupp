@@ -79,7 +79,8 @@ ABC4567
 
 ####do
 
-The macro places an argument into the single-pass `do-while` statement. It's usually used together with `define` macro.
+The macro places an argument into the single-pass `do-while` statement. It's usually used
+together with `define` macro.
 
 ```cpp
 ($do ]
@@ -208,6 +209,7 @@ Coroutines (corolib.yu)
 ```
 
 Coroutine mechanics, implemented using the C language extension "Labels as Values".
+
 Based on Simon Tatham ["Coroutines in C"](http://www.chiark.greenend.org.uk/~sgtatham/coroutines.html).
 
 ```cpp
