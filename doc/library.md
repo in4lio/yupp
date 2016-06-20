@@ -1,8 +1,10 @@
 Standard Library (stdlib.yu)
 ----------------------------
+
 ```
 ($import stdlib)
 ```
+
 ####dict
 
 ```cpp
@@ -198,59 +200,64 @@ int sumi( int argcnt, ... )
 Minimal and maximal values of `int32_t`.
 
 
-_Sorry, the others still in the process..._
-
-
 Coroutines (corolib.yu)
 -----------------------
+
 ```
 ($import corolib)
 ```
+
+Coroutine mechanics, implemented using the C language extension "Labels as Values".
+Based on Simon Tatham ["Coroutines in C"](http://www.chiark.greenend.org.uk/~sgtatham/coroutines.html).
+
 ```cpp
-	($coro-context A);
-	($coro-context B);
+($coro-context A);
+($coro-context B);
 
-	($coro-define A ]
-		for ( ; ; ) {
-			/* ... */
-			($coro-yield);
-		}
-	[ )
-
-	($coro-define B ]
-		for ( ; ; ) {
-			/* ... */
-			($coro-wait cond);
-		}
-	[ \enter ]
-		($coro-local) int b;
-	[ )
-
-	int main( void )
-	{
-		for ( ; ; ) {
-			($coro-call A);
-			($coro-call B);
-		}
-		return 0;
+($coro-define A ]
+	for ( ; ; ) {
+		/* ... */
+		($coro-yield);
 	}
+[ )
+
+($coro-define B ]
+	for ( ; ; ) {
+		/* ... */
+		($coro-wait cond);
+	}
+[ \enter ]
+	($coro-local) int b;
+[ )
+
+int main( void )
+{
+	for ( ; ; ) {
+		($coro-call A);
+		($coro-call B);
+	}
+	return 0;
+}
 ```
 
 
 Header Files Helper (h.yu)
 --------------------------
+
 ```
 ($import h)
 ```
+
 ```cpp
-	($h-begin-named)
+($h-begin-named)
 
-	($h-extern-init,,int a[ 4 ],,{ 0, 1, 2, 3 })
-	($h-extern) int b;
+($h-extern-init,,int a[ 4 ],,{ 0, 1, 2, 3 })
+($h-extern) int b;
 
-	($extern-c-begin)
-	($h-extern) int f( void );
-	($extern-c-end)
+($extern-c-begin)
+($h-extern) int f( void );
+($extern-c-end)
 
-	($h-end)
+($h-end)
+
 ```
