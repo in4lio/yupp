@@ -244,6 +244,8 @@ int main( void )
 Header Files Helper (h.yu)
 --------------------------
 
+For example, `unit.yu-h`:
+
 ```cpp
 ($import h)
 
@@ -251,7 +253,7 @@ Header Files Helper (h.yu)
 
 ($extern-c-begin)
 
-($h-extern-init,,unsigned int foo[ 4 ],,{ 0, 1, 2, 3 });
+($h-extern-init,,unsigned int foo[ 4 ],,{ 0, 1, 2, 3 })
 ($h-extern) int bar;
 
 ($h-extern) char fn( void );
@@ -266,8 +268,68 @@ Header Files Helper (h.yu)
 ($h-end)
 ```
 
+`unit.h`:
+
+```cpp
+#ifndef UNIT_H
+#define UNIT_H
+
+#ifdef  UNIT_IMPLEMENT
+#define UNIT_EXT
+#define UNIT_EXT_INIT( dec, init ) \
+	dec = init
+#define UNIT_INL extern inline
+#else
+#define UNIT_EXT extern
+#define UNIT_EXT_INIT( dec, init ) \
+	extern dec
+#define UNIT_INL inline
+#endif
+
+#ifndef COMMA
+#define COMMA   ,
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UNIT_EXT_INIT( unsigned int foo[ 4 ], { 0 COMMA  1 COMMA  2 COMMA  3 } );
+UNIT_EXT int bar;
+UNIT_EXT char fn( void );
+
+UNIT_INL int max( int a, int b )
+{
+	return ( a > b ? a : b );
+}
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
+```
+
+`unit.yu-c`:
+
 ```cpp
 ($import h)
 
 ($implement-named)
+
+char fn( void )
+{
+	result ( -1 );
+}
+```
+
+`unit.c`:
+
+```cpp
+#define UNIT_IMPLEMENT
+
+char fn( void )
+{
+	result ( -1 );
+}
 ```

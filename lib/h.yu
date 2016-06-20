@@ -3,7 +3,7 @@
 
 	($extern-c-begin)
 
-	($h-extern-init,,unsigned int foo[ 4 ],,{ 0, 1, 2, 3 });
+	($h-extern-init,,unsigned int foo[ 4 ],,{ 0, 1, 2, 3 })
 	($h-extern) int bar;
 	($h-extern) char fn( void );
 
