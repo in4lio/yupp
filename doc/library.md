@@ -255,7 +255,6 @@ For example, `unit.yu-h`:
 
 ($h-extern-init,,unsigned int foo[ 4 ],,{ 0, 1, 2, 3 })
 ($h-extern) int bar;
-
 ($h-extern) char fn( void );
 
 ($h-inline) int max( int a, int b )
@@ -319,7 +318,7 @@ UNIT_INL int max( int a, int b )
 
 char fn( void )
 {
-	result ( -1 );
+	return ( -1 );
 }
 ```
 
@@ -330,6 +329,6 @@ char fn( void )
 
 char fn( void )
 {
-	result ( -1 );
+	return ( -1 );
 }
 ```
