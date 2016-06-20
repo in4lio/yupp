@@ -204,15 +204,13 @@ Minimal and maximal values of `int32_t`.
 Coroutines (corolib.yu)
 -----------------------
 
-```
-($import corolib)
-```
-
 Coroutine mechanics, implemented using the C language extension "Labels as Values".
 
 Based on Simon Tatham ["Coroutines in C"](http://www.chiark.greenend.org.uk/~sgtatham/coroutines.html).
 
 ```cpp
+($import corolib)
+
 ($coro-context A);
 ($coro-context B);
 
@@ -246,20 +244,30 @@ int main( void )
 Header Files Helper (h.yu)
 --------------------------
 
-```
-($import h)
-```
-
 ```cpp
+($import h)
+
 ($h-begin-named)
 
-($h-extern-init,,int a[ 4 ],,{ 0, 1, 2, 3 })
-($h-extern) int b;
-
 ($extern-c-begin)
-($h-extern) int f( void );
+
+($h-extern-init,,unsigned int foo[ 4 ],,{ 0, 1, 2, 3 });
+($h-extern) int bar;
+
+($h-extern) char fn( void );
+
+($h-inline) int max( int a, int b )
+{
+	return ( a > b ? a : b );
+}
+
 ($extern-c-end)
 
 ($h-end)
+```
 
+```cpp
+($import h)
+
+($implement-named)
 ```

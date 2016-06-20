@@ -1,11 +1,12 @@
 ($!
 	($h-begin-named)
 
-	($h-extern-init,,int a[ 4 ],,{ 0, 1, 2, 3 })
-	($h-extern) int b;
-
 	($extern-c-begin)
-	($h-extern) int f( void );
+
+	($h-extern-init,,unsigned int foo[ 4 ],,{ 0, 1, 2, 3 });
+	($h-extern) int bar;
+	($h-extern) char fn( void );
+
 	($extern-c-end)
 
 	($h-end)
