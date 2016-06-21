@@ -267,7 +267,7 @@ For example, `unit.yu-h`:
 ($h-end)
 ```
 
-`unit.h`:
+will be translated into `unit.h`:
 
 ```cpp
 #ifndef UNIT_H
@@ -277,12 +277,16 @@ For example, `unit.yu-h`:
 #define UNIT_EXT
 #define UNIT_EXT_INIT( dec, init ) \
 	dec = init
-#define UNIT_INL extern inline
+#define UNIT_INL
 #else
 #define UNIT_EXT extern
 #define UNIT_EXT_INIT( dec, init ) \
 	extern dec
+#if __GNUC__ && !__GNUC_STDC_INLINE__
+#define UNIT_INL extern inline
+#else
 #define UNIT_INL inline
+#endif
 #endif
 
 #ifndef COMMA
@@ -309,7 +313,7 @@ UNIT_INL int max( int a, int b )
 #endif
 ```
 
-`unit.yu-c`:
+And `unit.yu-c`:
 
 ```cpp
 ($import h)
@@ -322,7 +326,7 @@ char fn( void )
 }
 ```
 
-`unit.c`:
+will spawn `unit.c`:
 
 ```cpp
 #define UNIT_IMPLEMENT
