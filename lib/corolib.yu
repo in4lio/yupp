@@ -1,1 +1,7 @@
-($import coroutine)  ($! coroutine or coroutine-h )
+($!
+	Please import "coroutine", here, if you want to generate a direct C source code for coroutines,
+	or import "coroutine-h" to generate a source code based on macro definitions from "coroutine.h".
+)
+
+($import coroutine)
+($! import coroutine-h)
