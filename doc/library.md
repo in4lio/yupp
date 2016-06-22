@@ -1,4 +1,4 @@
-Standard Library (stdlib.yu)
+Standard Library ([stdlib.yu](../lib/stdlib.yu))
 ----------------------------
 
 ```
