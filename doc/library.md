@@ -201,7 +201,7 @@ int sumi( int argcnt, ... )
 Minimal and maximal values of `int32_t`.
 
 
-Coroutines (corolib.yu)
+Coroutines ([corolib.yu](../lib/corolib.yu))
 -----------------------
 
 Coroutine mechanics, implemented using the C language extension "Labels as Values".
@@ -241,7 +241,7 @@ int main( void )
 ```
 
 
-Header Files Helper (h.yu)
+Header Files Helper ([h.yu](../lib/h.yu))
 --------------------------
 
 For example, `unit.yu-h`:
