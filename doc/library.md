@@ -1,11 +1,33 @@
-Standard Library ([stdlib.yu](../lib/stdlib.yu))
-----------------------------
+## Table of Contents
+
+<!-- MarkdownTOC autolink="true" bracket="round" depth=0 style="unordered" autoanchor="false" -->
+
+- [Standard Library \(stdlib.yu\)](#standard-library-stdlibyu)
+	- [dict](#dict)
+	- [if, unless](#if-unless)
+	- [unfold](#unfold)
+	- [do](#do)
+	- [foo](#foo)
+	- [define](#define)
+	- [def](#def)
+	- [undef](#undef)
+	- [def-if](#def-if)
+	- [skip-if, skip-if-not](#skip-if-skip-if-not)
+	- [BIN, BB](#bin-bb)
+	- [def-fn-argv](#def-fn-argv)
+	- [INT_MAX, INT_MIN](#int_max-int_min)
+- [Coroutines \(corolib.yu\)](#coroutines-corolibyu)
+- [Header Files Helper \(h.yu\)](#header-files-helper-hyu)
+
+<!-- /MarkdownTOC -->
+
+## Standard Library ([stdlib.yu](../lib/stdlib.yu))
 
 ```
 ($import stdlib)
 ```
 
-####dict
+#### dict
 
 ```cpp
 ($dict NAME
@@ -48,7 +70,7 @@ QString ini_greeting = "Hello! Improving Pi...";
 double ini_Pi = 0.0;
 ```
 
-####if, unless
+#### if, unless
 
 Another way to write a conditional expression.
 
@@ -64,7 +86,7 @@ ALL RIGHT
 "OK"
 ```
 
-####unfold
+#### unfold
 
 This macro allows to unfold a sequence of specified number of elements (the first argument).
 If the number of arguments is greater than two, the second argument is the first element
@@ -77,7 +99,7 @@ as a parameter, to calculate missing members of the sequence.
 ABC4567
 ```
 
-####do
+#### do
 
 The macro places an argument into the single-pass `do-while` statement. It's usually used
 together with `define` macro.
@@ -92,11 +114,11 @@ do {
 } while ( 0 )
 ```
 
-####foo
+#### foo
 
 It does the same thing as `do` macro but using Statements in Expressions GNU Extension `({ })`.
 
-####define
+#### define
 
 Define C macro `($define signature body)`.
 
@@ -110,7 +132,7 @@ Define C macro `($define signature body)`.
 } while ( 0 )
 ```
 
-####def
+#### def
 
 ```cpp
 ($def NAME)
@@ -124,7 +146,7 @@ Define empty C macro `NAME` and bind the same *yupp* atom with `1`.
 #define LINK_MODULE
 ```
 
-####undef
+#### undef
 
 ```cpp
 ($undef NAME)
@@ -138,7 +160,7 @@ Undefine C macro `NAME` and bind the same *yupp* atom with `0`.
 #undef  LINK_MODULE
 ```
 
-####def-if
+#### def-if
 
 ```cpp
 (def-if COND NAME)
@@ -150,7 +172,7 @@ Define empty C macro `NAME` and bind the same *yupp* atom with `1` only if `COND
 ($def-if LINK_MODULE LINK_MODULE_TEST)
 ```
 
-####skip-if, skip-if-not
+#### skip-if, skip-if-not
 
 ```cpp
 (skip-if COND)
@@ -158,7 +180,7 @@ Define empty C macro `NAME` and bind the same *yupp* atom with `1` only if `COND
 
 Skip the rest of the current file depending on `COND`.
 
-####BIN, BB
+#### BIN, BB
 
 Binary representation of the number.
 
@@ -172,7 +194,7 @@ Binary representation of the number.
 0xb3b2b1b0L
 ```
 
-####def-fn-argv
+#### def-fn-argv
 
 Wrapper for variadic functions.
 
@@ -201,8 +223,7 @@ int sumi( int argcnt, ... )
 Minimal and maximal values of `int32_t`.
 
 
-Coroutines ([corolib.yu](../lib/corolib.yu))
------------------------
+## Coroutines ([corolib.yu](../lib/corolib.yu))
 
 Coroutine mechanics, implemented using the C language extension "Labels as Values".
 
@@ -241,8 +262,7 @@ int main( void )
 ```
 
 
-Header Files Helper ([h.yu](../lib/h.yu))
---------------------------
+## Header Files Helper ([h.yu](../lib/h.yu))
 
 For example, `unit.yu-h`:
 
