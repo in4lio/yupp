@@ -94,11 +94,11 @@
 
     123
 
-    ($! the embedding of one list into another - *list )
+    ($! the embedding of one list into another — *list )
 
         ($set mark (5 4 *(3 2) 1))
 
-    ($! infix expression on Python - {} )
+    ($! infix expression on Python — {} )
 
         ($set four { 2 + 2 })
 
@@ -108,7 +108,7 @@
 
     foo = 10.0;
 
-    ($! conditional expression - consequent ? condition | alternative )
+    ($! conditional expression — consequent ? condition | alternative )
 
         ($set fact \n.($ 1 ? { n == 0 } | { ($fact { n - 1 }) * n }))
         ($fact 10)
@@ -127,7 +127,7 @@
 
     5, 4, 3, 2, 1,
 
-    ($! the function parameter with default value )
+    ($! the function parameter with default value — \p:val. )
 
         ($set if \cond.\then:[].\else:[].($ then ? cond | else ))
 
@@ -145,7 +145,7 @@
             ($set each-GRADE  ($range ($len (($PAIRS)) )))
         )
 
-    ($! the quote - (`) )
+    ($! the quote — (`) )
 
         ($GRADE
             (`
@@ -158,7 +158,7 @@
         )
 
     ($! the enclosing of the source code into the loop
-        with reverse square brackets - ]<EOL> <EOL>[ )
+        with reverse square brackets — ]<EOL> <EOL>[ )
 
         ($each-GRADE \i.]
             int ($i GRADE-name) = ($i GRADE-value);
@@ -171,7 +171,7 @@
     int D = 2;
     int E = 1;
 
-    ($! the source code enclosing with double comma - ,, )
+    ($! the source code enclosing with double comma — ,, )
 
         ($import stdlib)
         ($hex ($BB,,11000000,,11111111,,11101110))
@@ -184,13 +184,13 @@
 
     "Give me 5."
 
-    ($! the string evaluation - ($$) )
+    ($! the string evaluation — ($$) )
 
         ($ ($$'($($func) ($0) ($1))' \func (`mul) 5 5))
 
     25
 
-    ($! the iterator (modifier) - experimental!
+    ($! the iterator (modifier) — experimental!
         NOT applicable into loop or conditional expression )
 
         ($set i 0)
@@ -205,7 +205,7 @@
 
     5 10 15 20
 
-    ($! the late bound parameter - \p.. &p )
+    ($! the late bound parameter — \p.. &p )
 
         ($ \func.\val.($func val) \p.($q p) regular)
         ($ \p..\func.\val.($func val) ($q &p) late_bound)
@@ -213,7 +213,7 @@
     "regular"
     "late_bound"
 
-    ($! the variable argument list - \...(__va_args__) - experimental! )
+    ($! the variable argument list — \... __va_args__ — experimental! )
 
         ($ \p1.\p2.\...($__va_args__) 1 2 v a _ a r g s)
 
@@ -222,18 +222,18 @@
         ($ \val.\...($ ($lazy __va_args__) \func.[($func val) ])
             9.0
             \n.($sqrt n)
-            \n.{2 * n}
+            \n.{ 2 * n }
             \n.($pow n 2)
         )
 
     3.0 18.0 81.0
 
-    ($! getting names of parameters from the list - \(list). )
+    ($! getting names of parameters from the list — \(p). )
 
         ($set p (a b))
-        ($ \(p).{a - b} 100 500)
+        ($ \(p).{ a - b } 100 500)
         ($set p (b a))
-        ($ \(p).{a - b} 100 500)
+        ($ \(p).{ a - b } 100 500)
 
     -400
     400
@@ -351,7 +351,7 @@
     o   LEGO Mindstorms EV3 Debian C library:
         https://github.com/in4lio/ev3dev-c/
 
-    o   predict - an embedded application framework:
+    o   predict — an embedded application framework:
         https://github.com/in4lio/predict/
 
     ___     ______________________________________
