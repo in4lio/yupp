@@ -16,7 +16,7 @@ HOLDER      = 'Vitaly Kravtsov'
 EMAIL       = 'in4lio@gmail.com'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.9b2'
+VERSION     = '0.9b3'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -505,6 +505,22 @@ class COMMENT( BASE_MARK ):
     pass
 
 #   ---------------------------------------------------------------------------
+class IMPORT_BEGIN( BASE_MARK ):
+    """
+    AST: begin of imported text
+    """
+#   ---------------
+    pass
+
+#   ---------------------------------------------------------------------------
+class IMPORT_END( BASE_MARK ):
+    """
+    AST: end of imported text
+    """
+#   ---------------
+    pass
+
+#   ---------------------------------------------------------------------------
 class CAPTION( object ):
     """
     AST: abstract parent for headers
@@ -569,6 +585,12 @@ class TEXT( BASE_OBJECT ):
 #   -----------------------------------
     def __eq__( self, other ):
         return isinstance( other, self.__class__ ) and ( self.ast == other.ast )
+
+#   -----------------------------------
+    def enclose_import( self ):
+        if self.ast:
+            self.ast.insert( 0, IMPORT_BEGIN())
+            self.ast.append( IMPORT_END())
 
 #   ---------------------------------------------------------------------------
 class VAR( BASE_OBJECT ):
@@ -1070,6 +1092,7 @@ def ps_import( sou, depth = 0 ):
     if leg is not None:
 #       -- import library
         leg = yuparse( _import_source( STR( "%s.yu" % ( leg ), leg.input_file, leg.pos ), True ))
+        leg.enclose_import();
     else:
 #   ---- quote
         ( sou, leg ) = ps_quote( sou, depth + 1 )
@@ -1083,6 +1106,7 @@ def ps_import( sou, depth = 0 ):
             else:
 #               -- include source text
                 leg = yuparse( _import_source( leg, False ))
+                leg.enclose_import();
         else:
 #   ---- infix
             ( sou, leg ) = ps_infix( sou, depth + 1 )
@@ -2784,9 +2808,18 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #   ---- T
             elif isinstance( node, T ):
                 t = T([], node.indent )
+                skip_level = 0
                 for i, x in enumerate( node ):
                     nx = i + 1
                     x_apply = isinstance( x, APPLY )
+#                   -- skip text upto the end of module
+                    if skip_level:
+                        if isinstance( x, IMPORT_BEGIN ):
+                            skip_level += 1
+                        elif isinstance( x, IMPORT_END ):
+                            skip_level -= 1
+#                       -- skip node
+                        continue
 #   ---- T -- PLAIN
                     if isinstance( x, PLAIN ):
                         if x.indent is None:
@@ -2802,17 +2835,24 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         if isinstance( node.indent, str ) and ( nx < len( node )) and isinstance( node[ nx ], PLAIN ):
 #                           -- delete spacing
                             node[ nx ].trim = True
-#                       -- skip
+#                       -- skip node
                         continue
 
                     x = yueval( x, env, depth + 1 )
                     if x is None:
-#                       -- skip
+#                       -- skip node
                         continue
 
 #   ---- T -- SKIP
                     if isinstance( x, SKIP ):
-                        break
+                        skip_level = 1
+#                       -- skip node
+                        continue
+
+#   ---- T -- IMPORT_BEGIN | IMPORT_END
+                    if isinstance( x, IMPORT_BEGIN ) or isinstance( x, IMPORT_END ):
+#                       -- skip node
+                        continue
 
 #   ---- T -- ENV
                     if isinstance( x, ENV ):

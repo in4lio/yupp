@@ -100,9 +100,11 @@ enum {
 	return CO_YIELD;
 [ ))
 
-($macro coro-quit (name)($do ]
+($macro coro-quit ()($do ]
 	/* quit */
-	*co_p = &&L__END_($name);
+	*co_p = &&($__label);
+
+	($__label):
 	($&exit)
 	return CO_END;
 [ ))
