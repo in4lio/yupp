@@ -104,9 +104,9 @@
 
     ($! infix expression straight into the source code )
 
-        (${} sqrt(four))
+        foo = (${} sqrt(four) * 5.0);
 
-    2.0
+    foo = 10.0;
 
     ($! conditional expression - consequent ? condition | alternative )
 
@@ -160,10 +160,10 @@
     ($! the enclosing of the source code into the loop
         with reverse square brackets - ]<EOL> <EOL>[ )
 
-    ($each-GRADE \i.]
-        int ($i GRADE-name) = ($i GRADE-value);
+        ($each-GRADE \i.]
+            int ($i GRADE-name) = ($i GRADE-value);
 
-    [ )
+        [ )
 
     int A = 5;
     int B = 4;
@@ -173,8 +173,8 @@
 
     ($! the source code enclosing with double comma - ,, )
 
-    ($import stdlib)
-    ($hex ($BB,,11000000,,11111111,,11101110))
+        ($import stdlib)
+        ($hex ($BB,,11000000,,11111111,,11101110))
 
     0xc0ffee
 
@@ -186,7 +186,7 @@
 
     ($! the string evaluation - ($$) )
 
-        ($ ($$'($($fn) ($0) ($1))' \fn (`mul) 5 5))
+        ($ ($$'($($func) ($0) ($1))' \func (`mul) 5 5))
 
     25
 
@@ -205,26 +205,36 @@
 
     5 10 15 20
 
-    ($! the late bound parameter - \p.. )
+    ($! the late bound parameter - \p.. &p )
 
-        ($set a1 \p..\fn.\n.($fn n))
-        ($a1,,printf( ($q &p) );,,Hi!)
 
-    printf( "Hi!" );
+    "regular"
+    "late_bound"
 
     ($! the variable argument list - \...(__va_args__) - experimental! )
 
-        ($ \a.\b.\...($__va_args__) 1 2 3 4 5)
+        ($ \p1.\p2.\...($__va_args__) 1 2 v a _ a r g s)
 
-    345
+    va_args
 
-    ($ \a.\...($($lazy __va_args__) \f.($f a))
-        9 \n.($sqrt n) \n.[ ($n) ] \n.($pow n 2)
-    )
+        ($ \val.\...($ ($lazy __va_args__) \func.[($func val) ])
+            9.0
+            \n.($sqrt n)
+            \n.{2 * n}
+            \n.($pow n 2)
+        )
 
-    3.0 9 81.0
+    3.0 18.0 81.0
 
-    ($! getting the parameter names from the list - \(list). )
+    ($! getting names of parameters from the list - \(list). )
+
+        ($set p (a b))
+        ($ \(p).{a - b} 100 500)
+        ($set p (b a))
+        ($ \(p).{a - b} 100 500)
+
+    -400
+    400
 
     ___         __________________________________
     ___ EXAMPLE __________________________________
