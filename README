@@ -207,6 +207,8 @@
 
     ($! the late bound parameter - \p.. &p )
 
+        ($ \func.\val.($func val) \p.($q p) regular)
+        ($ \p..\func.\val.($func val) ($q &p) late_bound)
 
     "regular"
     "late_bound"
