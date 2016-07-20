@@ -34,7 +34,7 @@
 `($reversed list)` | Return a reversed list.
 `($re-split regex s)` | _Experimental_. Equality `filter( None, re.split( regex, s ))`.
 `($round x [n])` | Return the floating point value `x` rounded to `n` digits after the decimal point.
-`($skip)` | _Experimental_. Skip the rest of a text.
+`($skip)` | _Experimental_. Skip the rest of the current module.
 `($SPACE)` | Steady SPACE character.
 `($str x)` | Return a string containing a nicely printable representation of the argument.
 `($strlen s)` | Length of a string (without quotes).

@@ -178,7 +178,7 @@ Define empty C macro `NAME` and bind the same *yupp* atom with `1` only if `COND
 (skip-if COND)
 ```
 
-Skip the rest of the current file depending on `COND`.
+Skip the rest of the current module depending on `COND`.
 
 #### BIN, BB
 
