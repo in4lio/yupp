@@ -251,7 +251,7 @@ r"""
 A
 """
 ),(
-#   ---- 04 -- LATE_BOUNDED, EMIT
+#   ---- 04 -- LATE_BOUNDED, EMIT, parameters from list
 0,
 
 r"""
@@ -264,15 +264,21 @@ r"""
 ($set q 3)
 ($set add2 \n.($add n 2))
 (${}($emit q add2)+($emit q add2)+($emit q add2)+($emit q add2))
+($set p (c d))
+($ \(p).{c - d} 100 500)
+($set p (d c))
+($ \(p).{c - d} 100 500)
 """,
 
-TEXT([PLAIN('\n'), SET(ATOM('k'), INT(10L)), SET(ATOM('app'), LAMBDA([([ATOM('p1'), ATOM('p2')], ATOM('f'), None), ([], ATOM('i'), None)], APPLY(VAR([], ATOM('f')), [VAR([], ATOM('k')), VAR([], ATOM('i'))], []))), SET(ATOM('l'), INT(3L)), PLAIN('\n'), APPLY(VAR([], ATOM('list')), [VAR([], ATOM('k')), APPLY(VAR([], ATOM('app')), [INT(2L)], [(ATOM('f'), APPLY(VAR([], ATOM('mul')), [VAR(LATE_BOUNDED(), ATOM('p1')), VAR(LATE_BOUNDED(), ATOM('p2'))], []))]), APPLY(VAR([], ATOM('app')), [VAR([], ATOM('l'))], [(ATOM('f'), APPLY(VAR([], ATOM('mul')), [VAR(LATE_BOUNDED(), ATOM('p1')), VAR(LATE_BOUNDED(), ATOM('p2'))], []))])], []), PLAIN('\n'), SET(ATOM('l'), LIST([STR('"A"'), STR('"B"'), STR('"C"')])), PLAIN('\n'), SET(ATOM('a'), INT(5L)), PLAIN('\n'), EMIT(VAR([], ATOM('l')), None), PLAIN(', '), EMIT(VAR([], ATOM('l')), LAMBDA([([], ATOM('r'), None)], APPLY(VAR([], ATOM('r')), [LAMBDA([([], ATOM('s'), None)], APPLY(VAR([], ATOM('lower')), [VAR([], ATOM('s'))], []))], []))), PLAIN(', '), EMIT(VAR([], ATOM('l')), None), PLAIN(', '), EMIT(VAR([], ATOM('l')), None), PLAIN('\n'), EMIT(VAR([], ATOM('a')), LAMBDA([([], ATOM('n'), None)], INFIX(TEXT([PLAIN(' n + 1 ')], 0, 0)))), PLAIN(', '), EMIT(VAR([], ATOM('a')), LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('q')), [VAR([], ATOM('n'))], []))), PLAIN(', '), EMIT(VAR([], ATOM('a')), None), PLAIN('\n'), SET(ATOM('q'), INT(3L)), PLAIN('\n'), SET(ATOM('add2'), LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('add')), [VAR([], ATOM('n')), INT(2L)], []))), PLAIN('\n'), INFIX(TEXT([EMIT(VAR([], ATOM('q')), VAR([], ATOM('add2'))), PLAIN('+'), EMIT(VAR([], ATOM('q')), VAR([], ATOM('add2'))), PLAIN('+'), EMIT(VAR([], ATOM('q')), VAR([], ATOM('add2'))), PLAIN('+'), EMIT(VAR([], ATOM('q')), VAR([], ATOM('add2')))], 0, 0)), PLAIN('\n')], 0, 0),
+TEXT([PLAIN('\n'), SET(ATOM('k'), INT(10L)), SET(ATOM('app'), LAMBDA([([ATOM('p1'), ATOM('p2')], ATOM('f'), None), ([], ATOM('i'), None)], APPLY(VAR([], ATOM('f')), [VAR([], ATOM('k')), VAR([], ATOM('i'))], []))), SET(ATOM('l'), INT(3L)), PLAIN('\n'), APPLY(VAR([], ATOM('list')), [VAR([], ATOM('k')), APPLY(VAR([], ATOM('app')), [INT(2L)], [(ATOM('f'), APPLY(VAR([], ATOM('mul')), [VAR(LATE_BOUNDED(), ATOM('p1')), VAR(LATE_BOUNDED(), ATOM('p2'))], []))]), APPLY(VAR([], ATOM('app')), [VAR([], ATOM('l'))], [(ATOM('f'), APPLY(VAR([], ATOM('mul')), [VAR(LATE_BOUNDED(), ATOM('p1')), VAR(LATE_BOUNDED(), ATOM('p2'))], []))])], []), PLAIN('\n'), SET(ATOM('l'), LIST([STR('"A"'), STR('"B"'), STR('"C"')])), PLAIN('\n'), SET(ATOM('a'), INT(5L)), PLAIN('\n'), EMIT(VAR([], ATOM('l')), None), PLAIN(', '), EMIT(VAR([], ATOM('l')), LAMBDA([([], ATOM('r'), None)], APPLY(VAR([], ATOM('r')), [LAMBDA([([], ATOM('s'), None)], APPLY(VAR([], ATOM('lower')), [VAR([], ATOM('s'))], []))], []))), PLAIN(', '), EMIT(VAR([], ATOM('l')), None), PLAIN(', '), EMIT(VAR([], ATOM('l')), None), PLAIN('\n'), EMIT(VAR([], ATOM('a')), LAMBDA([([], ATOM('n'), None)], INFIX(TEXT([PLAIN(' n + 1 ')], 0, 0)))), PLAIN(', '), EMIT(VAR([], ATOM('a')), LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('q')), [VAR([], ATOM('n'))], []))), PLAIN(', '), EMIT(VAR([], ATOM('a')), None), PLAIN('\n'), SET(ATOM('q'), INT(3L)), PLAIN('\n'), SET(ATOM('add2'), LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('add')), [VAR([], ATOM('n')), INT(2L)], []))), PLAIN('\n'), INFIX(TEXT([EMIT(VAR([], ATOM('q')), VAR([], ATOM('add2'))), PLAIN('+'), EMIT(VAR([], ATOM('q')), VAR([], ATOM('add2'))), PLAIN('+'), EMIT(VAR([], ATOM('q')), VAR([], ATOM('add2'))), PLAIN('+'), EMIT(VAR([], ATOM('q')), VAR([], ATOM('add2')))], 0, 0)), PLAIN('\n'), SET(ATOM('p'), LIST([VAR([], ATOM('c')), VAR([], ATOM('d'))])), PLAIN('\n'), APPLY(LAMBDA(VAR([], ATOM('p')), INFIX(TEXT([PLAIN('c - d')], 0, 0))), [INT(100L), INT(500L)], []), PLAIN('\n'), SET(ATOM('p'), LIST([VAR([], ATOM('d')), VAR([], ATOM('c'))])), PLAIN('\n'), APPLY(LAMBDA(VAR([], ATOM('p')), INFIX(TEXT([PLAIN('c - d')], 0, 0))), [INT(100L), INT(500L)], []), PLAIN('\n')], 0, 0),
 
 r"""
 102030
 "A", "B", "c",
 5, 6, "6"
 24
+-400
+400
 """
 ),(
 #   ---- 05 -- LATE_BOUNDED (variable argument list)

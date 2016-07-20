@@ -230,10 +230,10 @@
 
     ($! getting names of parameters from the list — \(p). )
 
-        ($set p (a b))
-        ($ \(p).{ a - b } 100 500)
-        ($set p (b a))
-        ($ \(p).{ a - b } 100 500)
+        ($set p (c d))
+        ($ \(p).{ c - d } 100 500)
+        ($set p (d c))
+        ($ \(p).{ c - d } 100 500)
 
     -400
     400
