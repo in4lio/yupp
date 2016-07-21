@@ -1,1 +1,1 @@
-[A glance at the yupp](../../doc/glance.md)
+[A glance at the yupp](../../master/doc/glance.md)
