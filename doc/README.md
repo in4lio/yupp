@@ -1,1 +1,1 @@
-[yupp Wiki](../../wiki)
+[yupp Wiki](../../../wiki)
