@@ -56,8 +56,12 @@
     above, only an application can be embedded into the source code directly.
 
     Any functions from "string", "operator" and "math" modules of Python
-    standard library can be used in preprocessor expressions
+    Standard Library can be used in preprocessor expressions
     (https://github.com/in4lio/yupp/blob/master/doc/builtin.md).
+
+    The special ($import ) form is provided to include macros and functions
+    from yupp Standard Library or other libraries
+    (https://github.com/in4lio/yupp/blob/master/lib/README.md).
 
     The following examples show various syntactic constructs of the macro
     language. Try them using yupp Web Console (http://yup-py.appspot.com/).
@@ -98,7 +102,7 @@
 
         ($set mark (5 4 *(3 2) 1))
 
-    ($! infix expression on Python — {} )
+    ($! infix expression on Python — { } )
 
         ($set four { 2 + 2 })
 
@@ -121,7 +125,7 @@
 
     putchar('A'); putchar('B'); putchar('C'); putchar('D'); putchar('E');
 
-    ($! the source code enclosing with square brackets )
+    ($! the source code enclosing with square brackets — [ ] )
 
         ($mark \i.[($i), ])
 
@@ -145,7 +149,7 @@
             ($set each-GRADE  ($range ($len (($PAIRS)) )))
         )
 
-    ($! the quote — (`) )
+    ($! the quote — (` ) )
 
         ($GRADE
             (`
@@ -184,7 +188,7 @@
 
     "Give me 5."
 
-    ($! the string evaluation — ($$) )
+    ($! the string evaluation — ($$ ) )
 
         ($ ($$'($($func) ($0) ($1))' \func (`mul) 5 5))
 
