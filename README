@@ -68,7 +68,7 @@
 
     ($! this is a comment, won't be saved in the generated text )
 
-    ($! the atom binding )
+    ($! binding of the atom )
 
         ($set a 'A')
 
@@ -76,11 +76,11 @@
 
         ($set abc (a 'B' 'C' 'D' 'E'))
 
-    ($! a binding of the atom with the lambda is a function definition )
+    ($! binding of the atom with the lambda is a function definition )
 
         ($set inc \val.($add val 1))
 
-    ($! an application of the number is a subscripting )
+    ($! application of the number is subscripting )
 
         ($2 miss miss HIT miss)
 
@@ -92,13 +92,13 @@
 
     'A'
 
-    ($! an application of the list is "for each" loop )
+    ($! application of the list is "for each" loop )
 
         ($(0 1 2) \i.($inc i))
 
     123
 
-    ($! the embedding of one list into another — *list )
+    ($! embedding of one list into another — *list )
 
         ($set mark (5 4 *(3 2) 1))
 
@@ -119,7 +119,7 @@
 
     3628800
 
-    ($! the enclosing of the source code into the application form )
+    ($! enclosing of the source code into the application form )
 
         ($abc \ch.($code putchar(($ch));))
 
@@ -161,7 +161,7 @@
             )
         )
 
-    ($! the enclosing of the source code into the loop
+    ($! enclosing of the source code into the loop
         with reverse square brackets — ]<EOL> <EOL>[ )
 
         ($each-GRADE \i.]
@@ -195,7 +195,7 @@
     25
 
     ($! the iterator (modifier) — experimental!
-        NOT applicable into loop or conditional expression )
+        NOT applicable into a loop or conditional expression )
 
         ($set i 0)
         ($emit i inc) ($emit i inc) ($emit i dec) ($emit i)
