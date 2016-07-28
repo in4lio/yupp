@@ -4,7 +4,8 @@
  *  \author Vitaly Kravtsov (in4lio@gmail.com)
  *  \copyright The MIT License
  *
- *  Coroutine mechanics, implemented using the C language extension "Labels as Values".
+ *  Coroutine mechanics, implemented using the C language extensions "Labels as Values",
+ *  "Statements and Declarations in Expressions" and "Locally Declared Labels".
  *  Based on Simon Tatham "Coroutines in C".
  */
 
@@ -32,7 +33,7 @@
  *      CORO_BEGIN();
  *      for ( ; ; ) {
  *          // ...
- *          CORO_WAIT( cond, );
+ *          CORO_WAIT( cond );
  *      }
  *      CORO_END();
  *  }
@@ -46,10 +47,10 @@
  *      return 0;
  *  }
  *  \endcode
- *  Any local variables that need to be persistent across a coroutine switching
- *  must be declared static.
- *  If you need two CORO_YIELD on the same source line or into the macros,
- *  you should use CORO_YIELD_NAMED.
+ *
+ *  Any local variables which need to be persistent across a coroutine switching
+ *  must be declared static (CORO_LOCAL).
+ *
  *  \{
  */
 
@@ -67,26 +68,16 @@ enum {
 	CO_SKIP,
 };
 
-#define __concat_1( h, t )  h##t
-#define __concat( h, t )  __concat_1( h, t )
-
-#define CORO_LABEL  __concat( L__, __LINE__ )
-
-#define CORO_LABEL_NAMED( name )  __concat( L__##name##_, __LINE__ )
-
 /**
  *  \brief Define the coroutine context (a pointer to label).
  *  \param name Coroutine name.
  */
-#define CORO_CONTEXT( name )  co_t co_##name
+#define CORO_CONTEXT( name ) \
+	co_t co_##name
 
-#define CORO_CONTEXT_INIT( name )  co_##name = NULL
-
-/**
- *  \brief Define the coroutine.
- *  \param name Coroutine name.
- */
-#define CORO_DEFINE( name )  int coro_##name( co_t *co_p )
+#define CORO_CONTEXT_INIT( name ) ({ \
+	co_##name = NULL; \
+})
 
 /**
  *  \brief Declare the local variable that preserves a value across a coroutine switching.
@@ -94,92 +85,83 @@ enum {
 #define CORO_LOCAL  static
 
 /**
+ *  \brief Define the coroutine.
+ *  \param name Coroutine name.
+ */
+#define CORO_DEFINE( name ) \
+	int coro_##name( co_t *co_p )
+
+/**
  *  \brief The coroutine beginning.
  *  \param initial The initial operation, executed whenever enter in the coroutine.
  */
-#define CORO_BEGIN( initial ) \
+#define CORO_BEGIN( initial ) ({ \
 	initial; \
-	if ( *co_p ) goto **co_p;
+	if ( *co_p ) goto **co_p; \
+})
 
 /**
  *  \brief The coroutine end.
  *  \param final The final operation, executed whenever exit from the coroutine.
  *  \hideinitializer
  */
-#define CORO_END( final ) \
-	*co_p = &&CORO_LABEL; \
-CORO_LABEL: \
+#define CORO_END( final ) ({ \
+	__label__ L; \
+	*co_p = &&L; \
+L: \
 	final; \
-	return CO_END;
+	return CO_END; \
+})
 
 /**
  *  \brief Switching to the next coroutine.
  *  \param final Final operation.
  */
-#define CORO_YIELD( final ) \
-	do { \
-		*co_p = &&CORO_LABEL; \
-		final; \
-		return CO_YIELD; \
-CORO_LABEL:; \
-	} while ( 0 )
-
-/**
- *  \brief Switching to the next coroutine (with a named label).
- *  \param n Label name.
- *  \param final Final operation.
- */
-#define CORO_YIELD_NAMED( name, final ) \
-	do { \
-		*co_p = &&CORO_LABEL_NAMED( name ); \
-		final; \
-		return CO_YIELD; \
-CORO_LABEL_NAMED( name ):; \
-	} while ( 0 )
+#define CORO_YIELD( final ) ({ \
+	__label__ L; \
+	*co_p = &&L; \
+	final; \
+	return CO_YIELD; \
+L:; \
+})
 
 /**
  *  \brief Waiting for the condition is true.
  *  \param cond Condition.
- *  \param final Final operation.
+ *  \param ... Final operation.
  */
-#define CORO_WAIT( cond, final ) \
-	do { \
-		*co_p = &&CORO_LABEL; \
-CORO_LABEL: \
-		if (!( cond )) { \
-			final; \
-			return CO_WAIT; \
-		} \
-	} while ( 0 )
+#define CORO_WAIT( cond, ... ) ({ \
+	__label__ L; \
+	*co_p = &&L; \
+L: \
+	if (!( cond )) { \
+		__VA_ARGS__;  /* final */ \
+		return CO_WAIT; \
+	} \
+})
 
 /**
  *  \brief Restart the coroutine.
  *  \param final Final operation.
  */
-#define CORO_RESTART( final ) \
-	do { \
-		*co_p = NULL; \
-		final; \
-		return CO_YIELD; \
-	} while ( 0 )
+#define CORO_RESTART( final ) ({ \
+	*co_p = NULL; \
+	final; \
+	return CO_YIELD; \
+})
 
 /**
  *  \brief Quit the coroutine.
  *  \param final Final operation.
  */
-#define CORO_QUIT( final ) \
-	do { \
-		*co_p = &&CORO_LABEL; \
-CORO_LABEL: \
-		final; \
-		return CO_END; \
-	} while ( 0 )
+#define CORO_QUIT( final )  CORO_END( final )
 
 /**
  *  \brief Call the coroutine.
  *  \param name Coroutine name.
  */
-#define CORO_CALL( name )  coro_##name( &co_##name )
+#define CORO_CALL( name ) \
+	coro_##name( &co_##name )
 
 /**
  *  \brief Checking the coroutine is not completed.
@@ -191,37 +173,37 @@ CORO_LABEL: \
 /**
  *  \brief Start and waiting for the child coroutine is completed.
  *  \param coro Child coroutine.
- *  \param final Final operation.
+ *  \param ... Final operation.
  */
-#define CORO_WAIT_CORO( coro, final ) \
-	CORO_WAIT( !CORO_ALIVE( coro ), final )
+#define CORO_WAIT_CORO( coro, ... ) \
+	CORO_WAIT( !CORO_ALIVE( coro ), ## __VA_ARGS__ )
 
 /**
  *  \brief Initialize the semaphore.
  *  \param name Semaphore name.
  *  \param val Semaphore capacity.
  */
-#define SEMAPHORE_INIT( name, val ) name = val
+#define SEMAPHORE_INIT( name, val ) ({ \
+	name = val; \
+})
 
 /**
  *  \brief Waiting and acquire the semaphore.
  *  \param name Semaphore name.
- *  \param final Final operation.
+ *  \param ... Final operation.
  */
-#define SEMAPHORE_ACQUIRE( name, final ) \
-	do { \
-		CORO_WAIT(( name > 0 ), final ); \
-		--name; \
-	} while ( 0 )
+#define SEMAPHORE_ACQUIRE( name, ... ) ({ \
+	CORO_WAIT(( name > 0 ), ## __VA_ARGS__ ); \
+	--name; \
+})
 
 /**
  *  \brief Release the semaphore.
  *  \param name Semaphore name.
  */
-#define SEMAPHORE_RELEASE( name ) \
-	do { \
-		++name; \
-	} while ( 0 )
+#define SEMAPHORE_RELEASE( name ) ({ \
+	++name; \
+})
 
 /** \} */
 
