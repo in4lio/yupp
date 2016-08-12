@@ -47,10 +47,10 @@
 `($contains seq obj)` | Containment Test `obj in seq`.
 `($div a b)` | Division `a / b`.
 `($floordiv a b)` | Division `a // b`.
-`($and_ a b)` | Bitwise And `a & b`.
+`($and a b)` | Bitwise And `a & b`.
 `($xor a b)` | Bitwise Exclusive Or `a ^ b`.
 `($invert a)` | Bitwise Inversion `~ a`.
-`($or_ a b)` | Bitwise Or `a or b`.
+`($or a b)` | Bitwise Or `a or b`.
 `($pow a b)` | Exponentiation `a ** b`.
 `($is_ a b)` | Identity `a is b`.
 `($is_not a b)` | Identity `a is not b`.
@@ -59,7 +59,7 @@
 `($mod a b)` | Modulo `a % b`.
 `($mul a b)` | Multiplication `a * b`.
 `($neg a)` | Negation (Arithmetic) `-a`.
-`($not_ a)` | Negation (Logical) `not a`.
+`($not a)` | Negation (Logical) `not a`.
 `($pos a)` | Positive `+a`.
 `($rshift a b)` | Right Shift `a >> b`.
 `($repeat seq i)` | Sequence Repetition `seq * i`.

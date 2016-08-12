@@ -2473,6 +2473,7 @@ builtin.update({
     , 'datetime': 'at ' + datetime.datetime.now().strftime( '%Y-%m-%d %H:%M' ) if dt else ''
     }),
     'abs': abs,
+    'and': operator.and_,
     'car': lambda l : l[ :1 ],
     'cdr': lambda l : l[ 1: ],
     'chr': chr,
@@ -2487,7 +2488,9 @@ builtin.update({
     'islist': lambda l : isinstance( l, list ),
     'len': len,
     'list': lambda *l : LIST( l ),
+    'not': operator.not_,
     'oct': oct,
+    'or': operator.or_,
     'ord': lambda val : ord( val ) if isinstance( val, STR ) else ord( str( val )),
     'print': lambda *l : sys.stdout.write( ' '.join(( _unq( x ) if isinstance( x, STR ) else str( x )) for x in l )),
     'q': lambda val : STR( '"%s"' % str( val )),

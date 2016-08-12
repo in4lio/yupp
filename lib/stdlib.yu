@@ -52,7 +52,7 @@
 ($!
 	($define,,array_length( x ),,( sizeof( x ) / sizeof(( x )[ 0 ])))
 )
-($set __EOL__ EOL ? ($not_ ($isatom EOL)) | ,,
+($set __EOL__ EOL ? ($not ($isatom EOL)) | ,,
 )
 ($set define \sig.\body.($join ($split [#define ($sig) ($body)] __EOL__),, \($__EOL__)))
 
@@ -78,7 +78,7 @@
 	($skip-if-not LINK_MODULE)
 )
 ($macro skip-if (cond)($if ($cond) ($skip)))
-($macro skip-if-not (cond)($if ($not_ ($cond)) ($skip)))
+($macro skip-if-not (cond)($if ($not ($cond)) ($skip)))
 
 ($!
 	($BIN,,11001010110010100000)
