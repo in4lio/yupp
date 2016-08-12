@@ -16,7 +16,7 @@ HOLDER      = 'Vitaly Kravtsov'
 EMAIL       = 'in4lio@gmail.com'
 DESCRIPTION = 'yet another C preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.9b3'
+VERSION     = '0.9b4'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -1648,12 +1648,16 @@ def ps_l_form( sou, depth = 0 ):
     return ( sou, leg )
 
 #   ---------------------------------------------------------------------------
+def _open_sq_bracket( sou ):
+    return 1 if sou[ :1 ] == '[' else 2 if sou[ :2 ] == '\\[' else 0
+
+#   ---------------------------------------------------------------------------
 @echo__ps_
 def ps_code( sou, depth = 0 ):                                                                                         #pylint: disable=R0911,R0912
     """
     code ::=
-          ']' EOL text EOL '['
-        | ']' text '[' >> { tag } ')' <<
+          ']' EOL text EOL { '\\' } '['
+        | ']' text { '\\' } '[' >> { tag } ')' <<
         | '[' text ']' & ($eq depth_pth_sq 0)
         | ',,' text ( ';;' | >> ( ',,' | { tag } ')' & ($eq depth_pth 0) ) << )
         | '($code' text ')' & ($eq depth_pth 0);
@@ -1674,31 +1678,27 @@ def ps_code( sou, depth = 0 ):                                                  
                 if eol:
                     ( rest, _ ) = ps_space( rest, depth + 1 )
 #   ---- [
-                    if rest[ :1 ] == '[':
-                        return ( rest[ 1: ], leg )
+                    pos = _open_sq_bracket( rest )
+                    if pos:
+                        return ( rest[ pos: ], leg )
 
-#                   HACK: Highlighting in editor (Textastic) problem (unclosed [ in string) workaround
-#                   +
-                    if rest[ :2 ] == '\\[':
-                        return ( rest[ 2: ], leg )
-#                   .
+#               -- show warning in case of empty code without EOL before ending [
+                elif not leg.ast:
+                    ( rest, _ ) = ps_space( rest, depth + 1 )
+#   ---- [
+                    pos = _open_sq_bracket( rest )
+                    if pos:
+                        log.warn( 'there is no EOL before "["' + sou.loc())
         else:
             text = ps_text( sou[ 1: ], depth + 1 )
             while True:
 #   ---- text
                 ( rest, leg ) = text.next()
 #   ---- [ >>
-#               HACK: Highlighting problem workaround
-#               -
-#               if rest[ :1 ] == '[':
-#   ---- gap
-#                   ( look, _ ) = ps_gap( rest[ 1: ], depth + 1 )
-#               +
-                pos = ( 1 if rest[ :1 ] == '[' else 2 if rest[ :2 ] == '\\[' else 0 )
+                pos = _open_sq_bracket( rest )
                 if pos:
 #   ---- gap
                     ( look, _ ) = ps_gap( rest[ pos: ], depth + 1 )
-#               .
 #   ---- \
                     if look[ :1 ] == '\\':
 #   ---- atom
@@ -1709,12 +1709,7 @@ def ps_code( sou, depth = 0 ):                                                  
                     ( look, _ ) = ps_gap( look, depth + 1 )
 #   ---- ) <<
                     if look[ :1 ] == ')':
-#                       HACK: Highlighting problem workaround
-#                       -
-#                       return ( rest[ 1: ], leg )
-#                       +
                         return ( rest[ pos: ], leg )
-#                       .
 
 #   ---- [
     elif sou[ :1 ] == '[':
