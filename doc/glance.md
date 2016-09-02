@@ -14,12 +14,12 @@ The application `($! ... )` is used for __comments__.
 Looking at the preprocessor expressions of this example, you will also meet
 the following syntactic forms:
 * __simple lists__, e.g. `(0 1 2 3)`;
-* __quotes__ - irreducible expressions or strings without quotation marks -
+* __quotes__ – irreducible expressions or strings without quotation marks –
 ```(` ... )```;
 * __source code insertions__ using square brackets `[ ... ]` or reverse square
 brackets `]<EOL> ... <EOL>[`<br>
 (the insertions also can contain the preprocessor expressions);
-* __lambda expressions__ - expressions with parameters - `\a.\b.\c.( ... )`.
+* __lambda expressions__ – expressions with parameters – `\a.\b.\c.( ... )`.
 
 __Set form__ `($set ... )` allows to bound an atom with a value, for example
 the decrement function definition is<br>
@@ -77,10 +77,10 @@ is the double comma, e.g.<br>
 `($count,,Wild Wild World,,W)`.
 
 __Conditional expression__ contains: __condition__,
-__alternative__ - an expression to be evaluated if the condition<br>
+__alternative__ – an expression to be evaluated if the condition<br>
 evaluates to zero (empty list `()`, empty code `[]` or empty quote ```(`)```)
-and __consequent__ - an expression<br>
-to be evaluated for other values of the condition -
+and __consequent__ – an expression<br>
+to be evaluated for other values of the condition –
 ```consequent ? condition | alternative```.
 
 ![screenshot](pic/glance_03.png)
