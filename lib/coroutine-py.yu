@@ -1,0 +1,50 @@
+($! coroutine-py.yu - coroutines in Python )
+
+($!
+    def ($coro A):
+        while True:
+            # ...
+            ($coro-yield)
+
+    def ($coro B):
+        while True:
+            # ...
+            ($coro-wait cond)
+
+    if __name__ == '__main__':
+        ($coro-init A)
+        ($coro-init B)
+
+        while True:
+            ($coro-call A)
+            ($coro-call B)
+
+        ($coro-uninit A)
+        ($coro-uninit B)
+)
+
+($import stdlib)
+
+CO_READY = 0
+CO_WAIT  = 1
+CO_YIELD = 2
+CO_END   = 3
+CO_SKIP  = 4
+
+($macro coro (name) coro_($name)())
+
+($macro coro-init (name) ($name) = ($coro ($name)))
+
+($macro coro-uninit (name) ($name).close())
+
+($macro coro-yield () yield CO_YIELD)
+
+($macro coro-wait (cond) while not ( ($cond) ): yield CO_WAIT)
+
+($macro coro-wait-not (cond) while ($cond): yield CO_WAIT)
+
+($macro coro-quit () while True: yield CO_END)
+
+($macro coro-call (name) ($name).next())
+
+($macro coro-alive (status) (( ($status) ) < CO_END ))
