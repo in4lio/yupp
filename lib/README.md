@@ -16,7 +16,8 @@
 	- [BIN, BB](#bin-bb)
 	- [def-fn-argv](#def-fn-argv)
 	- [INT_MAX, INT_MIN](#int_max-int_min)
-- [Coroutines \(corolib.yu\)](#coroutines-corolibyu)
+- [Coroutines on C \(corolib.yu\)](#coroutines-on-c-corolibyu)
+- [Coroutines on Python \(coroutine-py.yu\)](#coroutines-on-python-coroutine-pyyu)
 - [Header Files Helper \(h.yu\)](#header-files-helper-hyu)
 
 <!-- /MarkdownTOC -->
@@ -223,9 +224,14 @@ int sumi( int argcnt, ... )
 Minimal and maximal values of `int32_t`.
 
 
-## Coroutines ([corolib.yu](../lib/corolib.yu))
+## Coroutines on C ([corolib.yu](../lib/corolib.yu))
 
-Coroutine mechanics, implemented using the C language extension "Labels as Values".
+Coroutine mechanics, implemented using the C language extensions "Labels as Values",
+"Statements and Declarations in Expressions" (only in [coroutine.h](../lib/coroutine.h))
+and "Locally Declared Labels" (only in [coroutine.h](../lib/coroutine.h)).
+
+`($set corolib-use-c-macro 0)` to generate a direct C source code for coroutines,<br>
+`($set corolib-use-c-macro 1)` to generate a source code based on macro definitions from [coroutine.h](../lib/coroutine.h).
 
 Based on Simon Tatham ["Coroutines in C"](http://www.chiark.greenend.org.uk/~sgtatham/coroutines.html).
 
@@ -260,6 +266,40 @@ int main( void )
 	return 0;
 }
 ```
+
+See also - [ulam.yu-c](../eg/ulam.yu-c)
+
+
+## Coroutines on Python ([coroutine-py.yu](../lib/coroutine-py.yu))
+
+Coroutine mechanics, implemented using generators.
+
+```cpp
+($import coroutine-py)
+
+def ($coro A):
+    while True:
+        # ...
+        ($coro-yield)
+
+def ($coro B):
+    while True:
+        # ...
+        ($coro-wait cond)
+
+if __name__ == '__main__':
+    ($coro-init A)
+    ($coro-init B)
+
+    while True:
+        ($coro-call A)
+        ($coro-call B)
+
+    ($coro-uninit A)
+    ($coro-uninit B)
+```
+
+See also - [coro.yu-py](../eg/coro.yu-py)
 
 
 ## Header Files Helper ([h.yu](../lib/h.yu))
