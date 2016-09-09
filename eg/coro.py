@@ -1,44 +1,41 @@
+# coding: yupp
 
-CO_READY = 0
-CO_WAIT  = 1
-CO_YIELD = 2
-CO_END   = 3
-CO_SKIP  = 4
+($import coroutine-py)
 
 c = False
 
-def coro_A():
+def ($coro A):
     while True:
         print 'A'
-        yield CO_YIELD
+        ($coro-yield)
 
-def coro_B():
+def ($coro B):
     global c
 
     for i in xrange( 5 ):
         print 'B'
         if i & 1:
             c = True
-        yield CO_YIELD
+        ($coro-yield)
 
-    while True: yield CO_END
+    ($coro-quit)
 
-def coro_C():
+def ($coro C):
     global c
 
     while True:
-        while not ( c ): yield CO_WAIT
+        ($coro-wait,,c)
         print 'C'
         c = False
 
 if __name__ == '__main__':
-    A = coro_A()
-    B = coro_B()
-    C = coro_C()
+    ($coro-init A)
+    ($coro-init B)
+    ($coro-init C)
 
     while True:
-        A.next()
-        if not ((  B.next() ) < CO_END ):
+        ($coro-call A)
+        if not ($coro-alive ($coro-call B)):
             break
-        C.next()
+        ($coro-call C)
         print
