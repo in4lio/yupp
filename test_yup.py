@@ -711,7 +711,7 @@ def test( kit, t ):                                                             
     i = 0
     for ( TR, text, parsed, evaluated ) in kit:
         i += 1
-        set_trace( TR & TR_PARSE )
+        trace_set_stage( TR & TR_PARSE )
         TR2F = trace.TRACE and TR_TO_FILE
         LOG = not trace.TRACE or TR_TO_FILE
         e = None
@@ -757,7 +757,7 @@ def test( kit, t ):                                                             
             print repr( parsed ), '\n'
 
         if evaluated and not e:
-            set_trace( TR & TR_EVAL )
+            trace_set_stage( TR & TR_EVAL )
             TR2F = trace.TRACE and TR_TO_FILE
             LOG = not trace.TRACE or TR_TO_FILE
             try:
@@ -800,7 +800,7 @@ def test( kit, t ):                                                             
                 print '*** FAIL *** Expected result:'
                 print evaluated, '\n'
 
-        set_trace( TR )
+        trace_set_stage( TR )
         if trace.TRACE:
             trace.info( ___ )
 
