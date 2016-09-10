@@ -3539,6 +3539,7 @@ FAIL    = '* FAIL * %s * %s'
 ___     = '.' * 79
 
 E_YU    = '.yu'
+E_YUGEN = '.yugen'
 re_e_yu = re.compile( r'\.yu(?:-([^\.]+))?$', flags = re.I )
 E_C     = '.c'
 E_PY    = '.py'
@@ -3747,32 +3748,24 @@ def _pp():                                                                      
 def _output_fn( fn ):
     fn_o, e = os.path.splitext( os.path.join( OUTPUT_DIRECTORY, os.path.basename( fn )) if OUTPUT_DIRECTORY else fn )
     if not e:
-#   ---- * --> *.c
-        return fn_o + E_C
-
-    if e == E_C:
-#   ---- .c --> .yu.c
-        return fn_o + E_YU + E_C
-
-    if e == E_PY:
-#   ---- .py --> .yu.py
-        return fn_o + E_YU + E_PY
+#   ---- * --> *.yugen
+        return fn_o + E_YUGEN
 
     e_yu = re_e_yu.search( e )
     if e_yu is None:
-#   ---- *.* --> *.yu.*
-        return fn_o + E_YU + e
+#   ---- *.* --> *.yugen.*
+        return fn_o + E_YUGEN + e
 
     if e_yu.group( 1 ):
-#   ---- .yu-* --> .*
+#   ---- *.yu-* --> *.*
         return fn_o + '.' + e_yu.group( 1 )
 
-    if fn_o.endswith( E_C ):
-#   ---- .c.yu --> .c
-        return fn_o
+    if not os.path.splitext( fn_o )[ 1 ]:
+#   ---- *.yu --> *.yugen
+        return fn_o + E_YUGEN
 
-#   ---- .yu --> .c
-    return fn_o + E_C
+#   ---- *.*.yu --> *.*
+    return fn_o
 
 #   ---------------------------------------------------------------------------
 def pp_stream( _read, fn ):
@@ -3827,7 +3820,7 @@ def _pp_file( fn ):
     if not QUIET:
         print PP_I, PP_FILE % fn
 
-    result, plain, fn_o = pp_stream( f.read, fn )[ 0 ]
+    result, plain, fn_o = pp_stream( f.read, fn )
     f.close()
 
     print
