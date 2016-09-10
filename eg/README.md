@@ -2,4 +2,4 @@
 
 [Coroutines in C](./ulam.yu-c)
 
-[Coroutines in Python](./coro.yu-py)
+[Coroutines in Python](./coro.py)
