@@ -20,9 +20,8 @@
     yupp is a lexical preprocessor which implements the macro language
     with Lisp-like Polish notation syntax in fully parenthesized form.
     yupp is intended to transform C programs before they are compiled.
-    It can also be useful for more general purposes, for example, just
-    install "yupp" package and you will be able to use the preprocessor
-    with Python.
+    It can also be useful for more general purposes, if you would like
+    to use the preprocessor with Python just install "yupp" package.
 
     yupp allows to generate a readable, well-formatted text. Special
     attention is paid to providing complete diagnostic information and
