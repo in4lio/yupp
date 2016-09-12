@@ -1,5 +1,7 @@
 # coding: yupp
 
+($__TITLE__)
+
 ($import coroutine-py)
 
 c = False
