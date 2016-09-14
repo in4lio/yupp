@@ -1,9 +1,8 @@
-1. Install `yupp` package:
+- Install `yupp` package:
 ```
 pip install yupp
 ```
-
-2. Start your code with:
+- Start your code with:
 ```py
 # coding: yupp
 ```
