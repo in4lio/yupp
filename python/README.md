@@ -1,6 +1,6 @@
 ## `yupp` Python Package
 
-- qqInstall `yupp` package:
+- Install package:
 ```
 pip install yupp
 ```
