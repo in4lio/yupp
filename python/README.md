@@ -5,11 +5,25 @@
 pip install yupp
 ```
 
+* [Configure Sublime Text](../sublime_text/) (optional)
+
 * Start your code on Python with:
 ```py
 # coding: yupp
 ```
+for example:
+```
+# coding: yupp
+# hello.py
 
-* [Configure Sublime Text](../sublime_text/) (optional)
+($set msg "Hello world!")
+print ($msg)
+```
 
-* [See examples](../eg/)
+* Run the script in the usual way:
+```
+>python hello.py
+Hello world!
+```
+
+* [See more examples](../eg/)
