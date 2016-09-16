@@ -1,10 +1,15 @@
-## `yupp` Python Package
+### How to use `yupp` with Python 2
 
-- Install package:
+1) Install Python package:
 ```
 pip install yupp
 ```
-- Start your code with:
+
+2) Start your code on Python with:
 ```py
 # coding: yupp
 ```
+
+3) [Configure Sublime Text](../master/sublime_text/) (optional)
+
+4) See [examples](../master/eg/).
