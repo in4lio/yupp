@@ -1,5 +1,3 @@
-from __future__ import division
-
 r"""
 http://github.com/in4lio/yupp/
  __    __    _____ _____
@@ -9,12 +7,16 @@ http://github.com/in4lio/yupp/
   \/_/\_\/___/\ \_\/\ \_\/
      \/_/      \/_/  \/_/
 
-test_yup.py -- testkit for yup.py
+test_yup.py -- testkit for yupp preprocessor
 """
 
-from yup import *                                                                                                      #pylint: disable=W0614,W0401
+from __future__ import division
+import traceback
+from yugen import *                                                                                                    #pylint: disable=wildcard-import,unused-wildcard-import
 
 #   ---- cut here ----
+
+_traceback = True
 
 #   * * * * * * * * * * * * * * * * * *
 #   *                                 *
@@ -33,9 +35,9 @@ from yup import *                                                               
 
 t_parse_title = 'yuparse() testkit'
 t_parse_kit = [(
-                                                                                                                       #pylint: disable=C0301
+                                                                                                                       #pylint: disable=line-too-long
 #   ---- 01 -- PLAIN, APPLY, VAR, REMARK
-0,
+TRACE_STAGE_NONE,
 
 r"""
 while( ($m::app) > 10 ) {
@@ -48,7 +50,7 @@ TEXT([PLAIN('\nwhile( '), APPLY(VAR([ATOM('m')], ATOM('app')), [], []), PLAIN(' 
 ""
 ),(
 #   ---- 02 -- APPLY, SET, REMARK, COMMENT
-0,
+TRACE_STAGE_NONE,
 
 r"""
 ($set (a b c) (($e) 'hi!' ($q u)))($_123)/**/($set a 10 \set) // q...
@@ -60,7 +62,7 @@ TEXT([PLAIN('\n'), SET([ATOM('a'), ATOM('b'), ATOM('c')], LIST([APPLY(VAR([], AT
 ""
 ),(
 #   ---- 03 -- region, named, LATE_BOUNDED
-0,
+TRACE_STAGE_NONE,
 
 r"""
 // fn()!
@@ -73,7 +75,7 @@ TEXT([PLAIN('\n// fn()!\n'), APPLY(VAR([ATOM('u1'), ATOM('u2'), ATOM('u3')], ATO
 ""
 ),(
 #   ---- 04 -- code, EMIT
-0,
+TRACE_STAGE_NONE,
 
 r"""
 do {($fn \code ]
@@ -91,7 +93,7 @@ TEXT([PLAIN('\ndo {'), APPLY(VAR([], ATOM('fn')), [TEXT([PLAIN('(gh[i[j]] == k)'
 ""
 ),(
 #   ---- 05 -- LAMBDA
-0,
+TRACE_STAGE_NONE,
 
 r"""
 ($ \p.\pp1..\pp2..\pp:abc.\...\ppp1..\ppp.\pppp.($f p1) *(1 a b))
@@ -104,7 +106,7 @@ TEXT([PLAIN('\n'), APPLY(LAMBDA([([], ATOM('p'), None), ([ATOM('pp1'), ATOM('pp2
 ""
 ),(
 #   ---- 06 -- LIST, INT, FLOAT, STR
-0,
+TRACE_STAGE_NONE,
 
 r"""
 ($l (-0.123 -48 077 "\\Hello \"world\"!\n" 3.14e-29 0xFF1 *a *() ($b) '\x000' '\'' '\n' \c.(d)))
@@ -115,7 +117,7 @@ TEXT([PLAIN('\n'), APPLY(VAR([], ATOM('l')), [LIST([FLOAT(-0.123), INT(-48L), IN
 ""
 ),(
 #   ---- 07 -- INFIX, STR, MACRO, EVAL ($$)
-0,
+TRACE_STAGE_NONE,
 
 r"""
 ($z {pi + e/2 - ($w) + len("hi{!}")} ($quoteHello()))
@@ -130,7 +132,7 @@ TEXT([PLAIN('\n'), APPLY(VAR([], ATOM('z')), [INFIX(TEXT([PLAIN('pi + e/2 - '), 
 ""
 ),(
 #   ---- 08 -- COND
-0,
+TRACE_STAGE_NONE,
 
 r"""
 ($f 1L ? c | 2 ($e) ?(2) d ?($f) | dd?1 | ddd ?'2' | dddd)
@@ -147,9 +149,9 @@ TEXT([PLAIN('\n'), APPLY(VAR([], ATOM('f')), [COND(VAR([], ATOM('c')), INT(1L), 
 
 t_eval_title = 'yueval() testkit'
 t_eval_kit = [(
-                                                                                                                       #pylint: disable=C0301
+                                                                                                                       #pylint: disable=line-too-long
 #   ---- 01 -- PLAIN
-0,
+TRACE_STAGE_NONE,
 
 r"""
 /*  Hello world! */
@@ -176,7 +178,7 @@ int main()
 """
 ),(
 #   ---- 02 -- APPLY, BUILTIN, code, __va_args__
-0,
+TRACE_STAGE_NONE,
 
 r"""
 ($print ]($e) 100.0 ($len "We all live in a yellow submarine,")
@@ -207,7 +209,7 @@ r"""
 """
 ),(
 #   ---- 03 -- SET, indent
-0,
+TRACE_STAGE_NONE,
 
 r"""
 ($set a 222)
@@ -252,7 +254,7 @@ A
 """
 ),(
 #   ---- 04 -- LATE_BOUNDED, EMIT, parameters from list
-0,
+TRACE_STAGE_NONE,
 
 r"""
 ($set k 10)($set app \p1..\p2..\f.\i.($f k i))($set l 3)
@@ -282,7 +284,7 @@ r"""
 """
 ),(
 #   ---- 05 -- LATE_BOUNDED (variable argument list)
-0,
+TRACE_STAGE_NONE,
 
 r"""
 ($set def-fn-argv \type.\name.\type..\arg-begin..\arg-count..\arg-value..\arg-end..\body.]
@@ -325,7 +327,7 @@ int sumi( int argcnt, ... )
 """
 ),(
 #   ---- 06 -- MACRO, indent
-0,
+TRACE_STAGE_NONE,
 
 r"""
 ($macro m (a b)($add ($a) ($b)))
@@ -373,7 +375,7 @@ Yes!
 """
 ),(
 #   ---- 07 -- yummy C preprocessor)))
-0,
+TRACE_STAGE_NONE,
 
 r"""
 ($($\y:u.\m.\...(m y($\C.\p.(r)e p)($\ro.(ce)s)))so r)
@@ -386,7 +388,7 @@ source
 """
 ),(
 #   ---- 08 -- IMPORT (equals to test 5)
-0,
+TRACE_STAGE_NONE,
 
 r"""
 ($import "eg/lib.py")
@@ -402,7 +404,7 @@ r"""
 \[\def-fn-argv )
 """,
 
-TEXT([PLAIN('\n'), PLAIN('\n'), SET(ATOM('uprevst'), LAMBDA([([], ATOM('a'), None)], APPLY(VAR([], ATOM('upper')), [APPLY(VAR([], ATOM('reversed_string')), [VAR([], ATOM('a'))], [])], []))), PLAIN('\n#define '), APPLY(VAR([], ATOM('uprevst')), [VAR([], ATOM('hello'))], []), PLAIN('\n'), IMPORT_BEGIN(), COMMENT(), PLAIN('\n'), MACRO(ATOM('dict'), [ATOM('id'), ATOM('cols'), ATOM('body')], '\n\t($set cols-($id) ($range ($len (($cols)) )))\n\t($set each-($id) ($range ($len (($body)) )))\n\t($set (($cols))\n\t\t($cols-($id) \\__i.($ (($body)) \\__var.($__i __var)))\n\t)\n'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('if'), LAMBDA([([], ATOM('cond'), None), ([], ATOM('then'), TEXT([], 0, 0)), ([], ATOM('else'), TEXT([], 0, 0))], APPLY(COND(VAR([], ATOM('cond')), VAR([], ATOM('then')), VAR([], ATOM('else'))), [], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('unless'), LAMBDA([([], ATOM('cond'), None), ([], ATOM('then'), TEXT([], 0, 0)), ([], ATOM('else'), TEXT([], 0, 0))], APPLY(COND(VAR([], ATOM('cond')), VAR([], ATOM('else')), VAR([], ATOM('then'))), [], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('unfold'), LAMBDA([([], ATOM('count'), None), ([], ATOM('...'), None)], TEXT([PLAIN('\t'), SET(ATOM('__last'), APPLY(VAR([], ATOM('sub')), [APPLY(VAR([], ATOM('len')), [APPLY(VAR([], ATOM('lazy')), [VAR([], ATOM('__va_args__'))], [])], []), INT(1L)], [])), PLAIN('\n\t'), SET(ATOM('__func'), APPLY(VAR([], ATOM('__last')), [APPLY(VAR([], ATOM('lazy')), [VAR([], ATOM('__va_args__'))], [])], [])), PLAIN('\n\t'), APPLY(APPLY(VAR([], ATOM('range')), [VAR([], ATOM('count'))], []), [LAMBDA([([], ATOM('__i'), None)], APPLY(VAR([], ATOM('if')), [INFIX(TEXT([PLAIN(' __i < __last ')], 0, 0)), APPLY(VAR([], ATOM('__i')), [APPLY(VAR([], ATOM('lazy')), [VAR([], ATOM('__va_args__'))], [])], []), APPLY(VAR([], ATOM('__func')), [VAR([], ATOM('__i'))], [])], []))], [])], 0, 0))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('do'), [ATOM('body')], 'do {\n($body)\n} while ( 0 )'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('foo'), [ATOM('body')], '({\n($body)\n})'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('__EOL__'), COND(APPLY(VAR([], ATOM('not')), [APPLY(VAR([], ATOM('isatom')), [VAR([], ATOM('EOL'))], [])], []), VAR([], ATOM('EOL')), TEXT([PLAIN('\n')], 0, 0))), PLAIN('\n'), SET(ATOM('define'), LAMBDA([([], ATOM('sig'), None), ([], ATOM('body'), None)], APPLY(VAR([], ATOM('join')), [APPLY(VAR([], ATOM('split')), [TEXT([PLAIN('#define '), APPLY(VAR([], ATOM('sig')), [], []), PLAIN(' '), APPLY(VAR([], ATOM('body')), [], [])], 0, 0), VAR([], ATOM('__EOL__'))], []), TEXT([PLAIN(' \\'), APPLY(VAR([], ATOM('__EOL__')), [], [])], 0, 0)], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('def'), [ATOM('name')], '($set ($name) 1)\n#define ($name)'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('undef'), [ATOM('name')], '($set ($name) 0)\n#undef  ($name)'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('def-if'), [ATOM('cond'), ATOM('name')], '($set ($name) 1 ? ($cond) | 0)\n($if ($name) [#define ($name)])'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('skip-if'), [ATOM('cond')], '($if ($cond) ($skip))'), PLAIN('\n'), MACRO(ATOM('skip-if-not'), [ATOM('cond')], '($if ($not ($cond)) ($skip))'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('BIN'), LAMBDA([([], ATOM('b'), None)], APPLY(VAR([], ATOM('atoi')), [VAR([], ATOM('b')), INT(2L)], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('BB'), LAMBDA([([], ATOM('...'), None)], APPLY(VAR([], ATOM('sum')), [APPLY(APPLY(VAR([], ATOM('range')), [APPLY(VAR([], ATOM('len')), [VAR([], ATOM('__va_args__'))], [])], []), [LAMBDA([([], ATOM('__i'), None)], INFIX(TEXT([PLAIN(' '), APPLY(VAR([], ATOM('BIN')), [APPLY(VAR([], ATOM('__i')), [APPLY(VAR([], ATOM('reversed')), [VAR([], ATOM('__va_args__'))], [])], [])], []), PLAIN(' << '), APPLY(VAR([], ATOM('__i')), [], []), PLAIN(' * 8 ')], 0, 0)))], [])], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('def-fn-argv'), LAMBDA([([], ATOM('type'), None), ([], ATOM('name'), None), ([ATOM('type'), ATOM('arg-begin'), ATOM('arg-count'), ATOM('arg-value'), ATOM('arg-end')], ATOM('body'), None)], TEXT([APPLY(VAR([], ATOM('type')), [], []), PLAIN(' '), APPLY(VAR([], ATOM('name')), [], []), PLAIN('( int argcnt, ... )\n{\n\t'), APPLY(VAR([], ATOM('body')), [], [(ATOM('type'), VAR([], ATOM('type'))), (ATOM('arg-begin'), TEXT([PLAIN('\t\tva_list argptr;\n\t\tva_start( argptr, argcnt );')], 0, 0)), (ATOM('arg-count'), TEXT([PLAIN('\t\targcnt')], 0, 0)), (ATOM('arg-value'), LAMBDA([([], ATOM('type'), None)], TEXT([PLAIN('\t\tva_arg( argptr, '), APPLY(VAR([], ATOM('type')), [], []), PLAIN(' )')], 0, 0))), (ATOM('arg-end'), TEXT([PLAIN('\t\tva_end( argptr );')], 0, 0))]), PLAIN('\n}')], 0, 0))), PLAIN('\n\n'), SET(ATOM('INT_MAX'), INFIX(TEXT([PLAIN(' sys.maxint ')], 0, 0))), PLAIN('\n\n'), SET(ATOM('INT_MIN'), INFIX(TEXT([PLAIN(' -sys.maxint - 1 ')], 0, 0))), PLAIN('\n'), IMPORT_END(), PLAIN('\n'), APPLY(VAR([], ATOM('def-fn-argv')), [TEXT([PLAIN('    int result = 0;\n    '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-begin')), [], []), PLAIN('\n    while ( '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-count')), [], []), PLAIN('-- ) result += '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-value')), [VAR(LATE_BOUNDED(), ATOM('type'))], []), PLAIN(';\n    '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-end')), [], []), PLAIN('\n    return ( result );')], 0, 0)], [(ATOM('type'), VAR([], ATOM('int'))), (ATOM('name'), VAR([], ATOM('sumi')))]), PLAIN('\n')], 0, 0),
+TEXT([PLAIN('\n'), PLAIN('\n'), SET(ATOM('uprevst'), LAMBDA([([], ATOM('a'), None)], APPLY(VAR([], ATOM('upper')), [APPLY(VAR([], ATOM('reversed_string')), [VAR([], ATOM('a'))], [])], []))), PLAIN('\n#define '), APPLY(VAR([], ATOM('uprevst')), [VAR([], ATOM('hello'))], []), PLAIN('\n'), IMPORT_BEGIN(), COMMENT(), PLAIN('\n'), MACRO(ATOM('dict'), [ATOM('id'), ATOM('cols'), ATOM('body')], '\n\t($set cols-($id) ($range ($len (($cols)) )))\n\t($set each-($id) ($range ($len (($body)) )))\n\t($set (($cols))\n\t\t($cols-($id) \\__i.($ (($body)) \\__var.($__i __var)))\n\t)\n'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('if'), LAMBDA([([], ATOM('cond'), None), ([], ATOM('then'), TEXT([], 0, 0)), ([], ATOM('else'), TEXT([], 0, 0))], APPLY(COND(VAR([], ATOM('cond')), VAR([], ATOM('then')), VAR([], ATOM('else'))), [], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('unless'), LAMBDA([([], ATOM('cond'), None), ([], ATOM('then'), TEXT([], 0, 0)), ([], ATOM('else'), TEXT([], 0, 0))], APPLY(COND(VAR([], ATOM('cond')), VAR([], ATOM('else')), VAR([], ATOM('then'))), [], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('unfold'), LAMBDA([([], ATOM('count'), None), ([], ATOM('...'), None)], TEXT([PLAIN('\t'), SET(ATOM('__last'), APPLY(VAR([], ATOM('sub')), [APPLY(VAR([], ATOM('len')), [APPLY(VAR([], ATOM('lazy')), [VAR([], ATOM('__va_args__'))], [])], []), INT(1L)], [])), PLAIN('\n\t'), SET(ATOM('__func'), APPLY(VAR([], ATOM('__last')), [APPLY(VAR([], ATOM('lazy')), [VAR([], ATOM('__va_args__'))], [])], [])), PLAIN('\n\t'), APPLY(APPLY(VAR([], ATOM('range')), [VAR([], ATOM('count'))], []), [LAMBDA([([], ATOM('__i'), None)], APPLY(VAR([], ATOM('if')), [INFIX(TEXT([PLAIN(' __i < __last ')], 0, 0)), APPLY(VAR([], ATOM('__i')), [APPLY(VAR([], ATOM('lazy')), [VAR([], ATOM('__va_args__'))], [])], []), APPLY(VAR([], ATOM('__func')), [VAR([], ATOM('__i'))], [])], []))], [])], 0, 0))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('do'), [ATOM('body')], 'do {\n($body)\n} while ( 0 )'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('foo'), [ATOM('body')], '({\n($body)\n})'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('__EOL__'), COND(APPLY(VAR([], ATOM('not')), [APPLY(VAR([], ATOM('isatom')), [VAR([], ATOM('EOL'))], [])], []), VAR([], ATOM('EOL')), TEXT([PLAIN('\n')], 0, 0))), PLAIN('\n'), SET(ATOM('define'), LAMBDA([([], ATOM('sig'), None), ([], ATOM('body'), None)], APPLY(VAR([], ATOM('join')), [APPLY(VAR([], ATOM('split')), [TEXT([APPLY(VAR([], ATOM('unq')), [STR('"#define"')], []), PLAIN(' '), APPLY(VAR([], ATOM('sig')), [], []), PLAIN(' '), APPLY(VAR([], ATOM('body')), [], [])], 0, 0), VAR([], ATOM('__EOL__'))], []), TEXT([PLAIN(' \\'), APPLY(VAR([], ATOM('__EOL__')), [], [])], 0, 0)], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('def'), [ATOM('name')], '($set ($name) 1)\n($unq "#define") ($name)'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('undef'), [ATOM('name')], '($set ($name) 0)\n($unq "#undef")  ($name)'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('def-if'), [ATOM('cond'), ATOM('name')], '($set ($name) 1 ? ($cond) | 0)\n($if ($name) [($unq "#define") ($name)])'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('skip-if'), [ATOM('cond')], '($if ($cond) ($skip))'), PLAIN('\n'), MACRO(ATOM('skip-if-not'), [ATOM('cond')], '($if ($not ($cond)) ($skip))'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('BIN'), LAMBDA([([], ATOM('b'), None)], APPLY(VAR([], ATOM('atoi')), [VAR([], ATOM('b')), INT(2L)], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('BB'), LAMBDA([([], ATOM('...'), None)], APPLY(VAR([], ATOM('sum')), [APPLY(APPLY(VAR([], ATOM('range')), [APPLY(VAR([], ATOM('len')), [VAR([], ATOM('__va_args__'))], [])], []), [LAMBDA([([], ATOM('__i'), None)], INFIX(TEXT([PLAIN(' '), APPLY(VAR([], ATOM('BIN')), [APPLY(VAR([], ATOM('__i')), [APPLY(VAR([], ATOM('reversed')), [VAR([], ATOM('__va_args__'))], [])], [])], []), PLAIN(' << '), APPLY(VAR([], ATOM('__i')), [], []), PLAIN(' * 8 ')], 0, 0)))], [])], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('def-fn-argv'), LAMBDA([([], ATOM('type'), None), ([], ATOM('name'), None), ([ATOM('type'), ATOM('arg-begin'), ATOM('arg-count'), ATOM('arg-value'), ATOM('arg-end')], ATOM('body'), None)], TEXT([APPLY(VAR([], ATOM('type')), [], []), PLAIN(' '), APPLY(VAR([], ATOM('name')), [], []), PLAIN('( int argcnt, ... )\n{\n\t'), APPLY(VAR([], ATOM('body')), [], [(ATOM('type'), VAR([], ATOM('type'))), (ATOM('arg-begin'), TEXT([PLAIN('\t\tva_list argptr;\n\t\tva_start( argptr, argcnt );')], 0, 0)), (ATOM('arg-count'), TEXT([PLAIN('\t\targcnt')], 0, 0)), (ATOM('arg-value'), LAMBDA([([], ATOM('type'), None)], TEXT([PLAIN('\t\tva_arg( argptr, '), APPLY(VAR([], ATOM('type')), [], []), PLAIN(' )')], 0, 0))), (ATOM('arg-end'), TEXT([PLAIN('\t\tva_end( argptr );')], 0, 0))]), PLAIN('\n}')], 0, 0))), PLAIN('\n\n'), SET(ATOM('INT_MAX'), INFIX(TEXT([PLAIN(' sys.maxint ')], 0, 0))), PLAIN('\n\n'), SET(ATOM('INT_MIN'), INFIX(TEXT([PLAIN(' -sys.maxint - 1 ')], 0, 0))), PLAIN('\n'), IMPORT_END(), PLAIN('\n'), APPLY(VAR([], ATOM('def-fn-argv')), [TEXT([PLAIN('    int result = 0;\n    '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-begin')), [], []), PLAIN('\n    while ( '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-count')), [], []), PLAIN('-- ) result += '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-value')), [VAR(LATE_BOUNDED(), ATOM('type'))], []), PLAIN(';\n    '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-end')), [], []), PLAIN('\n    return ( result );')], 0, 0)], [(ATOM('type'), VAR([], ATOM('int'))), (ATOM('name'), VAR([], ATOM('sumi')))]), PLAIN('\n')], 0, 0),
 
 r"""
 #define OLLEH
@@ -419,7 +421,7 @@ int sumi( int argcnt, ... )
 """
 ),(
 #   ---- 09 -- COND, recursion, indent
-0,
+TRACE_STAGE_NONE,
 
 r"""
 ($add ? 0 | sub 10 ? 1 | 5 0 ? 0 | 3)
@@ -478,7 +480,7 @@ ABB
 """
 ),(
 #   ---- 10 -- INFIX, recursion
-0,
+TRACE_STAGE_NONE,
 
 r"""
 ($set fib1 \n.($n ? ($lt n 2) | ($add ($fib1 ($sub n 1)) ($fib1 ($sub n 2)))))
@@ -508,7 +510,7 @@ r"""
 """
 ),(
 #   ---- 11 -- "for each" loop
-0,
+TRACE_STAGE_NONE,
 
 r"""
 ($ ($range 3) (`Q))
@@ -587,7 +589,7 @@ a = 0; bb = 11; ccc = 22; dddd = 33;
 """
 ),(
 #   ---- 12 -- dict
-0,
+TRACE_STAGE_NONE,
 
 r"""
 ($! dict )
@@ -673,7 +675,7 @@ int d[4] = 1;
 """
 ),(
 #   ---- XX --
-0,
+TRACE_STAGE_NONE,
 
 r"""
 """,
@@ -699,7 +701,7 @@ def ___title___( t ):
     return CH * d + ' ' + t + ' ' + CH * ( LL - 2 - l - d )
 
 #   ---------------------------------------------------------------------------
-def test( kit, t ):                                                                                                    #pylint: disable=R0915
+def test( kit, t ):                                                                                                    #pylint: disable=too-many-statements
     """
     For each test case: ( text, parsed, evaluated ),
     check: ( yuparse( yushell( text )) == parsed ) and ( yueval( parsed ) == evaluated ).
@@ -711,41 +713,43 @@ def test( kit, t ):                                                             
     i = 0
     for ( TR, text, parsed, evaluated ) in kit:
         i += 1
-        trace_set_stage( TR & TR_PARSE )
-        TR2F = trace.TRACE and TR_TO_FILE
-        LOG = not trace.TRACE or TR_TO_FILE
+        trace.stages = TR
+        trace.set_current( TRACE_STAGE_PARSE )
+        TR2F = trace.enabled and trace.to_file
+        LOG = not trace.enabled or trace.to_file
         e = None
         try:
             print '* %d *' % ( i )
             print text, '\n'
             if TR2F:
                 trace.info( text )
-            if trace.TRACE:
+            if trace.enabled:
                 trace.info( ___title___( 'test %d' % ( i )))
             trace.deepest = 0
 #   ---- parse
+            yuinit()
             ast = yuparse( yushell( text ))
 
             print repr( ast ), '\n'
             if TR2F:
                 trace.info( repr( ast ))
-                trace.info( TR_DEEPEST, trace.deepest )
+                trace.info( trace.TEMPL_DEEPEST, trace.deepest )
 
 #   ---- test
             result = ( ast == parsed )
 
-        except:                                                                                                        #pylint: disable=W0702
+        except:                                                                                                        #pylint: disable=bare-except
             e_type, e, tb = sys.exc_info()
             msg = '\n'
             arg = e.args[ 0 ]
-            if TRACEBACK or isinstance( arg, str ) and arg.startswith( 'python' ):
+            if _traceback or isinstance( arg, str ) and arg.startswith( 'python' ):
 #               -- enabled traceback or not raised exception
                 msg += ''.join( traceback.format_tb( tb ))
             msg += ''.join( traceback.format_exception_only( e_type, e ))
             print msg
             if TR2F:
                 trace.info( msg )
-                trace.info( TR_DEEPEST, trace.deepest )
+                trace.info( trace.TEMPL_DEEPEST, trace.deepest )
             if LOG:
                 log.error( msg )
 
@@ -757,9 +761,9 @@ def test( kit, t ):                                                             
             print repr( parsed ), '\n'
 
         if evaluated and not e:
-            trace_set_stage( TR & TR_EVAL )
-            TR2F = trace.TRACE and TR_TO_FILE
-            LOG = not trace.TRACE or TR_TO_FILE
+            trace.set_current( TRACE_STAGE_EVAL )
+            TR2F = trace.enabled and trace.to_file
+            LOG = not trace.enabled or trace.to_file
             try:
                 trace.deepest = 0
 #   ---- eval
@@ -767,28 +771,28 @@ def test( kit, t ):                                                             
 
                 if isinstance( plain, str ):
                     plain = replace_steady( reduce_emptiness( plain ))
-                    msg = plain
+                    res = plain
                 else:
-                    msg = repr( plain )
-                print msg, '\n'
+                    res = repr( plain )
+                print res, '\n'
                 if TR2F:
-                    trace.info( msg )
-                    trace.info( TR_DEEPEST, trace.deepest )
+                    trace.info( res )
+                    trace.info( trace.TEMPL_DEEPEST, trace.deepest )
 #   ---- test
                 result = ( plain == evaluated )
 
-            except:                                                                                                    #pylint: disable=W0702
+            except:                                                                                                    #pylint: disable=bare-except
                 e_type, e, tb = sys.exc_info()
                 msg = '\n'
                 arg = e.args[ 0 ]
-                if TRACEBACK or isinstance( arg, str ) and arg.startswith( 'python' ):
+                if _traceback or isinstance( arg, str ) and arg.startswith( 'python' ):
 #                   -- enabled traceback or not raised exception
                     msg += ''.join( traceback.format_tb( tb ))
                 msg += ''.join( traceback.format_exception_only( e_type, e ))
                 print msg
                 if TR2F:
                     trace.info( msg )
-                    trace.info( TR_DEEPEST, trace.deepest )
+                    trace.info( trace.TEMPL_DEEPEST, trace.deepest )
                 if LOG:
                     log.error( msg )
 
@@ -800,8 +804,8 @@ def test( kit, t ):                                                             
                 print '*** FAIL *** Expected result:'
                 print evaluated, '\n'
 
-        trace_set_stage( TR )
-        if trace.TRACE:
+        trace.set_current( TR )
+        if trace.enabled:
             trace.info( ___ )
 
     print ___
@@ -820,5 +824,3 @@ if __name__ == '__main__':
     t_failed -= test( t_eval_kit, t_eval_title )
 
     sys.exit( t_failed )
-
-#   -- EOF
