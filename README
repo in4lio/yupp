@@ -10,8 +10,8 @@
     ___         __________________________________
     ___ VERSION __________________________________
 
-    yup.py      0.9b6
-                2016-09-09
+    yup.py      0.9b7
+                2016-09-20
     python      2.7
 
     ___             ______________________________
@@ -28,7 +28,7 @@
     navigational capabilities.
 
     Embedding of the preprocessor expressions into the source code occurs
-    by using an "application form", e.g. ($e).
+    by using an "application" form, e.g. ($e).
 
     A small example with comments:
 
@@ -37,18 +37,28 @@
     ___        ___________________________________
     ___ SYNTAX ___________________________________
 
-    The basic syntactic forms of the macro language are list, application
-    and lambda expression.
+    The most significant syntactic categories of the macro language are
+    list, application and lambda expression.
 
-    <list> ::= '(' { <form> } ')'
+    List is a sequence of expressions separated by blanks and enclosed
+    in parentheses.
+
+    <list> ::= '(' { <expression> } ')'
 
     e.g. (0.5 "string" atom)
+
+    Application is an applying a function to arguments, it syntactically
+    differs from a list in presence of the dollar sign after the open
+    parenthesis.
 
     <application> ::= '($' <function> { <argument> } ')'
 
     ($add 2 3)
 
-    <lambda> ::= <param> { <param> } <form>
+    Lambda is an anonymous function, it consists of a sequence of parameters
+    and a function body.
+
+    <lambda> ::= <param> { <param> } <expression>
     <param>  ::= '\' <name> [ ':' <default> ] '.'
 
     \p.($sub p 1)
@@ -69,7 +79,7 @@
 
     ($! this is a comment, won't be saved in the generated text )
 
-    ($! binding of the atom )
+    ($! binding of the atom (identifier) with the value )
 
         ($set a 'A')
 
@@ -120,7 +130,7 @@
 
     3628800
 
-    ($! enclosing of the source code into the application form )
+    ($! enclosing of the source code into the application )
 
         ($abc \ch.($code putchar(($ch));))
 
