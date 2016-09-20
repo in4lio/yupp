@@ -1,2 +1,3 @@
 include yupp/eg/*.py
 include yupp.pth
+include LICENSE

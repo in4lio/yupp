@@ -10,14 +10,12 @@ from distutils.sysconfig import get_python_lib
 def read(fname):
     return codecs.open(os.path.join(os.path.dirname(__file__), fname)).read()
 
-
 # Provided as an attribute, so you can append to these instead
 # of replicating them:
 standard_exclude = ["*.py", "*.pyc", "*$py.class", "*~", ".*", "*.bak", "*.yu-*"]
 standard_exclude_directories = [
     ".*", "CVS", "_darcs", "./build", "./dist", "EGG-INFO", "*.egg-info"
 ]
-
 
 # (c) 2005 Ian Bicking and contributors; written for Paste (http://pythonpaste.org)
 # Licensed under the MIT license: http://www.opensource.org/licenses/mit-license.php
@@ -102,10 +100,9 @@ def find_package_data(
                 out.setdefault(package, []).append(prefix+name)
     return out
 
-
 PACKAGE = "yupp"
 pack = __import__(PACKAGE)
-NAME = pack.__library__
+NAME = pack.__pp_name__
 VERSION = pack.__version__
 DESCRIPTION = pack.__description__
 AUTHOR = pack.__author__

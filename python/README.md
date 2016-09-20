@@ -11,18 +11,19 @@ pip install yupp
 ```py
 # coding: yupp
 ```
-for example:
+  for example:
 ```
 # coding: yupp
-# hello.py
+# test.py
 
-($set msg "Hello world!")
-print ($msg)
+($set hola 'Hello world!')
+print ($hola)
 ```
 
 * Run the script in the usual way:
 ```
->python hello.py
+python test.py
+
 Hello world!
 ```
 
