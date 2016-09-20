@@ -4,7 +4,6 @@
 #rcfile=
 
 # Python code to execute, usually for sys.path manipulation such as
-
 # pygtk.require().
 #init-hook=
 
@@ -12,7 +11,6 @@
 profile=no
 
 # Add files or directories to the blacklist. They should be base names, not
-
 # paths.
 ignore=CVS
 
@@ -20,7 +18,6 @@ ignore=CVS
 persistent=yes
 
 # List of plugins (as comma separated values of python modules names) to load,
-
 # usually to register additional checkers.
 load-plugins=
 
@@ -28,38 +25,26 @@ load-plugins=
 [MESSAGES CONTROL]
 
 # Enable the message, report, category or checker with the given id(s). You can
-
 # either give multiple identifier separated by comma (,) or put this option
-
 # multiple time. See also the "--disable" option for examples.
 #enable=
 
 # Disable the message, report, category or checker with the given id(s). You
-
 # can either give multiple identifiers separated by comma (,) or put this
-
 # option multiple times (only on the command line, not in the configuration
-
 # file where it should appear only once).You can also use "--disable=all" to
-
 # disable everything first and then reenable specific checks. For example, if
-
 # you want to run only the similarities checker, you can use "--disable=all
-
 # --enable=similarities". If you want to run only the classes checker, but have
-
 # no Warning level messages displayed, use"--disable=all --enable=classes
-
 # --disable=W"
-#disable=
+disable=I0011,invalid-name, missing-docstring, bad-whitespace, bad-continuation, pointless-string-statement
 
 
 [REPORTS]
 
 # Set the output format. Available formats are text, parseable, colorized, msvs
-
 # (visual studio) and html. You can also give a reporter class, eg
-
 # mypackage.mymodule.MyReporterClass.
 output-format=text
 
@@ -70,9 +55,7 @@ include-ids=no
 symbols=no
 
 # Put messages in a separate file for each module / package specified on the
-
 # command line instead of printing them on stdout. Reports (if any) will be
-
 # written in a file name "pylint_global.[txt|html]".
 files-output=no
 
@@ -80,18 +63,13 @@ files-output=no
 reports=yes
 
 # Python expression which should return a note less than 10 (10 is the highest
-
 # note). You have access to the variables errors warning, statement which
-
 # respectively contain the number of errors / warnings messages and the total
-
 # number of statements analyzed. This is used by the global evaluation report
-
 # (RP0004).
 evaluation=10.0 - ((float(5 * error + warning + refactor + convention) / statement) * 10)
 
 # Add a comment according to your evaluation note. This is used by the global
-
 # evaluation report (RP0004).
 comment=no
 
@@ -129,7 +107,6 @@ argument-rgx=[a-z_][a-z0-9_]{2,30}$
 variable-rgx=[a-z_][a-z0-9_]{2,30}$
 
 # Regular expression which should only match correct list comprehension /
-
 # generator expression variable names
 inlinevar-rgx=[A-Za-z_][A-Za-z0-9_]*$
 
@@ -140,7 +117,6 @@ good-names=i,j,k,ex,Run,_
 bad-names=foo,bar,baz,toto,tutu,tata
 
 # Regular expression which should only match functions or classes name which do
-
 # not require a docstring
 no-docstring-rgx=__.*__
 
@@ -182,24 +158,19 @@ ignore-imports=no
 [TYPECHECK]
 
 # Tells whether missing members accessed in mixin class should be ignored. A
-
 # mixin class is detected if its name ends with "mixin" (case insensitive).
 ignore-mixin-members=yes
 
 # List of classes names for which member attributes should not be checked
-
 # (useful for classes with attributes dynamically set).
 ignored-classes=SQLObject
 
 # When zope mode is activated, add a predefined set of Zope acquired attributes
-
 # to generated-members.
 zope=no
 
 # List of members which are set dynamically and missed by pylint inference
-
 # system, and so shouldn't trigger E0201 when accessed. Python regular
-
 # expressions are accepted.
 generated-members=REQUEST,acl_users,aq_parent
 
@@ -210,12 +181,10 @@ generated-members=REQUEST,acl_users,aq_parent
 init-import=no
 
 # A regular expression matching the beginning of the name of dummy variables
-
 # (i.e. not used).
 dummy-variables-rgx=_|dummy|depth
 
 # List of additional names supposed to be defined in builtins. Remember that
-
 # you should avoid to define new builtins when possible.
 additional-builtins=
 
@@ -223,7 +192,6 @@ additional-builtins=
 [CLASSES]
 
 # List of interface methods to ignore, separated by a comma. This is used for
-
 # instance to not check methods defines in Zope's Interface base class.
 ignore-iface-methods=isImplementedBy,deferred,extends,names,namesAndDescriptions,queryDescriptionFor,getBases,getDescriptionFor,getDoc,getName,getTaggedValue,getTaggedValueTags,isEqualOrExtendedBy,setTaggedValue,isImplementedByInstancesOf,adaptWith,is_implemented_by
 
@@ -243,7 +211,6 @@ valid-metaclass-classmethod-first-arg=mcs
 max-args=5
 
 # Argument names that match this expression will be ignored. Default to name
-
 # with leading underscore
 ignored-argument-names=_.*
 
@@ -278,17 +245,14 @@ max-public-methods=40
 deprecated-modules=regsub,string,TERMIOS,Bastion,rexec
 
 # Create a graph of every (i.e. internal and external) dependencies in the
-
 # given file (report RP0402 must not be disabled)
 import-graph=
 
 # Create a graph of external dependencies in the given file (report RP0402 must
-
 # not be disabled)
 ext-import-graph=
 
 # Create a graph of internal dependencies in the given file (report RP0402 must
-
 # not be disabled)
 int-import-graph=
 
@@ -296,6 +260,5 @@ int-import-graph=
 [EXCEPTIONS]
 
 # Exceptions that will emit a warning when being caught. Defaults to
-
 # "Exception"
 overgeneral-exceptions=Exception

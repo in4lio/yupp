@@ -11,14 +11,7 @@
 	{
 		"pylinter":
 		{
-			"pylint_rc": ".\\project\\pylint.rc",
-			"disable": [
-			  "C0103" // Invalid name "%s" (should match %s)
-			, "C0111" // Missing docstring
-			, "C0326" // Wrong number of spaces
-			, "I0011" // Locally disabling %s
-			, "W0105" // String statement has no effect
-			]
+			"pylint_rc": "project\\pylint.rc"
 		}
 	}
 }
