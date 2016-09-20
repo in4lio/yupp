@@ -6,20 +6,20 @@ Here you can get acquainted with __yupp__ by exploring a small example:
 result is [glance.cpp](../eg/glance/glance.cpp).
 
 Embedding of the preprocessor expressions into the source code occurs using
-an __application form__ `($ ... )`.<br>
+an __application__ form `($ ... )`.<br>
 The first element of an application is a function, that can be called with
 arguments, e.g. `($div 22 7)`.<br>
 The application `($! ... )` is used for __comments__.
 
 Looking at the preprocessor expressions of this example, you will also meet
-the following syntactic forms:
+the following syntactic categories:
 * __simple lists__, e.g. `(0 1 2 3)`;
 * __quotes__ – irreducible expressions or strings without quotation marks –
 ```(` ... )```;
 * __source code insertions__ using square brackets `[ ... ]` or reverse square
 brackets `]<EOL> ... <EOL>[`<br>
 (the insertions also can contain the preprocessor expressions);
-* __lambda expressions__ – expressions with parameters – `\a.\b.\c.( ... )`.
+* __lambda expressions__ – expressions with parameters – `\a.\b.\c.<EXPR>`.
 
 __Set form__ `($set ... )` allows to bound an atom with a value, for example
 the decrement function definition is<br>
