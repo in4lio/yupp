@@ -54,25 +54,25 @@
 )
 ($set __EOL__ EOL ? ($not ($isatom EOL)) | ,,
 )
-($set define \sig.\body.($join ($split [#define ($sig) ($body)] __EOL__),, \($__EOL__)))
+($set define \sig.\body.($join ($split [($unq "#define") ($sig) ($body)] __EOL__),, \($__EOL__)))
 
 ($!
 	($def LINK_MODULE)
 )
 ($macro def (name)($set ($name) 1)
-#define ($name))
+($unq "#define") ($name))
 
 ($!
 	($undef LINK_MODULE)
 )
 ($macro undef (name)($set ($name) 0)
-#undef  ($name))
+($unq "#undef")  ($name))
 
 ($!
 	($def-if LINK_MODULE LINK_MODULE_TEST)
 )
 ($macro def-if (cond name)($set ($name) 1 ? ($cond) | 0)
-($if ($name) [#define ($name)]))
+($if ($name) [($unq "#define") ($name)]))
 
 ($!
 	($skip-if-not LINK_MODULE)
