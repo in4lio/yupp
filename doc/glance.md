@@ -22,7 +22,8 @@ brackets `]<EOL> ... <EOL>[`<br>
 * __lambda expressions__ – expressions with parameters – `\a.\b.\c.<EXPR>`.
 
 __Set__ form `($set ... )` allows to bound an atom (identifier) with a value,
-for example the decrement function definition is `($set dec \p.($sub p 1))`.
+for example the decrement function<br>
+definition is `($set dec \p.($sub p 1))`.
 
 The example begins with `($import ... )` of [__yupp__ Standard Library](../lib/README.md).
 The [stdlib.yu](../lib/stdlib.yu), in particular, contains __dict__<br>
