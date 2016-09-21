@@ -11,3 +11,6 @@ yupp/lib/
 .pypirc
 README
 yupp/yup.py
+yupp/yugen.py
+yupp/yulic.py
+yupp/yuconfig.py
