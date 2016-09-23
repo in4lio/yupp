@@ -1,11 +1,11 @@
 ### How to start using `yupp` with Python 2
 
-1. Install Python package:
+`1.` Install Python package:
 ```
 pip install yupp
 ```
 
-2. Start your code on Python with:
+`2.` Start your code on Python with:
 ```
 # coding: yupp
 ```
@@ -18,7 +18,7 @@ for example:
 print ($hola)
 ```
 
-3. Run the script in the usual way:
+`3.` Run the script in the usual way:
 ```
 python ./test.py
 
@@ -27,12 +27,12 @@ Hello world!
 
 ### How to use `yupp` with Python 3
 
-1. Process your script with `yupp`:
+`1.` Process your script with `yupp`:
 ```
 python yup.py -q ./test.yu-py
 ```
 
-2. Run the preprocessed script:
+`2.` Run the preprocessed script:
 ```
 python ./test.py
 ```
