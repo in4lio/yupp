@@ -1,0 +1,101 @@
+"""
+yupp Python preprocessor global options
+"""
+
+"""
+skip processing of comments
+
+PP_SKIP_COMMENTS_NONE (default)
+PP_SKIP_C_COMMENTS
+PP_SKIP_PYTHON_COMMENTS
+PP_SKIP_COMMENTS_AUTO
+"""
+# pp_skip_comments = PP_SKIP_COMMENTS_NONE
+
+"""
+use an application ($ _ ) indent as the base for all substituting lines,
+delete a spacing after ($set _ ), ($macro _ ) and ($! _ )
+
+False
+True (default)
+"""
+# pp_trim_app_indent = True
+
+"""
+reduce an amount of successive empty lines up to one
+
+False
+True (default)
+"""
+# pp_reduce_emptiness = True
+
+"""
+save browse information
+
+False (default)
+True
+"""
+pp_browse = True
+
+"""
+warn if an application of unbound atom is detected
+
+False
+True (default)
+"""
+# warn_unbound_application = True
+
+"""
+set a logging level
+
+LOG_LEVEL_DEBUG (default)
+LOG_LEVEL_INFO
+LOG_LEVEL_WARNING
+LOG_LEVEL_ERROR
+LOG_LEVEL_CRITICAL
+"""
+# log_level = LOG_LEVEL_DEBUG
+
+"""
+set a tracing stage,
+tracing of evaluation can take too much time for complicated expressions
+
+TRACE_STAGE_NONE (default)
+TRACE_STAGE_PARSE
+TRACE_STAGE_EVAL
+TRACE_STAGE_ALL
+"""
+# trace_stage = TRACE_STAGE_NONE
+
+"""
+set traceback of exceptions
+
+TRACEBACK_NONE
+TRACEBACK_PYTHON (default)
+TRACEBACK_ALL
+"""
+# traceback = TRACEBACK_PYTHON
+
+"""
+an import directory
+
+directory.append( 'dir' )
+"""
+# directory.append( 'dir' )
+
+"""
+process the source file, even if neither the source file
+nor dependencies have been changed, if you prefer to avoid
+useless processing, keep it to False
+
+False (default)
+True
+"""
+# force = False
+
+"""
+dependency of the source file
+
+dependency.append( 'file' )
+"""
+dependency.append( '.yuconfig' )
