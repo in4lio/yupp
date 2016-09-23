@@ -25,18 +25,6 @@ python ./test.py
 Hello world!
 ```
 
-### How to use `yupp` with Python 3
-
-`1.` Process your script with `yupp`:
-```
-python yup.py -q ./test.yu-py
-```
-
-`2.` Run the preprocessed script:
-```
-python ./test.py
-```
-
 ### See also
 
 [Configure Sublime Text](../sublime_text/)
