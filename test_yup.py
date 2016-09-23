@@ -14,8 +14,6 @@ from __future__ import division
 import traceback
 from yugen import *                                                                                                    #pylint: disable=wildcard-import,unused-wildcard-import
 
-#   ---- cut here ----
-
 _traceback = True
 
 #   * * * * * * * * * * * * * * * * * *
