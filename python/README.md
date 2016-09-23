@@ -1,17 +1,15 @@
 ### How to use `yupp` with Python 2
 
-* Install Python package:
+1) Install Python package:
 ```
 pip install yupp
 ```
 
-* [Configure Sublime Text](../sublime_text/) (optional)
-
-* Start your code on Python with:
-```py
+2) Start your code on Python with:
+```
 # coding: yupp
 ```
-  for example:
+for example:
 ```
 # coding: yupp
 # test.py
@@ -20,11 +18,18 @@ pip install yupp
 print ($hola)
 ```
 
-* Run the script in the usual way:
+3) Run the script in the usual way:
 ```
 python test.py
 
 Hello world!
 ```
 
-* [See more examples](../eg/)
+### See also
+
+[Configure Sublime Text](../sublime_text/)
+[More examples](../eg/)
+
+
+
+
