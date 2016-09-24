@@ -311,6 +311,14 @@
 
         https://github.com/in4lio/yupp/tree/master/eg
 
+    ___                ___________________________
+    ___ PYTHON PACKAGE ___________________________
+
+    The easiest way to integrate the macro processor into Python 2
+    to install the corresponding package:
+
+        pip install yupp
+
     ___          _________________________________
     ___ GET HELP _________________________________
 
