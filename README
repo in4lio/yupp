@@ -314,10 +314,15 @@
     ___                ___________________________
     ___ PYTHON PACKAGE ___________________________
 
-    The easiest way to integrate the macro processor into Python 2
+    The easiest way to integrate the preprocessor into Python 2 -
     to install the corresponding package:
 
         pip install yupp
+
+    After that you will be able to use macro expressions in the source
+    code on Python, starting the script with:
+
+        # coding: yupp
 
     ___          _________________________________
     ___ GET HELP _________________________________
