@@ -37,8 +37,8 @@
     ___        ___________________________________
     ___ SYNTAX ___________________________________
 
-    The most significant syntactic categories of the macro language are
-    list, application and lambda expression.
+    Main syntactic categories of the macro language are: list, application
+    and lambda expression.
 
     List is a sequence of expressions separated by blanks and enclosed
     in parentheses.
