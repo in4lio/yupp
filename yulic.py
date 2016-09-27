@@ -14,7 +14,7 @@ HOLDER      = 'Vitaly Kravtsov'
 EMAIL       = 'in4lio@gmail.com'
 DESCRIPTION = 'yet another lexical preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '0.9b7'
+VERSION     = '0.9b8'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

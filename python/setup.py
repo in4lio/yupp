@@ -101,6 +101,7 @@ def find_package_data(
     return out
 
 PACKAGE = "yupp"
+sys.path.insert(0, os.path.realpath(os.path.join(".", PACKAGE)))
 pack = __import__(PACKAGE)
 NAME = pack.__pp_name__
 VERSION = pack.__version__

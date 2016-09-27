@@ -751,7 +751,7 @@ re_STR = re.compile( r'^"(?:\\.|[^\\"])*"' )
 #   ---- character literal
 re_CHR = re.compile( r"^'(?:\\.|[^\\'])*'" )
 #   ---- coding (Python)
-re_CODING = re.compile( r"coding\:\s*yupp(?:\W|$)" )
+re_CODING = re.compile( r"coding\:\s*yupp(?:\W|$)", re.IGNORECASE )
 
 E_PY = '.py'
 
