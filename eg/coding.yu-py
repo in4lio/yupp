@@ -1,0 +1,7 @@
+# coding: yupp.cp1252
+
+($__TITLE__)
+
+print ($'($0), ($1), ($2)' ($unq 'Liberté') [égalité],,fraternité)
+
+# ¡No pasarán!
