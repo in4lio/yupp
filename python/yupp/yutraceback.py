@@ -36,11 +36,11 @@ def print_tb(tb, limit=None, file=None):
         co = f.f_code
 #       -- filename = co.co_filename
         if co.co_filename in fn_subst:
-            filename, coding_lineno = fn_subst[co.co_filename]
+            filename, shrink = fn_subst[co.co_filename]
         else:
             filename = co.co_filename
-            coding_lineno = 0
-        lineno -= coding_lineno
+            shrink = 0
+        lineno -= shrink
         if lineno < 1: lineno = 1
 #       --
         name = co.co_name
@@ -75,11 +75,11 @@ def extract_tb(tb, limit = None):
         co = f.f_code
 #       -- filename = co.co_filename
         if co.co_filename in fn_subst:
-            filename, coding_lineno = fn_subst[co.co_filename]
+            filename, shrink = fn_subst[co.co_filename]
         else:
             filename = co.co_filename
-            coding_lineno = 0
-        lineno -= coding_lineno
+            shrink = 0
+        lineno -= shrink
         if lineno < 1: lineno = 1
 #       --
         name = co.co_name
@@ -117,11 +117,11 @@ def extract_stack(f=None, limit = None):
         co = f.f_code
 #       -- filename = co.co_filename
         if co.co_filename in fn_subst:
-            filename, coding_lineno = fn_subst[co.co_filename]
+            filename, shrink = fn_subst[co.co_filename]
         else:
             filename = co.co_filename
-            coding_lineno = 0
-        lineno -= coding_lineno
+            shrink = 0
+        lineno -= shrink
         if lineno < 1: lineno = 1
 #       --
         name = co.co_name

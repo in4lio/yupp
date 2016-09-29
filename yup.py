@@ -491,7 +491,7 @@ def proc_stream( _stream, fn ):
             pass
 
     ok, data = _pp_stream( _stream, fn, fn_o )
-    return ( ok, data, fn_o, yushell.coding_lineno )
+    return ( ok, data, fn_o, yushell.shrink )
 
 #   ---------------------------------------------------------------------------
 if __name__ == '__main__':

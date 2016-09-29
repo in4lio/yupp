@@ -522,6 +522,11 @@ class TEXT( BASE_OBJECT ):
             self.ast.insert( 0, IMPORT_BEGIN())
             self.ast.append( IMPORT_END())
 
+#   -----------------------------------
+    def extend_text( self, pos, lst ):
+        if self.ast:
+            self.ast[ pos:pos ] = lst
+
 #   ---------------------------------------------------------------------------
 class VAR( BASE_OBJECT ):
     """
@@ -738,12 +743,16 @@ ps_EMIT_T = '\\emit'
 l_EMIT_T = len( ps_EMIT_T )
 #   ---- embed character
 ps_EMBED = '*'
-#   ---- hexadecimal number
-re_HEX = re.compile( r'^[+-]? *0[xX][0-9a-fA-F]+' )
-#   ---- octal number
-re_OCT = re.compile( r'^[+-]? *0[0-7]+' )
-#   ---- decimal number
-re_DEC = re.compile( r'^[+-]? *[0-9]+[lL]?' )
+#   ---- integer number
+re_INT = re.compile( r"""
+^[+-]?[ \t]*(?:
+    0[xX][\da-fA-F]+[lL]?  #  hexadecimal
+  | 0[bB][01]+             #  binary
+  | 0[oO][0-7]+            #  octal
+  | 0[0-7]*                #  octal
+  | [1-9]\d*               #  decimal
+)[lL]?
+""", re.VERBOSE )
 #   ---- float
 re_FLOAT = re.compile( r'^[+-]? *(?:\d+(?:\.\d+))(?:[eE][+-]?\d+)?' )
 #   ---- string literal
@@ -751,10 +760,11 @@ re_STR = re.compile( r'^"(?:\\.|[^\\"])*"' )
 #   ---- character literal
 re_CHR = re.compile( r"^'(?:\\.|[^\\'])*'" )
 #   ---- coding (Python)
-re_CODING = re.compile( r"coding\:\s*yupp(?:\W|$)", re.IGNORECASE )
+re_CODING = re.compile( r"coding\:\s*yupp(\.[\-_a-zA-Z0-9]+)?(?:\W|$)", re.IGNORECASE )
+ps_CODING = 'yupp.'
+l_CODING = len( ps_CODING )
 
 E_PY = '.py'
-
 #   -----------------------------------
 #   Grammar rules
 #   -----------------------------------
@@ -856,14 +866,19 @@ def yuparse( input_file ):
 
     sou = SOURCE( source, input_file )
     try:
-#       -- throw "coding: yupp" out of result
         if ( yushell.input_file == input_file ) and yushell.output_py:
 #   ---- { coding_py }
-            ( sou, _ ) = ps_coding_py( sou, 0 )
+            ( sou, coding ) = ps_coding_py( sou, 0 )
+        else:
+            coding = None
+
 #   ---- text
         text = ps_text( sou, 0 )
         while sou:
             ( sou, ast ) = text.next()
+
+        if coding is not None:
+            ast.extend_text( 0, coding )
 
         return ast
 
@@ -1317,20 +1332,28 @@ def ps_remark_py( sou, depth = 0 ):
 @echo__ps_
 def ps_coding_py( sou, depth = 0 ):
     """
-    coding_py ::= { EOL } remark_py & ( 'coding:' 'yupp' );
+    coding_py ::= { EOL } remark_py & ( 'coding:' 'yupp' { '.' encoding } );
+    encoding ::= name;
     """
 #   ---------------
 #   ---- { EOL }
     ( rest, _ ) = ps_space( sou, depth + 1 )
     ( rest, eol ) = ps_eol( rest, depth + 1 )
     ( rest, _ ) = ps_space( rest, depth + 1 )
-#   ---- remark_py & ( 'coding:' 'yupp' )
+#   ---- remark_py
     ( rest, leg ) = ps_remark_py( rest, depth + 1 )
     if leg is not None:
+#   ---- ( 'coding:' 'yupp' { '.' encoding } )
         mch = re_CODING.search( str( leg ))
         if mch:
-            yushell.coding_lineno = 2 if eol else 1
-            return ( rest, leg )
+            yushell.shrink = 2 if eol else 1
+            if mch.group( 1 ) is None:
+#               -- encoding is absent - delete the magic comment
+                return ( rest, None )
+
+#           -- delete 'yupp.' from the magic comment
+            i = leg.find( ps_CODING )
+            return ( rest, [ REMARK( leg[ :i ]), REMARK( leg[( i + l_CODING ): ])])
 
     return ( sou, None )
 
@@ -1939,23 +1962,11 @@ def ps_number( sou, depth = 0 ):
         leg = mch.group( 0 )
         return ( sou[ mch.end(): ], FLOAT( leg ))
 
-#   ---- hex
-    mch = re_HEX.match( sou )
+#   ---- integer
+    mch = re_INT.match( sou )
     if mch:
         leg = mch.group( 0 )
-        return ( sou[ mch.end(): ], INT( leg, 16 ))
-
-#   ---- oct
-    mch = re_OCT.match( sou )
-    if mch :
-        leg = mch.group( 0 )
-        return ( sou[ mch.end(): ], INT( leg, 8 ))
-
-#   ---- dec
-    mch = re_DEC.match( sou )
-    if mch:
-        leg = mch.group( 0 )
-        return ( sou[ mch.end(): ], INT( leg, 10 ))
+        return ( sou[ mch.end(): ], INT( leg, 0 ))
 
     return ( sou, None )
 
@@ -2005,8 +2016,8 @@ class LAMBDA_CLOSURE( BASE_OBJECT ):
 #   ---------------------------------------------------------------------------
 class L_CLOSURE( LAMBDA_CLOSURE ):
     """
-    AST: L_CLOSURE( form, ENV, { var: [( late, BOUND )] }, { var: form }) <-- LAMBDA
-                                                                              late
+    AST: L_CLOSURE( form, ENV, { var: [( late, BOUND )] }, { var: form } ) <-- LAMBDA
+                                                                               late
     """
 #   ---------------
     pass
@@ -2408,6 +2419,7 @@ STEADY_TAB = '\xFF'
 def yushell( text, _input = None, _output = None ):
     yushell.input_file = os.path.basename( _input ) if _input else '<stdin>'
     yushell.output_file = os.path.basename( _output ) if _output else '<stdout>'
+#   -- output file is in Python
     yushell.output_py = os.path.splitext( yushell.output_file )[ 1 ].lower() == E_PY
     yushell.source = { SOURCE_EMPTY: ( '', '' ), yushell.input_file: ( _input, text.replace( '\r\n', EOL ))}
     yushell.script = []
@@ -2430,7 +2442,8 @@ def yushell( text, _input = None, _output = None ):
     yushell.pp_skip_comments = config.pp_skip_comments
     if yushell.pp_skip_comments == PP_SKIP_COMMENTS_AUTO:
         yushell.pp_skip_comments = PP_SKIP_PYTHON_COMMENTS if yushell.output_py else PP_SKIP_C_COMMENTS
-    yushell.coding_lineno = 0
+#   -- the number of deleted lines at the beginning (Python)
+    yushell.shrink = 0
     return yushell.input_file
 
 _title_template_c = r"""/*  %(output)s was generated by %(app)s %(version)s

@@ -12,6 +12,7 @@ __author_email__ = yulic.EMAIL
 __url__          = 'http://github.com/in4lio/yupp/'
 
 def yuppReaderFactory( BaseReader ):
+
     class yuppReader( BaseReader ):
         def __init__( self, *args, **kwargs ):
             import cStringIO
@@ -21,10 +22,10 @@ def yuppReaderFactory( BaseReader ):
 
             BaseReader.__init__( self, *args, **kwargs )
             fn = self.stream.name                                                                                      #pylint: disable=access-member-before-definition
-            ok, code, fn_o, lnno = yup.proc_stream( self.stream, fn )                                                  #pylint: disable=access-member-before-definition
+            ok, code, fn_o, shrink = yup.proc_stream( self.stream, fn )                                                #pylint: disable=access-member-before-definition
             if ok:
 #               -- replace the filename of source file in traceback
-                yutraceback.fn_subst[ fn ] = ( fn_o, lnno )
+                yutraceback.fn_subst[ fn ] = ( fn_o, shrink )
 #               -- check syntax of the preprocessed code
                 try:
                     ast.parse( code, fn_o )
@@ -38,18 +39,30 @@ def yuppReaderFactory( BaseReader ):
 
     return yuppReader
 
-def search_function( s ):
-    if not s.lower().startswith( __pp_name__ ):
+def search_function( coding ):
+    if not coding.lower().startswith( __pp_name__ ):
         return None
 
-    basereader = utf_8.StreamReader
-    pos = s.find( '.' ) + 1
-    if pos:
-        codec = encodings.search_function( s[ pos: ])
+    dot = coding.find( '.' )
+    if dot != -1:
+#       -- coding: yupp.<encoding>
+        if dot != len( __pp_name__ ):
+#           -- wrong coding format
+            return None
+
+        codec = encodings.search_function( coding[( dot + 1 ): ])
         if codec is None:
+#           -- unknown <encoding>
             return None
 
         basereader = codec.streamreader
+    else:
+        if len( coding ) != len( __pp_name__ ):
+#           -- wrong coding format
+            return None
+
+#       -- default encoding: UTF-8
+        basereader = utf_8.StreamReader
 
     utf8 = encodings.search_function( 'utf8' )
     return codecs.CodecInfo(
