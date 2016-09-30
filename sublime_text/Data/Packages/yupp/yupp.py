@@ -171,6 +171,9 @@ class OpenSourceCommand( sublime_plugin.TextCommand ):
         view.sel().clear()
         view.sel().add( reg )
         view.show_at_center( reg )
+        # workaround: caret position not refreshing if new position on the same line
+        view.add_regions( 'bug', [ reg ], 'bug', 'dot', sublime.HIDDEN | sublime.PERSISTENT )
+        view.erase_regions( 'bug' )
 
 #   -----------------------------------
     def run( self, edit ):
