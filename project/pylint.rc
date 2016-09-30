@@ -127,7 +127,7 @@ no-docstring-rgx=__.*__
 max-line-length=120
 
 # Maximum number of lines in a module
-max-module-lines=3555
+max-module-lines=3999
 
 # String used as indentation unit. This is usually " " (4 spaces) or "\t" (1
 # tab).

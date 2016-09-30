@@ -267,7 +267,7 @@ class ATOM( BASE_STR ):
     """
 #   -----------------------------------
     def is_valid_c_id( self ):
-        return self.find( '-' ) == -1
+        return '-' not in self
 
 #   ---------------------------------------------------------------------------
 class REMARK( BASE_STR ):
@@ -781,6 +781,10 @@ def _unq( st ):
         return st
 
 #   ---------------------------------------------------------------------------
+def _unify_eol( st ):
+    return st.replace( '\r\n', EOL ).replace( '\r', EOL )
+
+#   ---------------------------------------------------------------------------
 def _import_source( lib, once ):
 #   -- prevent libraries re-import
     if once and lib in yushell.source:
@@ -795,7 +799,7 @@ def _import_source( lib, once ):
                 break
     try:
         with open( lpath, 'r' ) as f:
-            sou = f.read().replace( '\r\n', EOL )
+            sou = _unify_eol( f.read())
     except:
         e_type, e, tb = sys.exc_info()
         raise e_type, 'ps_import: %s' % ( e ) + lib.loc(), tb
@@ -1601,6 +1605,11 @@ def ps_former( sou, depth = 0 ):
         | l-form;
     """
 #   ---------------
+#   ---- value
+    ( sou, leg ) = ps_value( sou, depth + 1 )
+    if leg is not None:
+        return ( sou, leg )
+
 #   ---- variable
     ( sou, leg ) = ps_variable( sou, depth + 1 )
     if leg is not None:
@@ -1608,11 +1617,6 @@ def ps_former( sou, depth = 0 ):
 
 #   ---- lambda
     ( sou, leg ) = ps_lambda( sou, depth + 1 )
-    if leg is not None:
-        return ( sou, leg )
-
-#   ---- value
-    ( sou, leg ) = ps_value( sou, depth + 1 )
     if leg is not None:
         return ( sou, leg )
 
@@ -1893,17 +1897,24 @@ def ps_quote( sou, depth = 0 ):
         | ( '($quote' | '(`' ) plain ')' & ($eq depth_pth 0);
     """
 #   ---------------
-#   ---- str
-    mch = re_STR.match( sou )
-    if mch:
-        leg = mch.group( 0 )
-        return ( sou[ mch.end(): ], STR( leg ))
+    if yushell.output_py:
+#   ---- Python string
+        ( sou, leg ) = ps_string_py( sou, depth + 1 )
+        if leg is not None:
+            return ( sou, leg )
+
+    else:
+#   ---- C string
+        mch = re_STR.match( sou )
+        if mch:
+            leg = mch.group( 0 )
+            return ( sou[ mch.end(): ], STR( leg ))
 
 #   ---- chr
-    mch = re_CHR.match( sou )
-    if mch:
-        leg = mch.group( 0 )
-        return ( sou[ mch.end(): ], STR( leg ))
+        mch = re_CHR.match( sou )
+        if mch:
+            leg = mch.group( 0 )
+            return ( sou[ mch.end(): ], STR( leg ))
 
 #   ---- (` | ($quote
     pos = ( l_BQUOTE if sou[ :l_BQUOTE ] == ps_BQUOTE else l_QUOTE if sou[ :l_QUOTE ] == ps_QUOTE else 0 )
@@ -1921,6 +1932,72 @@ def ps_quote( sou, depth = 0 ):
                 return ( sou[ 1: ], STR( str( leg )))
 
     return ( sou, None )
+
+#   ---------------------------------------------------------------------------
+def _getline( st, _from = 0 ):
+    _end = st.find( '\n', _from ) + 1
+    if not _end:
+        _end = len( st )
+    return ( _from, _end )
+
+#   ---------------------------------------------------------------------------
+@echo__ps_
+def ps_string_py( sou, depth = 0 ):
+#   -- the first line
+    ln_start, ln_end = _getline( sou )
+    ln = sou[ ln_start:ln_end ]
+#   -- look for head
+    mch_head = ps_string_py.re_STR_HEAD.match( ln )
+    if mch_head:
+        p = mch_head.end()
+        head = ln[ :p ]
+        if mch_head.group( ps_string_py.group_3x ) is not None:
+#           -- head of ''' or """ string
+            re_tail = ps_string_py.re_STR_3x1_TAIL if "'" in head else ps_string_py.re_STR_3x2_TAIL
+#           -- look for tail
+            mch_tail = re_tail.match( ln, p )
+            if mch_tail:
+#               -- tail on the same line
+                p = mch_tail.end()
+                return ( sou[ p: ], STR( sou[ :p ]))
+
+#           -- tail on other line
+            _1x = False
+        else:
+#           -- head of ' or " string
+            if head[ -1 ] != '\n':
+#               -- tail on the same line
+                return ( sou[ p: ], STR( sou[ :p ]))
+
+#           -- tail on other line
+            re_tail = ps_string_py.re_STR_1x1_TAIL if "'" in head else ps_string_py.re_STR_1x2_TAIL
+            _1x = True
+    else:
+        return ( sou, None )
+
+#   -- look for tail on the following lines
+    sou_p = len( ln )
+    while True:
+#       -- the next line
+        ln_start, ln_end = _getline( sou, ln_end )
+        ln = sou[ ln_start:ln_end ]
+        if not ln:
+            raise EOFError( '%s: unexpected EOF into multi-line string:' % ( callee()))
+
+        mch_tail = re_tail.match( ln )
+        if mch_tail:
+#           -- tail is found
+            sou_p += mch_tail.end( 0 )
+            return ( sou[ sou_p: ], STR( sou[ :sou_p ]))
+
+#       -- look for line continuation
+        elif _1x and ln[ -2: ] != '\\\n':
+            raise SyntaxError( '%s: multi-line string continuation expected' % ( callee()) + sou[ sou_p: ].loc())
+
+        sou_p += len( ln )
+
+# -- regexes will be initialized in the yuinit(), if required
+ps_string_py.initialized = False
 
 #   ---------------------------------------------------------------------------
 @echo__ps_
@@ -2421,7 +2498,7 @@ def yushell( text, _input = None, _output = None ):
     yushell.output_file = os.path.basename( _output ) if _output else '<stdout>'
 #   -- output file is in Python
     yushell.output_py = os.path.splitext( yushell.output_file )[ 1 ].lower() == E_PY
-    yushell.source = { SOURCE_EMPTY: ( '', '' ), yushell.input_file: ( _input, text.replace( '\r\n', EOL ))}
+    yushell.source = { SOURCE_EMPTY: ( '', '' ), yushell.input_file: ( _input, _unify_eol( text ))}
     yushell.script = []
     yushell.inclusion = []
     yushell.module = os.path.splitext( yushell.input_file )[ 0 ].replace( '-', '_' ).upper() if _input else 'UNTITLED'
@@ -2444,7 +2521,6 @@ def yushell( text, _input = None, _output = None ):
         yushell.pp_skip_comments = PP_SKIP_PYTHON_COMMENTS if yushell.output_py else PP_SKIP_C_COMMENTS
 #   -- the number of deleted lines at the beginning (Python)
     yushell.shrink = 0
-    return yushell.input_file
 
 _title_template_c = r"""/*  %(output)s was generated by %(app)s %(version)s
     out of %(input)s %(datetime)s
@@ -3393,6 +3469,30 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #   ---------------------------------------------------------------------------
 def yuinit():
     RESULT.clean()
+
+    if yushell.output_py and not ps_string_py.initialized:
+#       -- initialize regexes for ps_string_py()
+        ps_string_py.initialized = True
+#       -- head of any string
+        ps_string_py.re_STR_HEAD = re.compile( r"""
+        ^[uU]?[rR]?(?:
+            ( '''
+            | \"\"\"
+            )
+          | ( '[^\n'\\]*(?:\\.[^\n'\\]*)*(?:'|\\\n)
+            | "[^\n"\\]*(?:\\.[^\n"\\]*)*(?:"|\\\n)
+            )
+        )
+        """, re.VERBOSE )
+        ps_string_py.group_3x = 1
+#       -- tail of ' string
+        ps_string_py.re_STR_1x1_TAIL = re.compile( r"[^'\\]*(?:\\.[^'\\]*)*'" )
+#       -- tail of " string
+        ps_string_py.re_STR_1x2_TAIL = re.compile( r'[^"\\]*(?:\\.[^"\\]*)*"' )
+#       -- tail of ''' string
+        ps_string_py.re_STR_3x1_TAIL = re.compile( r"[^'\\]*(?:(?:\\.|'(?!''))[^'\\]*)*'''" )
+#       --  tail of """ string
+        ps_string_py.re_STR_3x2_TAIL = re.compile( r'[^"\\]*(?:(?:\\.|"(?!""))[^"\\]*)*"""' )
 
 
 #   * * * * * * * * * * * * * * * * * *

@@ -702,7 +702,7 @@ def ___title___( t ):
 def test( kit, t ):                                                                                                    #pylint: disable=too-many-statements
     """
     For each test case: ( text, parsed, evaluated ),
-    check: ( yuparse( yushell( text )) == parsed ) and ( yueval( parsed ) == evaluated ).
+    check: ( yuparse( yushell.input_file ) == parsed ) and ( yueval( parsed ) == evaluated ).
     """
 #   ---------------
     print ___title___( t )
@@ -725,8 +725,9 @@ def test( kit, t ):                                                             
                 trace.info( ___title___( 'test %d' % ( i )))
             trace.deepest = 0
 #   ---- parse
+            yushell( text )
             yuinit()
-            ast = yuparse( yushell( text ))
+            ast = yuparse( yushell.input_file )
 
             print repr( ast ), '\n'
             if TR2F:
