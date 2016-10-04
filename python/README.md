@@ -25,6 +25,12 @@ python ./test.py
 Hello world!
 ```
 
+### How to define source code encoding
+
+```
+# coding: yupp.cp1252
+```
+
 ### See also
 
 [Configure Sublime Text](../sublime_text/)
