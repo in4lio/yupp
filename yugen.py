@@ -2576,7 +2576,8 @@ builtin.update({
     'sum': sum,
     'TAB': lambda : STEADY_TAB,
     'typeof': lambda val : ATOM( val.__class__.__name__ ),
-    'unq': _unq
+    'unique': lambda l, s=set() : LIST( x for x in l if not ( x in s or s.add( x ))),
+    'unq': _unq,
 })
 
 builtin_special = dict()
@@ -2585,7 +2586,7 @@ builtin_special.update({
     'lazy': lambda val : LIST( LAZY( x ) for x in val ) if isinstance( val, list ) else LAZY( val ),
     'skip': SKIP(),
     'reduce': reduce,
-    'repr': repr
+    'repr': repr,
 })
 
 #   ---------------------------------------------------------------------------

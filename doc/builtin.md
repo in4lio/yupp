@@ -38,8 +38,9 @@
 `($SPACE)` | Steady SPACE character.
 `($str x)` | Return a string containing a nicely printable representation of the argument.
 `($strlen s)` | Length of a string (without quotes).
-`($sum list [start])` | Sums `start` and the items of a list from left to right and returns the total. `start` defaults to `0`.
+`($sum list [start])` | Sum `start` and the items of a list from left to right and return the total. `start` defaults to `0`.
 `($TAB)` | Steady TAB character.
+`($unique list)` | Return a list of unique elements, preserving order.
 `($unq s)` | Unquote a string.
  | **Functions imported from Python `operator` module**
 `($add a b)` | Addition `a + b`.
@@ -100,7 +101,7 @@
 `($isnan x)` | Check if float `x` is not a number (NaN).
 `($ldexp x i)` | Return `x * (2**i)`.
 `($lgamma x)` | Natural logarithm of absolute value of Gamma function at `x`.
-`($log x [base])` | Return the logarithm of `x` to the given base. If the base not specified, returns the natural logarithm (base `e`) of `x`.
+`($log x [base])` | Return the logarithm of `x` to the given base. If the base not specified, return the natural logarithm (base `e`) of `x`.
 `($log10 x)` | Return the base 10 logarithm of `x`.
 `($log1p x)` | Return the natural logarithm of `1+x` (base e). The result is computed in a way which is accurate for `x` near zero.
 `($modf x)` | Return the fractional and integer parts of `x`. Both results carry the sign of `x` and are floats.
