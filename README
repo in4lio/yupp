@@ -319,6 +319,8 @@
 
         pip install yupp
 
+    You may need to specify "--pre" key to install the beta version.
+
     After that you will be able to use macro expressions in the source
     code on Python, starting the script with:
 
