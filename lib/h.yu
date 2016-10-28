@@ -54,10 +54,10 @@
 ($macro h-end ()
 #undef _EXT
 #undef _EXT_INIT
-#undef _INL
-#undef _C
 #undef _EXT_C
 #undef _EXT_C_INIT
+#undef _INL
+#undef _C
 #endif
 )
 
