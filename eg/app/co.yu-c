@@ -1,6 +1,7 @@
 ($import "app.yu")
 ($TITLE,,Coroutines implementation.)
 
+($import "config.yu")
 ($import h)
 ($import corolib)
 

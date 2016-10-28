@@ -1,6 +1,6 @@
 # coding: yupp
 
-($__TITLE__)
+($__TITLE__ 0)
 
 ($import coroutine-py)
 

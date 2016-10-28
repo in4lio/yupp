@@ -1,6 +1,7 @@
 ($import "app.yu")
 ($TITLE,,($DESCRIPTION).)
 
+($import "config.yu")
 ($import h)
 ($import corolib)
 

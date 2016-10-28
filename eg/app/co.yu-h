@@ -1,12 +1,11 @@
 ($import "app.yu")
 ($TITLE,,Coroutines declarations.)
 
+($import "config.yu")
 ($import h)
 ($import corolib)
 
 ($h-begin-named)
-
-($extern-c-begin)
 
 ($coro-h)
 
@@ -26,7 +25,5 @@
 	extern void ($C)_uninit( void );
 
 [ )
-
-($extern-c-end)
 
 ($h-end)

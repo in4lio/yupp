@@ -3,17 +3,16 @@
 #   |   |  _   _|   | |  _   _|
 #   |  _|_| |___ ___|_|___  |
 #   |_|                   |_|
-#   makefile ( yupp, gcc )
+#   makefile (yupp, gcc)
 
-# -- binary name (without extension)
-BIN = app
+# -- name of binary file without extension
+TARGET = predict
 
 # -- creating MAP file
 MAP = 0
 
-# -- platform (core)
+# -- platform
 ifeq ($(OS),Windows_NT)
-# ARM Cortex-M: __CORTEX_M__
 # MSDOS: __DJGPP__
 # WIN32: __MINGW__
 # UNIX: __UNIX__
@@ -25,10 +24,16 @@ endif
 
 TOP = ../..
 
-# -- compilers
+# -- compiler
+ifeq ($(PLATFORM),__DJGPP__)
+CC = $(DJGPP_HOME)/bin/gcc.exe
+CXX = $(DJGPP_HOME)/bin/gxx.exe
+LINK = $(CC)
+else
 CC = gcc
 CXX = g++
 LINK = $(CC)
+endif
 
 # -- yupp preprocessor
 YUPP_HOME = $(TOP)
@@ -44,29 +49,39 @@ else
 PP = @echo makefile: warning: preprocessing step is skipped,
 endif
 
-ifeq ($(PLATFORM),__MINGW__)
-D_PLATFORM =
+# -- command to create directories
+MKDIR = mkdir -p
+
+# -- output subdirectory
+ifeq ($(PLATFORM),__DJGPP__)
+D_PLATFORM = djgpp
 else
-D_PLATFORM =
+ifeq ($(PLATFORM),__MINGW__)
+D_PLATFORM = .
+else
+D_PLATFORM = .
+endif
 endif
 
-# -- yupp import directories
-D_YU = .
+D_SOU = .
+
+# -- import directories for yupp
+D_YU = $(D_SOU)
 
 # -- source directories
 D_C = $(D_YU)
 D_CXX = $(D_C)
-D_ASM = $(D_C)
+D_ASM = $(D_SOU)
 
 # -- include directories
 D_H = $(D_C) $(YUPP_HOME)/lib
 
-# -- binary directory
+# -- binary file directory
 D_BIN = .
 D_BIN := $(if $(D_PLATFORM), $(D_BIN)/$(D_PLATFORM), $(D_BIN))
 
 # -- object directory
-D_OBJ = object
+D_OBJ = ./object
 D_OBJ := $(if $(D_PLATFORM), $(D_OBJ)/$(D_PLATFORM), $(D_OBJ))
 
 # -- LIST and MAP directories
@@ -87,15 +102,15 @@ E_ASM = .asm
 # -- object suffix
 E_OBJ = .o
 
-# -- binary suffix
+# -- binary file suffix
 ifeq ($(OS),Windows_NT)
 E_BIN = .exe
 else
 E_BIN =
 endif
 
-# -- binary full name
-F_BIN = $(D_BIN)/$(BIN)$(E_BIN)
+# -- full name of binary file
+F_BIN = $(D_BIN)/$(TARGET)$(E_BIN)
 
 # -- LIST and MAP suffixes
 E_MAP = .map
@@ -111,7 +126,7 @@ endif
 LFLAGS =
 
 ifeq ($(MAP),1)
-LFLAGS := $(LFLAGS) -Wl,-Map,$(D_MAP)/$(BIN)$(E_MAP)
+LFLAGS := $(LFLAGS) -Wl,-Map,$(D_MAP)/$(TARGET)$(E_MAP)
 endif
 
 # -- preprocessor flags
@@ -121,6 +136,12 @@ PPFLAGS = -q --pp-browse -Wno-unbound $(addprefix -d, $(D_YU))
 CFLAGS = $(addprefix -I, $(D_H)) -O2 -std=gnu99 -W -Wall -Wno-comment
 CXXFLAGS = $(addprefix -I, $(D_H)) -O2 -ffast-math -funroll-loops -fno-exceptions -fomit-frame-pointer -g -W -Wall -Wno-comment
 ASMFLAGS = -Wall
+
+# -- platform specific options
+ifeq ($(PLATFORM),__DJGPP__)
+BUFSIZE = 16k
+MINSTACK = 1024k
+endif
 
 # ---------------------------------
 #   files lists
@@ -163,25 +184,15 @@ define wrap
 endef
 endif
 
-define cc
-	$(call wrap,$(CC),$(CFLAGS) -c $1 -o $2)
-endef
-
-define cxx
-	$(call wrap,$(CXX),$(CXXFLAGS) -c $1 -o $2)
-endef
-
-define asm
-	$(call wrap,$(CC),$(ASMFLAGS) -c $1 -o $2)
-endef
-
-define link
-	$(call wrap,$(LINK),$1 -o $2 $(LIBS) $(LFLAGS))
-endef
-
 # -- optional final tools
+ifeq ($(PLATFORM),__DJGPP__)
+define final
+	stubedit $1 minstack=$(MINSTACK) bufsize=$(BUFSIZE)
+endef
+else
 define final
 endef
+endif
 
 # -- removal list
 R_BIN = $(F_BIN) $(O)
@@ -192,7 +203,7 @@ R := $(R) $(G_H) $(G_C) $(G_CXX)
 endif
 
 ifeq ($(MAP),1)
-R := $(R) $(D_MAP)/$(BIN)$(E_MAP)
+R := $(R) $(D_MAP)/$(TARGET)$(E_MAP)
 endif
 
 ifeq ($(OS),Windows_NT)
@@ -219,13 +230,13 @@ vpath %$(E_ASM) $(D_ASM)
 vpath %$(E_YUCXX) $(D_CXX)
 vpath %$(E_YUC) $(D_C)
 
-# -- build project
-.PHONY: all
+# -- build binary file
+.PHONY: default
 
-all: $(F_BIN)
+default: bindirs $(F_BIN)
 
 $(F_BIN): $(O)
-	$(call link,$^,$@)
+	$(call wrap,$(LINK),$(LFLAGS) $(LIBS) $^ -o $@)
 	$(call final,$@)
 	@echo "*** $(F_BIN) ***"
 
@@ -243,13 +254,22 @@ $(G_H): %$(E_H): %$(E_YUH)
 $(S_C) $(S_CXX): $(G_H)
 
 $(O_C): $(D_OBJ)/%$(E_OBJ): %$(E_C)
-	$(call cc,$<,$@)
+	$(call wrap,$(CC),$(CFLAGS) -c $< -o $@)
 
 $(O_CXX): $(D_OBJ)/%$(E_OBJ): %$(E_CXX)
-	$(call cxx,$<,$@)
+	$(call wrap,$(CXX),$(CXXFLAGS) -c $< -o $@)
 
 $(O_ASM): $(D_OBJ)/%$(E_OBJ): %$(E_ASM)
-	$(call asm,$<,$@)
+	$(call wrap,$(CC),$(ASMFLAGS) -c $< -o $@)
+
+# -- create 'object' and 'bin' directories
+bindirs: $(D_OBJ) $(D_BIN)
+
+$(D_OBJ):
+	${MKDIR} ${D_OBJ}
+
+$(D_BIN):
+	${MKDIR} ${D_BIN}
 
 # -- perform preprocessing only
 .PHONY: yupp
@@ -262,13 +282,13 @@ yupp: $(G_C) $(G_CXX) $(G_H)
 clean:
 	$(CLEAN)
 
-# -- remove binary files
+# -- remove binary and object files
 .PHONY: clean-binary
 
 clean-binary:
 	$(CLEAN_BIN)
 
-# -- install project
+# -- install
 .PHONY: install
 
 install:
