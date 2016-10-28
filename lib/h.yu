@@ -1,12 +1,14 @@
 ($!
 	($h-begin-named)
 
+	($extern-init,,unsigned int foo[ 4 ],,{ 0, 1, 2, 3 })
+	($extern) int bar;
+	($extern-c) void fn( char *a );
+
+	($inline) int max( int a, b ) { return (( a > b ) ? a : b ); }
+
 	($extern-c-begin)
-
-	($h-extern-init,,unsigned int foo[ 4 ],,{ 0, 1, 2, 3 })
-	($h-extern) int bar;
-	($h-extern) char fn( void );
-
+	int fn2( void );
 	($extern-c-end)
 
 	($h-end)
@@ -18,18 +20,29 @@
 #define ($h-name)_H
 
 #ifdef  ($h-name)_IMPLEMENT
-#define ($h-name)_EXT
-#define ($h-name)_EXT_INIT( dec, init ) \
+#define _EXT
+#define _EXT_INIT( dec, init ) \
 	dec = init
-#define ($h-name)_INL
+#define _EXT_C
+#define _EXT_C_INIT( dec, init ) \
+	dec = init
+#define _INL
 #else
-#define ($h-name)_EXT extern
-#define ($h-name)_EXT_INIT( dec, init ) \
+#define _EXT extern
+#define _EXT_INIT( dec, init ) \
 	extern dec
-#if __GNUC__ && !__GNUC_STDC_INLINE__
-#define ($h-name)_INL extern inline
+#ifdef __cplusplus
+#define _C "C"
 #else
-#define ($h-name)_INL inline
+#define _C
+#endif
+#define _EXT_C extern _C
+#define _EXT_C_INIT( dec, init ) \
+	extern _C dec
+#if __GNUC__ && !__GNUC_STDC_INLINE__
+#define _INL extern inline
+#else
+#define _INL inline
 #endif
 #endif
 
@@ -39,6 +52,12 @@
 )
 
 ($macro h-end ()
+#undef _EXT
+#undef _EXT_INIT
+#undef _INL
+#undef _C
+#undef _EXT_C
+#undef _EXT_C_INIT
 #endif
 )
 
@@ -65,6 +84,8 @@ extern "C" {
 #endif
 )
 
-($macro h-extern ()($h-name)_EXT)
-($macro h-extern-init ( dec init )($h-name)_EXT_INIT( ($dec), ($replace [($init)] [,] [ COMMA ]) );)
-($macro h-inline ()($h-name)_INL)
+($macro extern ()_EXT)
+($macro extern-init ( dec init )_EXT_INIT( ($dec), ($replace [($init)] [,] [ COMMA ]) );)
+($macro extern-c ()_EXT_C)
+($macro extern-c-init ( dec init )_EXT_C_INIT( ($dec), ($replace [($init)] [,] [ COMMA ]) );)
+($macro inline ()_INL)
