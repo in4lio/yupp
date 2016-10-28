@@ -12,29 +12,29 @@
 #define CO_H
 
 #ifdef  CO_IMPLEMENT
-#define _EXT
-#define _EXT_INIT( dec, init ) \
+#define CO_EXT
+#define CO_EXT_INIT( dec, init ) \
 	dec = init
-#define _EXT_C
-#define _EXT_C_INIT( dec, init ) \
+#define CO_EXT_C
+#define CO_EXT_C_INIT( dec, init ) \
 	dec = init
-#define _INL
+#define CO_INL
 #else
-#define _EXT extern
-#define _EXT_INIT( dec, init ) \
+#define CO_EXT extern
+#define CO_EXT_INIT( dec, init ) \
 	extern dec
 #ifdef __cplusplus
-#define _C "C"
+#define CO_C "C"
 #else
-#define _C
+#define CO_C
 #endif
-#define _EXT_C extern _C
-#define _EXT_C_INIT( dec, init ) \
-	extern _C dec
+#define CO_EXT_C extern CO_C
+#define CO_EXT_C_INIT( dec, init ) \
+	extern CO_C dec
 #if __GNUC__ && !__GNUC_STDC_INLINE__
-#define _INL extern inline
+#define CO_INL extern inline
 #else
-#define _INL inline
+#define CO_INL inline
 #endif
 #endif
 
@@ -45,41 +45,41 @@
 #include "coroutine.h"
 
 /** "A" coroutine local context. */
-_EXT_INIT( CORO_CONTEXT( A ), NULL );
+CO_EXT_INIT( CORO_CONTEXT( A ), NULL );
 /** "A" coroutine alive flag. */
-_EXT_INIT( int A_alive, CO_SKIP );
+CO_EXT_INIT( int A_alive, CO_SKIP );
 /** "A" coroutine. */
-_EXT CORO_DEFINE( A );
+CO_EXT CORO_DEFINE( A );
 /** Initialize "A" coroutine. */
-_EXT int A_init( void );
+CO_EXT int A_init( void );
 /** Uninitialize "A" coroutine. */
-_EXT void A_uninit( void );
+CO_EXT void A_uninit( void );
 /** "B" coroutine local context. */
-_EXT_INIT( CORO_CONTEXT( B ), NULL );
+CO_EXT_INIT( CORO_CONTEXT( B ), NULL );
 /** "B" coroutine alive flag. */
-_EXT_INIT( int B_alive, CO_SKIP );
+CO_EXT_INIT( int B_alive, CO_SKIP );
 /** "B" coroutine. */
-_EXT CORO_DEFINE( B );
+CO_EXT CORO_DEFINE( B );
 /** Initialize "B" coroutine. */
-_EXT int B_init( void );
+CO_EXT int B_init( void );
 /** Uninitialize "B" coroutine. */
-_EXT void B_uninit( void );
+CO_EXT void B_uninit( void );
 /** "C" coroutine local context. */
-_EXT_INIT( CORO_CONTEXT( C ), NULL );
+CO_EXT_INIT( CORO_CONTEXT( C ), NULL );
 /** "C" coroutine alive flag. */
-_EXT_INIT( int C_alive, CO_SKIP );
+CO_EXT_INIT( int C_alive, CO_SKIP );
 /** "C" coroutine. */
-_EXT CORO_DEFINE( C );
+CO_EXT CORO_DEFINE( C );
 /** Initialize "C" coroutine. */
-_EXT int C_init( void );
+CO_EXT int C_init( void );
 /** Uninitialize "C" coroutine. */
-_EXT void C_uninit( void );
+CO_EXT void C_uninit( void );
 
-#undef _EXT
-#undef _EXT_INIT
-#undef _INL
-#undef _C
-#undef _EXT_C
-#undef _EXT_C_INIT
+#undef CO_EXT
+#undef CO_EXT_INIT
+#undef CO_EXT_C
+#undef CO_EXT_C_INIT
+#undef CO_INL
+#undef CO_C
 #endif
 

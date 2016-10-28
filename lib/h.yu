@@ -20,29 +20,29 @@
 #define ($h-name)_H
 
 #ifdef  ($h-name)_IMPLEMENT
-#define _EXT
-#define _EXT_INIT( dec, init ) \
+#define ($h-name)_EXT
+#define ($h-name)_EXT_INIT( dec, init ) \
 	dec = init
-#define _EXT_C
-#define _EXT_C_INIT( dec, init ) \
+#define ($h-name)_EXT_C
+#define ($h-name)_EXT_C_INIT( dec, init ) \
 	dec = init
-#define _INL
+#define ($h-name)_INL
 #else
-#define _EXT extern
-#define _EXT_INIT( dec, init ) \
+#define ($h-name)_EXT extern
+#define ($h-name)_EXT_INIT( dec, init ) \
 	extern dec
 #ifdef __cplusplus
-#define _C "C"
+#define ($h-name)_C "C"
 #else
-#define _C
+#define ($h-name)_C
 #endif
-#define _EXT_C extern _C
-#define _EXT_C_INIT( dec, init ) \
-	extern _C dec
+#define ($h-name)_EXT_C extern ($h-name)_C
+#define ($h-name)_EXT_C_INIT( dec, init ) \
+	extern ($h-name)_C dec
 #if __GNUC__ && !__GNUC_STDC_INLINE__
-#define _INL extern inline
+#define ($h-name)_INL extern inline
 #else
-#define _INL inline
+#define ($h-name)_INL inline
 #endif
 #endif
 
@@ -52,12 +52,12 @@
 )
 
 ($macro h-end ()
-#undef _EXT
-#undef _EXT_INIT
-#undef _EXT_C
-#undef _EXT_C_INIT
-#undef _INL
-#undef _C
+#undef ($h-name)_EXT
+#undef ($h-name)_EXT_INIT
+#undef ($h-name)_EXT_C
+#undef ($h-name)_EXT_C_INIT
+#undef ($h-name)_INL
+#undef ($h-name)_C
 #endif
 )
 
@@ -84,8 +84,8 @@ extern "C" {
 #endif
 )
 
-($macro extern ()_EXT)
-($macro extern-init ( dec init )_EXT_INIT( ($dec), ($replace [($init)] [,] [ COMMA ]) );)
-($macro extern-c ()_EXT_C)
-($macro extern-c-init ( dec init )_EXT_C_INIT( ($dec), ($replace [($init)] [,] [ COMMA ]) );)
-($macro inline ()_INL)
+($macro extern ()($h-name)_EXT)
+($macro extern-init ( dec init )($h-name)_EXT_INIT( ($dec), ($replace [($init)] [,] [ COMMA ]) );)
+($macro extern-c ()($h-name)_EXT_C)
+($macro extern-c-init ( dec init )($h-name)_EXT_C_INIT( ($dec), ($replace [($init)] [,] [ COMMA ]) );)
+($macro inline ()($h-name)_INL)
