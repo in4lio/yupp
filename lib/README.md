@@ -304,48 +304,55 @@ See also - [coro.yu-py](../eg/coro.yu-py)
 
 ## Header Files Helper ([h.yu](./h.yu))
 
-For example, `unit.yu-h`:
+For example, `module.yu-h`:
 
 ```cpp
 ($import h)
-
 ($h-begin-named)
 
+($extern-init,,unsigned int foo[ 4 ],,{ 0, 1, 2, 3 })
+($extern) int bar;
+($extern-c) void fn( char *a );
+
+($inline) int max( int a, b ) { return (( a > b ) ? a : b ); }
+
 ($extern-c-begin)
-
-($h-extern-init,,unsigned int foo[ 4 ],,{ 0, 1, 2, 3 })
-($h-extern) int bar;
-($h-extern) char fn( void );
-
-($h-inline) int max( int a, int b )
-{
-	return ( a > b ? a : b );
-}
-
+int fn2( void );
 ($extern-c-end)
 
 ($h-end)
 ```
 
-will be translated into `unit.h`:
+will be translated into `module.h`:
 
 ```cpp
-#ifndef UNIT_H
-#define UNIT_H
+#ifndef MODULE_H
+#define MODULE_H
 
-#ifdef  UNIT_IMPLEMENT
-#define UNIT_EXT
-#define UNIT_EXT_INIT( dec, init ) \
+#ifdef  MODULE_IMPLEMENT
+#define MODULE_EXT
+#define MODULE_EXT_INIT( dec, init ) \
 	dec = init
-#define UNIT_INL
+#define MODULE_EXT_C
+#define MODULE_EXT_C_INIT( dec, init ) \
+	dec = init
+#define MODULE_INL
 #else
-#define UNIT_EXT extern
-#define UNIT_EXT_INIT( dec, init ) \
+#define MODULE_EXT extern
+#define MODULE_EXT_INIT( dec, init ) \
 	extern dec
-#if __GNUC__ && !__GNUC_STDC_INLINE__
-#define UNIT_INL extern inline
+#ifdef __cplusplus
+#define MODULE_C "C"
 #else
-#define UNIT_INL inline
+#define MODULE_C
+#endif
+#define MODULE_EXT_C extern MODULE_C
+#define MODULE_EXT_C_INIT( dec, init ) \
+	extern MODULE_C dec
+#if __GNUC__ && !__GNUC_STDC_INLINE__
+#define MODULE_INL extern inline
+#else
+#define MODULE_INL inline
 #endif
 #endif
 
@@ -353,45 +360,57 @@ will be translated into `unit.h`:
 #define COMMA   ,
 #endif
 
+MODULE_EXT_INIT( unsigned int foo[ 4 ], { 0 COMMA  1 COMMA  2 COMMA  3 } );
+MODULE_EXT int bar;
+MODULE_EXT_C void fn( char *a );
+
+MODULE_INL int max( int a, b ) { return (( a > b ) ? a : b ); }
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-UNIT_EXT_INIT( unsigned int foo[ 4 ], { 0 COMMA  1 COMMA  2 COMMA  3 } );
-UNIT_EXT int bar;
-UNIT_EXT char fn( void );
-
-UNIT_INL int max( int a, int b )
-{
-	return ( a > b ? a : b );
-}
+int fn2( void );
 
 #ifdef __cplusplus
 }
 #endif
 
+#undef MODULE_EXT
+#undef MODULE_EXT_INIT
+#undef MODULE_EXT_C
+#undef MODULE_EXT_C_INIT
+#undef MODULE_INL
+#undef MODULE_C
 #endif
 ```
 
-And `unit.yu-c`:
+And `module.yu-c`:
 
 ```cpp
 ($import h)
-
 ($implement-named)
 
-char fn( void )
+void fn( char *a )
+{
+}
+
+int fn2( void )
 {
 	return ( -1 );
 }
 ```
 
-will spawn `unit.c`:
+will spawn `module.c`:
 
 ```cpp
-#define UNIT_IMPLEMENT
+#define MODULE_IMPLEMENT
 
-char fn( void )
+void fn( char *a )
+{
+}
+
+int fn2( void )
 {
 	return ( -1 );
 }
