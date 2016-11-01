@@ -66,14 +66,6 @@
     Syntactic forms can be nested within each other but, as mentioned above,
     only an application can be embedded into the source code directly.
 
-    Any functions from "string", "operator" and "math" modules of Python
-    Standard Library can be used in preprocessor expressions
-    (https://github.com/in4lio/yupp/blob/master/doc/builtin.md).
-
-    The special ($import ) form is provided to include macros and functions
-    from yupp Standard Library or other libraries
-    (https://github.com/in4lio/yupp/blob/master/lib/README.md).
-
     The following examples show various syntactic constructs of the macro
     language. Try them using yupp Web Console (http://yup-py.appspot.com/).
 
@@ -252,6 +244,14 @@
 
     -400
     400
+
+    Any functions from "string", "operator" and "math" modules of Python
+    Standard Library can be used in preprocessor expressions
+    (https://github.com/in4lio/yupp/blob/master/doc/builtin.md).
+
+    The special ($import ) form is provided to include macros and functions
+    from yupp Standard Library or other libraries
+    (https://github.com/in4lio/yupp/blob/master/lib/README.md).
 
     ___       ____________________________________
     ___ USAGE ____________________________________
