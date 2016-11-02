@@ -44,19 +44,21 @@ TITLE = r""" __    __    _____ _____
 """ % { 'description' : DESCRIPTION, 'app': APP, 'version': VERSION
       , 'copyright': COPYRIGHT, 'holder': HOLDER, 'email': EMAIL }
 
-PROMPT  = '[yupp]# '
-PP_I    = '<--'
-PP_O    = '-->'
-PP_FILE = '[%s]'
-OK      = '* OK *'
-FAIL    = '\n%s: %s'
-___     = '.' * 79
+PP_I      = '<--'
+PP_O      = '-->'
+PP_FILE   = '[%s]'
+OK        = '* OK *'
+FAIL      = '\n%s: %s'
+___       = '.' * 79
+PROMPT    = '[yupp]# '
+REPL_TEST = 'test'
+REPL_EXIT = 'exit'
 
-E_YUGEN = '.yugen'
-E_YUCFG = '.yuconfig'
-re_e_yu = re.compile( r'\.yu(?:-([^\.]+))?$', flags = re.I )
-E_BAK   = '.bak'
-E_AST   = '.ast'
+E_YUGEN   = '.yugen'
+E_YUCFG   = '.yuconfig'
+re_e_yu   = re.compile( r'\.yu(?:-([^\.]+))?$', flags = re.I )
+E_BAK     = '.bak'
+E_AST     = '.ast'
 
 QUIET_HELP = """
 do not show usual greeting and other information
@@ -184,7 +186,8 @@ def shell_input():
 
     except ( EOFError, ValueError ):
 #       -- e.g. run into environment without terminal input
-        return ''
+        print
+        return REPL_EXIT
 
 #   ---------------------------------------------------------------------------
 def shell_backup( fn ):
@@ -425,31 +428,35 @@ def _pp_file( fn ):
 
 #   ---------------------------------------------------------------------------
 def _pp_test( text, echo = True ):
-    if not text or text.isspace():
-#       -- empty text - quit REPL
-        return False
+    if not text.strip():
+#       -- ignore empty text
+        return True
 
     if echo:
         print PP_I, text
     yushell( text )
     yuinit()
     ok, plain = _pp()
+
     print
-    print PP_O, plain
+    if plain:
+        print PP_O, plain
     if ok:
         print OK
-#   -- continue REPL
-    return True
+    return ok
 
 #   ---------------------------------------------------------------------------
 def _pp_text( text, text_source = None ):
     yushell( text, text_source )
     yuinit()
     ok, plain = _pp()
+
     print
-    print plain
+    if plain:
+        print plain
     if ok:
         print OK
+    return ok
 
 #   ---------------------------------------------------------------------------
 def _getmtime( fn ):
@@ -522,5 +529,18 @@ if __name__ == '__main__':
 
     else:
 #       -- Read-Eval-Print Loop
-        while _pp_test( shell_input(), False ):
-            pass
+        print PROMPT + 'Type "%s" or source code + "%s".' % ( REPL_EXIT, REPL_TEST )
+        test = ''
+        while True:
+            line = shell_input()
+            stripped = line.strip()
+            if stripped == REPL_EXIT:
+#               -- quit REPL
+                break
+            if stripped == REPL_TEST:
+#               -- run preprocessor
+                _pp_test( test, False )
+                test = ''
+            else:
+                test += line + '\n'
+        sys.exit( 0 )
