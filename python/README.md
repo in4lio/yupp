@@ -35,4 +35,4 @@ Hello world!
 
 [Configure Sublime Text](../sublime_text/)
 
-[More examples](../eg/)
+[Further examples](../eg/)
