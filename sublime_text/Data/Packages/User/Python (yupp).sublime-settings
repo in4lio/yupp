@@ -2,6 +2,7 @@
 	"extensions":
 	[
 		"py",
-		"yu-py"
+		"yu-py",
+		"yuconfig"
 	]
 }
