@@ -1,0 +1,209 @@
+($__TITLE__ 0)/**
+ *  \file  ($unq ($__OUTPUT_FILE__)) (($unq ($__FILE__)))
+ *  \brief  Generic example of using preprocessor for interaction with GPIO pins.
+ */
+
+#include <stdint.h>
+#include <stdbool.h>
+#include <stdio.h>
+
+($import stdlib)
+
+($! Definition of used inputs )
+($dict IN_POOL
+	(` IN_NAME  IN_PORT  IN_PIN  IN_PULL  IN_FILT  )
+	(`
+	(  NACK     'A'      2       DOWN     OFF      )
+	(  BUSY     'B'      11      OFF      ON       )
+	(  PE       'B'      13      UP       OFF      )
+	(  SLCT     'A'      5       OFF      ON       )
+	(  NERR     'C'      7       DOWN     OFF      )
+	)
+)
+
+/**
+ *  \defgroup periph Simulation of peripheral registers
+ *  \{
+ */
+
+($set PIN_PER_PORT 16)
+
+($! Define offsets in register for each pin
+	reg: register name
+	sz : field size (in bits)
+)
+($macro _REGOFS (reg sz) ($($range PIN_PER_PORT) \i.]
+	#define GPIO_($reg)_PIN($i)  ($mul i ($sz))
+
+[ ))
+
+/**
+ *  \defgroup reg_mode GPIO MODE register
+ *  \{
+ */
+
+#define GPIO_MODE_INPUT   0
+#define GPIO_MODE_OUTPUT  1
+
+($_REGOFS MODE 1)
+
+/** \} */
+
+/**
+ *  \defgroup reg_pull GPIO PULL register
+ *  \{
+ */
+
+#define GPIO_PULL_OFF   0
+#define GPIO_PULL_UP    1
+#define GPIO_PULL_DOWN  2
+
+($_REGOFS PULL 2)
+
+/** \} */
+
+/**
+ *  \defgroup reg_filt GPIO FILT register
+ *  \{
+ */
+
+#define GPIO_FILT_OFF  0
+#define GPIO_FILT_ON   1
+
+($_REGOFS FILT 1)
+
+/** \} */
+
+/**
+ *  \defgroup reg_state GPIO STATE register
+ *  \{
+ */
+
+($_REGOFS STATE 1)
+
+/** \} */
+
+/**
+ *  \defgroup reg_clock GPIO clock register
+ *  \{
+ */
+
+#define GPIO_CLOCK_PORTA  0
+#define GPIO_CLOCK_PORTB  1
+#define GPIO_CLOCK_PORTC  2
+
+uint32_t GPIO_CLOCK;
+
+/** \} */
+
+/**
+ *  \defgroup reg_port GPIO port registers
+ *  \{
+ */
+
+typedef struct {
+	uint32_t mode;
+	uint32_t pull;
+	uint32_t filt;
+	uint32_t state;
+} GPIO_PORT;
+
+GPIO_PORT PORTA, PORTB, PORTC;
+
+/** \} */
+
+/** \} */
+
+/**
+ *  \defgroup inputs Functions for interaction with inputs
+ *  \{
+ */
+
+/**
+ *  \brief Identifiers of inputs.
+ */
+enum {
+	($each-IN_POOL \i.]
+		($i IN_NAME),
+
+	[ )
+	IN__COUNT_  /**< Count of inputs. */
+};
+
+/**
+ *  \brief Initialize GPIO ports.
+ */
+void init_gpio( void )
+{
+	($set PORTS ($unique IN_PORT))
+
+	/* Enable GPIO clocks */
+	GPIO_CLOCK |= 0 ($PORTS \p.[ | ( 1UL << GPIO_CLOCK_PORT($unq p) )]);
+
+	/* Configure GPIO ports */
+	($PORTS \p.]
+		PORT($unq p).mode = ( 0
+			($each-IN_POOL \i.($if ($eq p ($i IN_PORT)) ]
+				| ( GPIO_MODE_INPUT << GPIO_MODE_PIN($i) )
+
+			[ ))
+		);
+		PORT($unq p).pull = ( 0
+			($each-IN_POOL \i.($if ($eq p ($i IN_PORT)) ]
+				| ( GPIO_PULL_($i IN_PULL) << GPIO_PULL_PIN($i) )
+
+			[ ))
+		);
+		PORT($unq p).filt = ( 0
+			($each-IN_POOL \i.($if ($eq p ($i IN_PORT)) ]
+				| ( GPIO_FILT_($i IN_FILT) << GPIO_FILT_PIN($i) )
+
+			[ ))
+		);
+
+	[ )
+}
+
+($each-IN_POOL \i.]
+
+	/**
+	 *  \brief Get state of ($i IN_NAME) input.
+	 *  \return State.
+	 */
+	bool get_($i IN_NAME)( void )
+	{
+		($set port ($unq ($i IN_PORT)))
+		($set pin ($i IN_PIN))
+		return (( PORT($port).state & GPIO_STATE_PIN($pin) ) != 0 );  /* port ($port) pin ($pin) */
+	}
+
+[ )
+
+bool get_input( int in )
+{
+	switch ( in ) {
+	($each-IN_POOL \i.]
+		case ($i IN_NAME):
+			return get_($i IN_NAME)();
+
+	[ )
+	}
+	return false;
+}
+
+/** \} */
+
+int main( void )
+{
+	init_gpio();
+
+	($each-IN_POOL \i.]
+		bool ($lower ($i IN_NAME)) = get_input( ($i IN_NAME) );
+
+	[ )
+
+	($each-IN_POOL \i.]
+		printf( ($"($0) = %d\n" ($i IN_NAME)), get_($i IN_NAME)());
+
+	[ )
+}
