@@ -343,6 +343,13 @@
 
         # coding: yupp
 
+    Preprocessor options for all files in a directory can be specified into
+    ".yuconfig" file, individual options for the file in "file.yuconfig".
+
+    Nothing prevents to translate other file types using the package:
+
+        python -c "from yupp import pp; pp.translate( 'file.yu-c' )"
+
     ___              _____________________________
     ___ SUBLIME TEXT _____________________________
 
