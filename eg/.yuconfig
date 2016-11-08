@@ -1,5 +1,7 @@
+# coding: utf8
+
 """
-yupp Python preprocessor global options
+yupp Python package – options for the entire directory
 """
 
 """

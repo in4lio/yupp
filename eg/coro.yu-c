@@ -1,6 +1,6 @@
 ($! coroutines in gcc )
 
-($__TITLE__)
+($__TITLE__ 0)
 
 ($set coro-define \name.\coro.\enter:[].]
 int coro_($name)( void **ip )

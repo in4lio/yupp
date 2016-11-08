@@ -1,6 +1,8 @@
+# coding: utf8
+
 """
-yupp Python preprocessor options for "dict.yu-py"
-these options will override the global options ".yuconfig"
+yupp Python package – options for "dict.yu-py"
+will override options for the directory ".yuconfig"
 """
 
 """

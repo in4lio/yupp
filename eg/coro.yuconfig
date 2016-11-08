@@ -1,0 +1,16 @@
+# coding: utf8
+
+"""
+yupp Python package – options for "coro.yu-c"
+will override options for the directory ".yuconfig"
+"""
+
+"""
+warn if an application of unbound atom is detected
+"""
+warn_unbound_application = False
+
+"""
+dependency of the source file
+"""
+dependency.append( 'coro.yuconfig' )
