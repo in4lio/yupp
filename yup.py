@@ -501,6 +501,22 @@ def proc_stream( _stream, fn ):
     return ( ok, data, fn_o, yushell.shrink )
 
 #   ---------------------------------------------------------------------------
+def proc_file( fn ):
+    """
+    File preprocessing (for Python package).
+    """
+    try:
+#       -- open input file
+        f = open( fn, 'r' )
+    except IOError as e:
+#       -- e.g. file operation failure
+        log.critical( FAIL, type( e ).__name__, str( e ))
+        return ( False, None )
+
+    ok, _, fn_o, _ = proc_stream( f, fn )
+    return ( ok, fn_o )
+
+#   ---------------------------------------------------------------------------
 if __name__ == '__main__':
     args = shell_parse_cli_args()
     if not args.files:
