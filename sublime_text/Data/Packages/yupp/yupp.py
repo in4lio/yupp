@@ -26,7 +26,7 @@ file_mtime = {}  # time of last modification
 #   ---------------------------------------------------------------------------
 def _bisect( a, x ):
     """
-    Modified 'bisect_right' from the python standard library.
+    Modified 'bisect_right' from Python standard library.
     """
     hi = len( a )
     lo = 0
@@ -73,7 +73,7 @@ def open_file( fn ):
         with open( fn_json ) as f:
             file_data[ fn ] = json.load( f )
 
-        # search for origin files in fruit's directory
+        # search for original files in fruit's directory
         l_files = len( file_data[ fn ][ 'files' ])
         dirs = [ os.path.dirname( fn )]
         file_data[ fn ][ 'paths' ] = [ '' ] * l_files
@@ -88,14 +88,14 @@ def open_file( fn ):
             file_state[ fn ] = STATE_CHECK_RAW
         return
 
-    # check origin file
+    # check original file
     b, e = os.path.splitext( fn )
     if not e:
         return
 
     if e == '.yugen':
         # *.yugen --> *.yu
-        origin = b + '.yu'  # or just `b`... (ignored)
+        origin = b + '.yu'  # or just b... (ignored)
     else:
         bb, be = os.path.splitext( b )
         if be == '.yugen':
@@ -233,7 +233,7 @@ class GotoOriginCommand( sublime_plugin.TextCommand ):
                 i -= 1
                 pos_found, inx, pos_to = browse[ i ]
                 dirs = self.view.window().folders()
-                # search for origin file in project directories
+                # search for original file in project directories
                 fn_to = search_file( fn_fruit, dirs, inx )
                 if ( i > 0 ) and ( browse[ i - 1 ][ 0 ] != pos_found ) and ( pos_to > 0 ):
                     # relative shift only in case of single jump
