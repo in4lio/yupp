@@ -355,7 +355,14 @@
 
     The folder "sublime_text" contains configuration files for comfortable
     usage of the preprocessor in Sublime Text 2 editor. In addition there is
-    a plug-in for quick navigation between the generated text and its source.
+    a plugin for quick navigation between the generated text and its origin.
+
+    ___     ______________________________________
+    ___ VIM ______________________________________
+
+    Switching between the generated text and its origin in VIM editor:
+
+        https://github.com/in4lio/vim-yupp (under development)
 
     ___         __________________________________
     ___ TESTKIT __________________________________
