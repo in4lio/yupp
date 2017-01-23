@@ -56,7 +56,7 @@ REPL_EXIT = 'exit'
 
 E_YUGEN   = '.yugen'
 E_YUCFG   = '.yuconfig'
-re_e_yu   = re.compile( r'\.yu(?:-([^\.]+))?$', flags = re.I )
+re_e_yu   = re.compile( r'\.yu(?:-([^.]+))?$', flags = re.IGNORECASE )
 E_BAK     = '.bak'
 E_AST     = '.ast'
 
@@ -159,7 +159,7 @@ def _exec_yuconfig_script( fn_cfg, context ):
         try:
             execfile( fn_cfg, context )
         except Exception as e:                                                                                         #pylint: disable=broad-except
-            log.error( 'unable to execute configuration script\n' \
+            log.error( 'unable to execute configuration script\n'
             'File "%s"\n%s: %s', fn_cfg, type( e ).__name__, str( e ))
 
 #   ---------------------------------------------------------------------------
@@ -357,6 +357,7 @@ def _output_fn( fn ):
 #   ---------------------------------------------------------------------------
 def _pp_stream( _stream, fn, fn_o ):
     ok = False
+    plain = None
     try:
         text = _stream.read()
 #       -- preprocessing

@@ -760,7 +760,7 @@ re_STR = re.compile( r'^"(?:\\.|[^\\"])*"' )
 #   ---- character literal
 re_CHR = re.compile( r"^'(?:\\.|[^\\'])*'" )
 #   ---- coding (Python)
-re_CODING = re.compile( r"coding\:\s*yupp(\.[\-_a-zA-Z0-9]+)?(?:\W|$)", re.IGNORECASE )
+re_CODING = re.compile( r'coding:\s*yupp(\.[\-_a-zA-Z0-9]+)?(?:\W|$)', re.IGNORECASE )
 ps_CODING = 'yupp.'
 l_CODING = len( ps_CODING )
 
