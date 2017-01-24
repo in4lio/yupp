@@ -759,7 +759,7 @@ def test( kit, t ):                                                             
             print '*** FAIL *** Expected AST:'
             print repr( parsed ), '\n'
 
-        if evaluated and not e:
+        if evaluated and e is None:
             trace.set_current( TRACE_STAGE_EVAL )
             TR2F = trace.enabled and trace.to_file
             LOG = not trace.enabled or trace.to_file

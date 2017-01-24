@@ -1284,6 +1284,7 @@ def ps_remark_c( sou, depth = 0 ):
         | '/*' { ANY YIELD }0... '*/';
     """
 #   ---------------
+    del depth
 #   ---- //
     if sou[ :2 ] == '//':
         i = 2
@@ -1318,6 +1319,7 @@ def ps_remark_py( sou, depth = 0 ):
     remark_py ::= '#' { ANY YIELD }0... >> EOL <<;
     """
 #   ---------------
+    del depth
 #   ---- #
     if sou[ :1 ] == '#':
         i = 1
@@ -1841,6 +1843,7 @@ def ps_atom( sou, depth = 0 ):
     atom ::= LETTER { LETTER | FIGURE }0...;
     """
 #   ---------------
+    del depth
     i = 0
     if _ord( sou, 0 ) in ps_LETTER:
         i = 1
@@ -1856,6 +1859,7 @@ def ps_space( sou, depth = 0 ):
     SPACE ::= [ '\t', ' ' ];
     """
 #   ---------------
+    del depth
     i = 0
     while _ord( sou, i ) in ps_SPACE:
         i += 1
@@ -1869,6 +1873,7 @@ def ps_eol( sou, depth = 0 ):
     EOL ::= [ '\n', '\r' ];
     """
 #   ---------------
+    del depth
     if _ord( sou, 0 ) in ps_EOL:
         return ( sou[ 1: ], sou[ :1 ])
 
@@ -1881,6 +1886,7 @@ def ps_gap( sou, depth = 0 ):
     GAP ::= EOL + SPACE;
     """
 #   ---------------
+    del depth
     i = 0
     while _ord( sou, i ) in ps_EOL | ps_SPACE:
         i += 1
@@ -1943,7 +1949,8 @@ def _getline( st, _from = 0 ):
 #   ---------------------------------------------------------------------------
 @echo__ps_
 def ps_string_py( sou, depth = 0 ):
-#   -- the first line
+    del depth
+    #   -- the first line
     ln_start, ln_end = _getline( sou )
     ln = sou[ ln_start:ln_end ]
 #   -- look for head
@@ -2033,6 +2040,7 @@ def ps_number( sou, depth = 0 ):
         | dec;
     """
 #   ---------------
+    del depth
 #   ---- float
     mch = re_FLOAT.match( sou )
     if mch:
@@ -2397,6 +2405,7 @@ class ENV( dict ):
 
 #   -----------------------------------
     def lookup( self, reg, var ):                                                                                      #pylint: disable=unused-argument
+        del reg
         env = self
         while env is not None:
             if env.__contains__( var ):
@@ -2407,7 +2416,8 @@ class ENV( dict ):
         return NOT_FOUND
 
 #   -----------------------------------
-    def update( self, reg, var, value ):                                                                               #pylint: disable=unused-argument
+    def update_variable( self, reg, var, value ):                                                                      #pylint: disable=unused-argument
+        del reg
         env = self
         while env is not None:
             if env.__contains__( var ):
@@ -2436,9 +2446,9 @@ class ENV( dict ):
         and ( self.parent == other.parent ) and ( self.order == other.order ))
 
 #   -----------------------------------
-    def __deepcopy__( self, memodict ):
-        return ENV( copy.deepcopy( self.parent, memodict )
-        , [( key, copy.deepcopy( self.__getitem__( key ), memodict )) for key in self.order ])
+    def __deepcopy__( self, memo=None ):
+        return ENV( copy.deepcopy( self.parent, memo )
+        , [( key, copy.deepcopy( self.__getitem__( key ), memo )) for key in self.order ])
 
 #   -----------------------------------
 #   -- debug message
@@ -3409,7 +3419,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
                 if node.ast:
                     val = yueval( APPLY( node.ast, [ val ], []), env, depth + 1 )
-                    env.update( node.var.reg, node.var.atom, val )
+                    env.update_variable( node.var.reg, node.var.atom, val )
                 return result
 
 #   ---- LIST | list

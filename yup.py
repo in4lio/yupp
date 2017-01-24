@@ -151,7 +151,7 @@ def shell_parse_cli_args():
             sys.exit( 2 )
 
     return argp.parse_args()
-    return argp.parse_args([ '-h' ])                                                                                   #pylint: disable=unreachable
+#    return argp.parse_args([ '-h' ])
 
 #   ---------------------------------------------------------------------------
 def _exec_yuconfig_script( fn_cfg, context ):
