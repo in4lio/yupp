@@ -2446,7 +2446,7 @@ class ENV( dict ):
         and ( self.parent == other.parent ) and ( self.order == other.order ))
 
 #   -----------------------------------
-    def __deepcopy__( self, memo=None ):
+    def __deepcopy__( self, memo = None ):
         return ENV( copy.deepcopy( self.parent, memo )
         , [( key, copy.deepcopy( self.__getitem__( key ), memo )) for key in self.order ])
 
@@ -3606,9 +3606,9 @@ def reduce_emptiness( text ):
         return RESULT( result, text.browse, offset )
 
     def _filter( ln ):
-        empty = _filter.empty
+        _empty = _filter.empty
         _filter.empty = not ln.strip()
-        return not empty or not _filter.empty
+        return not _empty or not _filter.empty
 
     _filter.empty = False
 
