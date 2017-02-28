@@ -124,7 +124,7 @@ setup(
         PACKAGE,
         only_in_packages=False
     ),
-    data_files=[(get_python_lib(), ["yupp.pth"])],
+    data_files=[(get_python_lib().split( sys.prefix + os.sep )[ 1 ], ["yupp.pth"])],
     classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Console",
