@@ -327,8 +327,8 @@
 
         https://github.com/in4lio/yupp/tree/master/eg
 
-    ___                ___________________________
-    ___ PYTHON PACKAGE ___________________________
+    ___                   ________________________
+    ___ MACROS IN PYTHON  ________________________
 
     The easiest way to integrate the preprocessor into Python 2 - to install
     the corresponding package:
@@ -346,9 +346,13 @@
     Preprocessor options for all files in a directory can be specified into
     ".yuconfig" file, individual options for the file in "file.yuconfig".
 
-    Nothing prevents to translate other file types using the package:
+    Nothing hinders to translate any file types using the package:
 
         python -c "from yupp import pp; pp.translate( 'file.yu-c' )"
+
+    Read more:
+
+        https://github.com/in4lio/yupp/tree/master/python
 
     ___              _____________________________
     ___ SUBLIME TEXT _____________________________
