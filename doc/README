@@ -7,13 +7,6 @@
          \/_/      \/_/  \/_/
 
     ($($\y:u.\m.\...(m y($\C.\p.(r)e p)($\ro.(ce)s)))so r)
-    ___         __________________________________
-    ___ VERSION __________________________________
-
-    yup.py      1.0b5
-                2017-02-28
-    python      2.7
-
     ___             ______________________________
     ___ WHAT IS IT? ______________________________
 
@@ -414,8 +407,3 @@
 
     Please feel free to contact me at in4lio+yupp@gmail.com if you have
     any questions about the preprocessor.
-
-    ___         __________________________________
-    ___ LICENSE __________________________________
-
-    Please see the file called "LICENSE".
