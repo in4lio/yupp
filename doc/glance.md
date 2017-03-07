@@ -1,7 +1,7 @@
 A glance at the yupp
 --------------------
 
-Here you can get acquainted with __yupp__ lexical preprocessor by exploring a small example:
+Here you can get acquainted with __yupp__ lexical preprocessor by exploring a small example
 [glance.yu-cpp](pic/glance.yu-cpp.md).<br>
 The preprocessing result is [glance.cpp](../eg/glance/glance.cpp).
 
