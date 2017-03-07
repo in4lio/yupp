@@ -10,7 +10,7 @@
 #include <math.h>
 #include <stdio.h>
 
-void main( void )
+int main( void )
 {
 	($each-Pi \i.]
 		($i type) ($i name) = ($i val);
@@ -22,4 +22,5 @@ void main( void )
 		printf( ($"($0) = ($1)\n" ($i name) ($unq ($i format))), ($i name) );
 
 	[ )
+	return ( 0 );
 }

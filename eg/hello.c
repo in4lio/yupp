@@ -1,7 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 
-void main( void )
+int main( void )
 {
 	float Co = 3.14159265359;
 	double F = acos( -1 );
@@ -13,4 +13,5 @@ void main( void )
 	printf( "F = %.10f\n", F );
 	printf( "Zu = %.6f\n", Zu );
 
+	return ( 0 );
 }
