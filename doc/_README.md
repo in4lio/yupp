@@ -1,4 +1,4 @@
-Markdown version of README still under development...
+**Markdown version of README still under development...**
 
 
     yet another lexical preprocessor
@@ -17,7 +17,7 @@ Markdown version of README still under development...
 with Lisp-like Polish notation syntax in fully parenthesized form.
 **yupp** is intended to transform C programs before they are compiled.
 It can also be useful for more general purposes, if you would like
-to use the preprocessor with Python 2 just install "yupp" package.
+to use the preprocessor with Python 2 just install [yupp package](../../../tree/master/python).
 
 **yupp** allows to generate a readable, well-formatted text. Special
 attention is paid to providing complete diagnostic information and
@@ -26,43 +26,41 @@ navigational capabilities.
 Embedding of the preprocessor expressions into the source code occurs
 by using an _application_ form, e.g. `($e)`.
 
-A small example with comments:
-    https://github.com/in4lio/yupp/blob/master/doc/glance.md
+A small example with comments: ["A glance at the yupp"](./glance.md).
 
-    ___        ___________________________________
-    ___ SYNTAX ___________________________________
+### SYNTAX
 
-    Main syntactic categories of the macro language are: list, application
-    and lambda expression.
+Main syntactic categories of the macro language are: _list_, _application_
+and _lambda expression_.
 
-    List is a sequence of expressions separated by blanks and enclosed
-    in parentheses.
+_List_ is a sequence of expressions separated by blanks and enclosed
+in parentheses.
 
     <list> ::= '(' { <expression> } ')'
 
-    e.g. (0.5 "string" atom)
+e.g. `(0.5 "string" atom)`
 
-    Application is an applying a function to arguments, it syntactically
-    differs from a list in presence of the dollar sign after the open
-    parenthesis.
+_Application_ is an applying a function to arguments, it syntactically
+differs from a list in presence of the dollar sign after the open
+parenthesis.
 
     <application> ::= '($' <function> { <argument> } ')'
 
-    ($add 2 3)
+e.g. `($add 2 3)`
 
-    Lambda is an anonymous function, it consists of a sequence of parameters
-    and a function body.
+_Lambda_ is an anonymous function, it consists of a sequence of parameters
+and a function body.
 
     <lambda> ::= <param> { <param> } <expression>
     <param>  ::= '\' <name> [ ':' <default> ] '.'
 
-    \p.($sub p 1)
+e.g. `\p.($sub p 1)`
 
-    Syntactic forms can be nested within each other but, as mentioned above,
-    only an application can be embedded into the source code directly.
+Syntactic forms can be nested within each other but, as mentioned above,
+only an application can be embedded into the source code directly.
 
-    The following examples show various syntactic constructs of the macro
-    language. Try them using yupp Web Console (http://yup-py.appspot.com/).
+The following examples show various syntactic constructs of the macro
+language. Try them using [yupp Web Console](http://yup-py.appspot.com/).
 
     ($! this is a comment, won't be saved in the generated text )
 
