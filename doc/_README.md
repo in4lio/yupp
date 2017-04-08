@@ -1,6 +1,5 @@
 **Markdown version of README still under development...**
 
-## yupp – yet another lexical preprocessor
      __    __    _____ _____
     /\ \  /\ \  /\  _  \  _  \
     \ \ \_\/  \_\/  \_\ \ \_\ \
@@ -9,6 +8,8 @@
          \/_/      \/_/  \/_/
 
     ($($\y:u.\m.\...(m y($\C.\p.(r)e p)($\ro.(ce)s)))so r)
+
+## yupp – yet another lexical preprocessor
 
 ### WHAT IS IT?
 
@@ -56,7 +57,7 @@ and a function body.
 e.g. `\p.($sub p 1)`
 
 Syntactic forms can be nested within each other but, as mentioned above,
-only `an application` can be embedded into the source code directly.
+only _an application_ can be embedded into the source code directly.
 
 The following examples show various syntactic constructs of the macro
 language. Try them using [yupp Web Console](http://yup-py.appspot.com/).
@@ -381,7 +382,7 @@ or experimental features.
 
 ### GIT
 
-Enter in the following on your command-line to clone yupp repository:
+Enter in the following on your command-line to clone **yupp** repository:
 
     git clone https://github.com/in4lio/yupp.git
 
