@@ -10,21 +10,21 @@ Markdown version of README still under development...
          \/_/      \/_/  \/_/
 
     ($($\y:u.\m.\...(m y($\C.\p.(r)e p)($\ro.(ce)s)))so r)
-    ___             ______________________________
-    ___ WHAT IS IT? ______________________________
 
-_yupp_ is a lexical preprocessor which implements the macro language
+### WHAT IS IT?
+
+**yupp** is a lexical preprocessor which implements the macro language
 with Lisp-like Polish notation syntax in fully parenthesized form.
-_yupp_ is intended to transform C programs before they are compiled.
+**yupp** is intended to transform C programs before they are compiled.
 It can also be useful for more general purposes, if you would like
 to use the preprocessor with Python 2 just install "yupp" package.
 
-_yupp_ allows to generate a readable, well-formatted text. Special
+**yupp** allows to generate a readable, well-formatted text. Special
 attention is paid to providing complete diagnostic information and
 navigational capabilities.
 
 Embedding of the preprocessor expressions into the source code occurs
-by using an "application" form, e.g. `($e)`.
+by using an _application_ form, e.g. `($e)`.
 
 A small example with comments:
     https://github.com/in4lio/yupp/blob/master/doc/glance.md
