@@ -1,4 +1,4 @@
-**Markdown version of README still under development...**
+Markdown version of README still under development...
 
      __    __    _____ _____
     /\ \  /\ \  /\  _  \  _  \
@@ -19,14 +19,14 @@ with Lisp-like Polish notation syntax in fully parenthesized form.
 It can also be useful for more general purposes, if you would like
 to use the preprocessor with Python 2 just install [yupp package](../../../tree/master/python).
 
-**yupp** allows to generate a readable, well-formatted text. Special
+**yupp** allows to generate a well-formatted readable text. Special
 attention is paid to providing complete diagnostic information and
 navigational capabilities.
 
 Embedding of the preprocessor expressions into the source code occurs
-by using an _application_ form, e.g. `($e)`.
+by using _an application_ form, e.g. `($e)`.
 
-A small example with comments: ["A glance at the yupp"](./glance.md).
+A small example with comments – ["A glance at the yupp"](./glance.md).
 
 ### SYNTAX
 
@@ -239,8 +239,8 @@ language. Try them using [yupp Web Console](http://yup-py.appspot.com/).
     400
 
 Any functions from "string", "operator" and "math" modules of Python
-Standard Library can be used in preprocessor expressions
-(https://github.com/in4lio/yupp/blob/master/doc/builtin.md).
+Standard Library can be used in preprocessor expressions –
+[Build-in Functions](./builtin.md).
 
 The special `($import )` form is provided to include macros and functions
 from [yupp Standard Library](../../../blob/master/lib/README.md) or other libraries.
