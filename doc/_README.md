@@ -1,7 +1,6 @@
 **Markdown version of README still under development...**
 
-# yupp – yet another lexical preprocessor
-
+## yupp – yet another lexical preprocessor
      __    __    _____ _____
     /\ \  /\ \  /\  _  \  _  \
     \ \ \_\/  \_\/  \_\ \ \_\ \
@@ -57,7 +56,7 @@ and a function body.
 e.g. `\p.($sub p 1)`
 
 Syntactic forms can be nested within each other but, as mentioned above,
-only an application can be embedded into the source code directly.
+only `an application` can be embedded into the source code directly.
 
 The following examples show various syntactic constructs of the macro
 language. Try them using [yupp Web Console](http://yup-py.appspot.com/).
@@ -242,7 +241,7 @@ Any functions from "string", "operator" and "math" modules of Python
 Standard Library can be used in preprocessor expressions
 (https://github.com/in4lio/yupp/blob/master/doc/builtin.md).
 
-The special ($import ) form is provided to include macros and functions
+The special `($import )` form is provided to include macros and functions
 from [yupp Standard Library](../../../blob/master/lib/README.md) or other libraries.
 
 ### USAGE
@@ -324,7 +323,7 @@ the corresponding package:
 
     pip install yupp
 
-You have to use "pip", and may need to specify "--pre" key to install
+You have to use "pip", and may need to specify `--pre` key to install
 the beta version.
 
 After that you will be able to apply macro expressions in the source
@@ -343,14 +342,13 @@ Nothing hinders to translate any file types using the package:
 
 ### SUBLIME TEXT
 
-The folder "sublime_text" contains configuration files for comfortable
+The folder [sublime_text](../../../tree/master/sublime_text) contains configuration files for comfortable
 usage of the preprocessor in Sublime Text 2 editor. In addition there is
 a plugin for quick navigation between the generated text and its origin.
 
 ### VIM
 
-Switching between the generated text and its origin in VIM editor:
-https://github.com/in4lio/vim-yupp (under development)
+Switching between the generated text and its origin in VIM editor is [under development](../../../tree/master/vim-yupp).
 
 ### TESTKIT
 
