@@ -15,23 +15,23 @@ attention is paid to providing complete diagnostic information and
 navigational capabilities.
 
 Embedding of the preprocessor expressions into the source code occurs
-by using _an application_ form, e.g. `($e)`.
+by using _an application form_, e.g. `($e)`.
 
 A small example with comments – ["A glance at the yupp"](glance.md).
 
 ### SYNTAX
 
-Main syntactic categories of the macro language are: _list_, _application_
-and _lambda expression_.
+Main syntactic categories of the macro language are: **list**, **application**
+and **lambda expression**.
 
-_List_ is a sequence of expressions separated by blanks and enclosed
+**List** is a sequence of expressions separated by blanks and enclosed
 in parentheses.
 
     <list> ::= '(' { <expression> } ')'
 
 e.g. `(0.5 "string" atom)`
 
-_Application_ is an applying a function to arguments, it syntactically
+**Application** is an applying a function to arguments, it syntactically
 differs from a list in presence of the dollar sign after the open
 parenthesis.
 
@@ -39,7 +39,7 @@ parenthesis.
 
 e.g. `($add 2 3)`
 
-_Lambda_ is an anonymous function, it consists of a sequence of parameters
+**Lambda expression** is an anonymous function, it consists of a sequence of parameters
 and a function body.
 
     <lambda> ::= <param> { <param> } <expression>
@@ -55,86 +55,86 @@ language. Try them using [yupp Web Console](http://yup-py.appspot.com/).
 
     ($! this is a comment, won't be saved in the generated text )
 
-    ($! binding of the atom (identifier) with the value )
+Binding of the atom (identifier) with the value:
 
-        ($set a 'A')
+    ($set a 'A')
 
-    ($! the atom binding with the list )
+The atom binding with the list:
 
-        ($set abc (a 'B' 'C' 'D' 'E'))
+    ($set abc (a 'B' 'C' 'D' 'E'))
 
-    ($! binding of the atom with the lambda is a function definition )
+Binding of the atom with the lambda is a function definition:
 
-        ($set inc \val.($add val 1))
+    ($set inc \val.($add val 1))
 
-    ($! application of the number is subscripting )
+Application of the number is subscripting:
 
-        ($2 miss miss HIT miss)
+    ($2 miss miss HIT miss)
 
     HIT
 
-    ($! getting the specific element of the list )
+Getting the specific element of the list:
 
-        ($0 abc)
+    ($0 abc)
 
     'A'
 
-    ($! application of the list is "for each" loop )
+Application of the list is "for each" loop:
 
-        ($(0 1 2) \i.($inc i))
+    ($(0 1 2) \i.($inc i))
 
     123
 
-    ($! embedding of one list into another – *list )
+Embedding of one list into another `*list`:
 
-        ($set mark (5 4 *(3 2) 1))
+    ($set mark (5 4 *(3 2) 1))
 
-    ($! infix expression on Python – { } )
+Infix expression on Python `{ }`:
 
-        ($set four { 2 + 2 })
+    ($set four { 2 + 2 })
 
-    ($! infix expression straight into the source code )
+Infix expression straight into the source code:
 
-        foo = (${} sqrt(four) * 5.0);
+    foo = (${} sqrt(four) * 5.0);
 
     foo = 10.0;
 
-    ($! conditional expression – consequent ? condition | alternative )
+Conditional expression `consequent ? condition | alternative`:
 
-        ($set fact \n.($ 1 ? { n == 0 } | { ($fact { n - 1 }) * n }))
-        ($fact 10)
+    ($set fact \n.($ 1 ? { n == 0 } | { ($fact { n - 1 }) * n }))
+    ($fact 10)
 
     3628800
 
-    ($! enclosing of the source code into the application )
+Enclosing of the source code into the application:
 
-        ($abc \ch.($code putchar(($ch));))
+    ($abc \ch.($code putchar(($ch));))
 
     putchar('A'); putchar('B'); putchar('C'); putchar('D'); putchar('E');
 
-    ($! the source code enclosing with square brackets – [ ] )
+The source code enclosing with square brackets `[ ]`:
 
-        ($mark \i.[($i), ])
+    ($mark \i.[($i), ])
 
     5, 4, 3, 2, 1,
 
-    ($! the function parameter with default value – \p:val. )
+The function parameter with default value `\p:val.`:
 
-        ($set if \cond.\then:[].\else:[].($ then ? cond | else ))
+    ($set if \cond.\then:[].\else:[].($ then ? cond | else ))
 
-    ($! the named argument )
+The named argument:
 
-        ($if { four != 4 } \else OK )
+    ($if { four != 4 } \else OK )
 
     OK
 
-    ($! the macro definition )
+The macro definition:
 
-        ($macro GRADE ( PAIRS )
-            ($set GRADE-name  ($ (($PAIRS)) \p.($0 p)))
-            ($set GRADE-value ($ (($PAIRS)) \p.($1 p)))
-            ($set each-GRADE  ($range ($len (($PAIRS)) )))
-        )
+    ($macro GRADE ( PAIRS )
+        ($set GRADE-name  ($ (($PAIRS)) \p.($0 p)))
+        ($set GRADE-value ($ (($PAIRS)) \p.($1 p)))
+        ($set each-GRADE  ($range ($len (($PAIRS)) )))
+    )
 
     ($! the quote – (` ) )
 
