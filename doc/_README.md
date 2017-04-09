@@ -1,8 +1,6 @@
-Markdown version of README still under development...
+**Markdown version of README still under development...**
 
 ![screenshot](pic/logo.png)
-
-## yupp – yet another lexical preprocessor
 
 ### WHAT IS IT?
 
