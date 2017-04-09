@@ -1,13 +1,6 @@
 Markdown version of README still under development...
 
-     __    __    _____ _____
-    /\ \  /\ \  /\  _  \  _  \
-    \ \ \_\/  \_\/  \_\ \ \_\ \
-     \ \__  /\____/\  __/\  __/
-      \/_/\_\/___/\ \_\/\ \_\/
-         \/_/      \/_/  \/_/
-
-    ($($\y:u.\m.\...(m y($\C.\p.(r)e p)($\ro.(ce)s)))so r)
+![screenshot](pic/logo.png)
 
 ## yupp – yet another lexical preprocessor
 
@@ -26,7 +19,7 @@ navigational capabilities.
 Embedding of the preprocessor expressions into the source code occurs
 by using _an application_ form, e.g. `($e)`.
 
-A small example with comments – ["A glance at the yupp"](./glance.md).
+A small example with comments – ["A glance at the yupp"](glance.md).
 
 ### SYNTAX
 
@@ -240,7 +233,7 @@ language. Try them using [yupp Web Console](http://yup-py.appspot.com/).
 
 Any functions from "string", "operator" and "math" modules of Python
 Standard Library can be used in preprocessor expressions –
-[Build-in Functions](./builtin.md).
+[Built-in Functions](builtin.md).
 
 The special `($import )` form is provided to include macros and functions
 from [yupp Standard Library](../../../blob/master/lib/README.md) or other libraries.
@@ -315,7 +308,7 @@ the evaluation result will be saved as ".ast" file.
             return ( 0 );
         }
 
-[Further examples](https://github.com/in4lio/yupp/tree/master/eg)
+[Further examples...](https://github.com/in4lio/yupp/tree/master/eg)
 
 ### MACROS IN PYTHON
 
@@ -339,7 +332,7 @@ Nothing hinders to translate any file types using the package:
 
     python -c "from yupp import pp; pp.translate( 'file.yu-c' )"
 
-[Read more](../../../tree/master/python)
+[Read more...](../../../tree/master/python)
 
 ### SUBLIME TEXT
 
@@ -362,23 +355,14 @@ or experimental features.
 
 ### WEB
 
-    o   The project on GitHub:
-        https://github.com/in4lio/yupp/
-        https://github.com/in4lio/yupp/wiki/
-
-    o   yupp Blog:
-        http://yup-py.blogspot.com/
-
-    o   yupp Web Console:
-        http://yup-py.appspot.com/
+- [The project on GitHub](https://github.com/in4lio/yupp/wiki/)
+- [yupp Blog](http://yup-py.blogspot.com/)
+- [yupp Web Console](http://yup-py.appspot.com/)
 
 ### PROJECTS
 
-    o   LEGO Mindstorms EV3 Debian C library:
-        https://github.com/in4lio/ev3dev-c/
-
-    o   predict – an embedded application framework:
-        https://github.com/in4lio/predict/
+- [LEGO Mindstorms EV3 Debian C library](https://github.com/in4lio/ev3dev-c/)
+- [predict – an embedded application framework](https://github.com/in4lio/predict/)
 
 ### GIT
 
