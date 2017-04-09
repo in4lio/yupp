@@ -85,11 +85,11 @@ Application of the list is "for each" loop:
 
     123
 
-Embedding of one list into another `*list`:
+Embedding of one list into another – `*list`:
 
     ($set mark (5 4 *(3 2) 1))
 
-Infix expression on Python `{ }`:
+Infix expression on Python – `{ }`:
 
     ($set four { 2 + 2 })
 
@@ -99,7 +99,7 @@ Infix expression straight into the source code:
 
     foo = 10.0;
 
-Conditional expression `consequent ? condition | alternative`:
+Conditional expression – `consequent ? condition | alternative`:
 
     ($set fact \n.($ 1 ? { n == 0 } | { ($fact { n - 1 }) * n }))
     ($fact 10)
@@ -112,13 +112,13 @@ Enclosing of the source code into the application:
 
     putchar('A'); putchar('B'); putchar('C'); putchar('D'); putchar('E');
 
-The source code enclosing with square brackets `[ ]`:
+The source code enclosing with square brackets – `[ ]`:
 
     ($mark \i.[($i), ])
 
     5, 4, 3, 2, 1,
 
-The function parameter with default value `\p:val.`:
+The function parameter with default value – `\p:val.`:
 
     ($set if \cond.\then:[].\else:[].($ then ? cond | else ))
 
@@ -136,7 +136,7 @@ The macro definition:
         ($set each-GRADE  ($range ($len (($PAIRS)) )))
     )
 
-The quote ``(` )``:
+The quote – ``(` )``:
 
     ($GRADE
         (`
@@ -149,7 +149,7 @@ The quote ``(` )``:
     )
 
 Enclosing of the source code into the loop
-with reverse square brackets `]<EOL> <EOL>[`:
+with reverse square brackets – `]<EOL> <EOL>[`:
 
     ($each-GRADE \i.]
         int ($i GRADE-name) = ($i GRADE-value);
@@ -162,7 +162,7 @@ with reverse square brackets `]<EOL> <EOL>[`:
     int D = 2;
     int E = 1;
 
-The source code enclosing with double comma `,,`:
+The source code enclosing with double comma – `,,`:
 
     ($import stdlib)
     ($hex ($BB,,11000000,,11111111,,11101110))
@@ -181,8 +181,8 @@ The string evaluation – `($$ )`:
 
     25
 
-The iterator (modifier) **experimental**,
-NOT applicable into a loop or conditional expression:
+The iterator (modifier), NOT applicable into a loop
+or conditional expression, **experimental**:
 
     ($set i 0)
     ($emit i inc) ($emit i inc) ($emit i dec) ($emit i)
@@ -196,7 +196,7 @@ The iterator (modifier) of the list:
 
     5 10 15 20
 
-The late bound parameter `\p.. &p`:
+The late bound parameter – `\p.. &p`:
 
     ($ \func.\val.($func val) \p.($q p) regular)
     ($ \p..\func.\val.($func val) ($q &p) late_bound)
@@ -204,7 +204,7 @@ The late bound parameter `\p.. &p`:
     "regular"
     "late_bound"
 
-The variable argument list – `\... __va_args__` **experimental**:
+The variable argument list – `\... __va_args__`, **experimental**:
 
     ($ \p1.\p2.\...($__va_args__) 1 2 v a _ a r g s)
 
@@ -219,7 +219,7 @@ The variable argument list – `\... __va_args__` **experimental**:
 
     3.0 18.0 81.0
 
-Getting names of parameters from the list `\(p).`:
+Getting names of parameters from the list – `\(p).`:
 
     ($set p (c d))
     ($ \(p).{ c - d } 100 500)
@@ -310,7 +310,7 @@ the evaluation result will be saved as ".ast" file.
 
 ### MACROS IN PYTHON
 
-The easiest way to integrate the preprocessor into Python 2 - to install
+The easiest way to integrate the preprocessor into Python 2 – to install
 the corresponding package:
 
     pip install yupp
