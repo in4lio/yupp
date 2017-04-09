@@ -136,25 +136,25 @@ The macro definition:
         ($set each-GRADE  ($range ($len (($PAIRS)) )))
     )
 
-    ($! the quote – (` ) )
+The quote ``(` )``:
 
-        ($GRADE
-            (`
-                ( A 5 )
-                ( B 4 )
-                ( C 3 )
-                ( D 2 )
-                ( E 1 )
-            )
+    ($GRADE
+        (`
+            ( A 5 )
+            ( B 4 )
+            ( C 3 )
+            ( D 2 )
+            ( E 1 )
         )
+    )
 
-    ($! enclosing of the source code into the loop
-        with reverse square brackets – ]<EOL> <EOL>[ )
+Enclosing of the source code into the loop
+with reverse square brackets `]<EOL> <EOL>[`:
 
-        ($each-GRADE \i.]
-            int ($i GRADE-name) = ($i GRADE-value);
+    ($each-GRADE \i.]
+        int ($i GRADE-name) = ($i GRADE-value);
 
-        [ )
+    [ )
 
     int A = 5;
     int B = 4;
@@ -162,69 +162,69 @@ The macro definition:
     int D = 2;
     int E = 1;
 
-    ($! the source code enclosing with double comma – ,, )
+The source code enclosing with double comma `,,`:
 
-        ($import stdlib)
-        ($hex ($BB,,11000000,,11111111,,11101110))
+    ($import stdlib)
+    ($hex ($BB,,11000000,,11111111,,11101110))
 
     0xc0ffee
 
-    ($! the string substitution )
+The string substitution:
 
-        ($ "Give ($0) ($p)." \p ($0 mark) me )
+    ($ "Give ($0) ($p)." \p ($0 mark) me )
 
     "Give me 5."
 
-    ($! the string evaluation – ($$ ) )
+The string evaluation – `($$ )`:
 
-        ($ ($$'($($func) ($0) ($1))' \func (`mul) 5 5))
+    ($ ($$'($($func) ($0) ($1))' \func (`mul) 5 5))
 
     25
 
-    ($! the iterator (modifier) – experimental!
-        NOT applicable into a loop or conditional expression )
+The iterator (modifier) **experimental**,
+NOT applicable into a loop or conditional expression:
 
-        ($set i 0)
-        ($emit i inc) ($emit i inc) ($emit i dec) ($emit i)
+    ($set i 0)
+    ($emit i inc) ($emit i inc) ($emit i dec) ($emit i)
 
     0 1 2 1
 
-    ($! the iterator (modifier) of the list )
+The iterator (modifier) of the list:
 
-        ($set l ($range 5 25 5))
-        ($emit l) ($emit l) ($emit l) ($emit l)
+    ($set l ($range 5 25 5))
+    ($emit l) ($emit l) ($emit l) ($emit l)
 
     5 10 15 20
 
-    ($! the late bound parameter – \p.. &p )
+The late bound parameter `\p.. &p`:
 
-        ($ \func.\val.($func val) \p.($q p) regular)
-        ($ \p..\func.\val.($func val) ($q &p) late_bound)
+    ($ \func.\val.($func val) \p.($q p) regular)
+    ($ \p..\func.\val.($func val) ($q &p) late_bound)
 
     "regular"
     "late_bound"
 
-    ($! the variable argument list – \... __va_args__ – experimental! )
+The variable argument list – `\... __va_args__` **experimental**:
 
-        ($ \p1.\p2.\...($__va_args__) 1 2 v a _ a r g s)
+    ($ \p1.\p2.\...($__va_args__) 1 2 v a _ a r g s)
 
     va_args
 
-        ($ \val.\...($ ($lazy __va_args__) \func.[($func val) ])
-            9.0
-            \n.($sqrt n)
-            \n.{ 2 * n }
-            \n.($pow n 2)
-        )
+    ($ \val.\...($ ($lazy __va_args__) \func.[($func val) ])
+        9.0
+        \n.($sqrt n)
+        \n.{ 2 * n }
+        \n.($pow n 2)
+    )
 
     3.0 18.0 81.0
 
-    ($! getting names of parameters from the list – \(p). )
+Getting names of parameters from the list `\(p).`:
 
-        ($set p (c d))
-        ($ \(p).{ c - d } 100 500)
-        ($set p (d c))
-        ($ \(p).{ c - d } 100 500)
+    ($set p (c d))
+    ($ \(p).{ c - d } 100 500)
+    ($set p (d c))
+    ($ \(p).{ c - d } 100 500)
 
     -400
     400
