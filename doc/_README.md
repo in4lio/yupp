@@ -1,5 +1,3 @@
-**Markdown version of README still under development...**
-
 ![screenshot](pic/logo.png)
 
 ### WHAT IS IT?
@@ -256,55 +254,59 @@ the evaluation result will be saved as ".ast" file.
     >cd yupp
     >more "./eg/hello.yu-c"
 
-        ($set greeting "Hello world!\n")
+```cpp
+($set greeting "Hello world!\n")
 
-        ($set name   (  Co       F              Zu           ))
-        ($set type   (  float    double         float        ))
-        ($set val    (  { pi }   (`acos( -1 ))  { 355/113 }  ))
-        ($set format (  "%.2f"   "%.10f"        "%.6f"       ))
+($set name   (  Co       F              Zu           ))
+($set type   (  float    double         float        ))
+($set val    (  { pi }   (`acos( -1 ))  { 355/113 }  ))
+($set format (  "%.2f"   "%.10f"        "%.6f"       ))
 
-        ($set each-Pi ($range ($len name)))
+($set each-Pi ($range ($len name)))
 
-        #include <math.h>
-        #include <stdio.h>
+#include <math.h>
+#include <stdio.h>
 
-        int main( void )
-        {
-            ($each-Pi \i.]
-                ($i type) ($i name) = ($i val);
+int main( void )
+{
+    ($each-Pi \i.]
+        ($i type) ($i name) = ($i val);
 
-            [ )
-            printf( ($greeting) );
+    [ )
+    printf( ($greeting) );
 
-            ($each-Pi \i.]
-                ($set n ($i name))
-                printf( ($"($0) = ($1)\n" ($n) ($unq ($i format))), ($n) );
+    ($each-Pi \i.]
+        ($set n ($i name))
+        printf( ($"($0) = ($1)\n" ($n) ($unq ($i format))), ($n) );
 
-            [ )
-            return ( 0 );
-        }
+    [ )
+    return ( 0 );
+}
+```
 
     >python yup.py -q "./eg/hello.yu-c"
 
     >more "./eg/hello.c"
 
-        #include <math.h>
-        #include <stdio.h>
+```cpp
+#include <math.h>
+#include <stdio.h>
 
-        int main( void )
-        {
-            float Co = 3.14159265359;
-            double F = acos( -1 );
-            float Zu = 3.14159292035;
+int main( void )
+{
+    float Co = 3.14159265359;
+    double F = acos( -1 );
+    float Zu = 3.14159292035;
 
-            printf( "Hello world!\n" );
+    printf( "Hello world!\n" );
 
-            printf( "Co = %.2f\n", Co );
-            printf( "F = %.10f\n", F );
-            printf( "Zu = %.6f\n", Zu );
+    printf( "Co = %.2f\n", Co );
+    printf( "F = %.10f\n", F );
+    printf( "Zu = %.6f\n", Zu );
 
-            return ( 0 );
-        }
+    return ( 0 );
+}
+```
 
 [Further examples...](https://github.com/in4lio/yupp/tree/master/eg)
 
