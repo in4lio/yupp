@@ -10,14 +10,14 @@
     ___         __________________________________
     ___ VERSION __________________________________
 
-    yup.py      1.0b5
-                2017-02-28
+    yup.py      1.0b6
+                2017-04-11
     python      2.7
 
     ___             ______________________________
     ___ WHAT IS IT? ______________________________
 
-    yupp is a lexical preprocessor for C, C++, Python and
+    yupp is a lexical preprocessor for C/C++, Python and
     <you name it> languages. Read more:
 
         https://github.com/in4lio/yupp/blob/master/doc/
@@ -34,6 +34,16 @@
         printf( ($greeting (`world)) );
         return ( 0 );
     }
+
+    ___                 __________________________
+    ___ HELLO IN PYTHON __________________________
+
+    # coding: yupp
+
+    ($set greeting '!dlrow olleH')
+
+    print ($reversed greeting)
+
     ___         __________________________________
     ___ LICENSE __________________________________
 

@@ -7,7 +7,7 @@ http://github.com/in4lio/yupp/
   \/_/\_\/___/\ \_\/\ \_\/
      \/_/      \/_/  \/_/
 
-yugen.py -- an implementation of yupp preprocessor on Python
+yugen.py -- an implementation of yupp preprocessor in Python
 """
 
 from __future__ import division
@@ -284,6 +284,7 @@ class STR( BASE_STR ):
     """
     AST: STR( str ) <-- '___'
                         "___"
+                        (`___)
     """
 #   ---------------
     pass
@@ -775,10 +776,25 @@ def _ord( sou, pos = 0 ):
 
 #   ---------------------------------------------------------------------------
 def _unq( st ):
-    try:
-        return str( literal_eval( st ))
-    except:                                                                                                            #pylint: disable=bare-except
-        return st
+    if isinstance( st, str ):
+        try:
+            if st.startswith( '"' ) or st.startswith( "'" ):
+                result = str( literal_eval( st ))
+                if isinstance( st, STR ):
+                    return STR( result, st.input_file, st.pos )
+
+                return result
+
+            result = st.decode( 'string-escape' )
+            if isinstance( st, STR ):
+                return STR( result, st.input_file, st.pos )
+
+            return result
+
+        except:                                                                                                        #pylint: disable=bare-except
+            pass
+
+    return str( st )
 
 #   ---------------------------------------------------------------------------
 def _unify_eol( st ):
@@ -1813,7 +1829,7 @@ def ps_infix( sou, depth = 0 ):
         | '(${}' text ')' & ($eq depth_pth 0);
     """
 #   ---------------
-#   -- infix was released as a expression on Python
+#   -- infix was released as a expression in Python
 #   ---- {
     if sou[ :1 ] == '{':
         text = ps_text( sou[ 1: ], depth + 1 )
@@ -1935,7 +1951,7 @@ def ps_quote( sou, depth = 0 ):
             ( sou, leg, _, depth_pth ) = plain.next()
 #   ---- ) & ($eq depth_pth 0)
             if ( sou[ :1 ] == ')' ) and ( depth_pth == 0 ):
-                return ( sou[ 1: ], STR( str( leg )))
+                return ( sou[ 1: ], STR( leg ))
 
     return ( sou, None )
 
@@ -2468,7 +2484,7 @@ class ENV( dict ):
 #   ---------------------------------------------------------------------------
 class INFIX_VISITOR( NodeVisitor ):
     """
-    Get identifiers from expression on Python.
+    Get identifiers from expression in Python.
     """
 #   -----------------------------------
     def __init__( self ):
@@ -2573,8 +2589,8 @@ builtin.update({
     'or': operator.or_,
     'ord': lambda val : ord( val ) if isinstance( val, STR ) else ord( str( val )),
     'print': lambda *l : sys.stdout.write( ' '.join(( _unq( x ) if isinstance( x, STR ) else str( x )) for x in l )),
-    'q': lambda val : STR( '"%s"' % str( val )),
-    'qs': lambda val : STR( "'%s'" % str( val )),
+    'q': lambda val : STR( '"%s"' % str( val ).encode( 'string-escape' )),
+    'qs': lambda val : STR( "'%s'" % str( val ).encode( 'string-escape' )),
     'range': lambda *l : LIST( range( *l )),
     'reversed': lambda l : l[ ::-1 ],
     're-split': lambda regex, val : LIST( filter( None, re.split( regex, val ))),
