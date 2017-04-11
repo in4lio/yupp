@@ -87,7 +87,7 @@ Embedding of one list into another – `*list`:
 
     ($set mark (5 4 *(3 2) 1))
 
-Infix expression on Python – `{ }`:
+Infix expression in Python – `{ }`:
 
     ($set four { 2 + 2 })
 
@@ -321,7 +321,7 @@ You have to use **pip**, and may need to specify `--pre` key to install
 the beta version.
 
 After that you will be able to apply macro expressions in the source
-code on Python, starting the script with:
+code in Python, starting the script with:
 
     # coding: yupp
 

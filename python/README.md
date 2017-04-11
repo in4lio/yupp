@@ -5,7 +5,7 @@
 pip install --pre yupp
 ```
 
-`2.` Start your code on Python with:
+`2.` Start your code in Python with:
 ```
 # coding: yupp
 ```

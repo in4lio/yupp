@@ -98,7 +98,7 @@
 
         ($set mark (5 4 *(3 2) 1))
 
-    ($! infix expression on Python – { } )
+    ($! infix expression in Python – { } )
 
         ($set four { 2 + 2 })
 
@@ -334,7 +334,7 @@
     the beta version.
 
     After that you will be able to apply macro expressions in the source
-    code on Python, starting the script with:
+    code in Python, starting the script with:
 
         # coding: yupp
 
