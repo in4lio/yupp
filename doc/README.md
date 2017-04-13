@@ -357,7 +357,7 @@ or experimental features.
 
 ### WEB
 
-- [The project on GitHub](https://github.com/in4lio/yupp/wiki/)
+- [yupp Wiki](https://github.com/in4lio/yupp/wiki/)
 - [yupp Blog](http://yup-py.blogspot.com/)
 - [yupp Web Console](http://yup-py.appspot.com/)
 
