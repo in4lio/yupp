@@ -500,8 +500,8 @@ class EMBED( BASE_OBJECT, CAPTION ):
 #   ---------------------------------------------------------------------------
 class TEXT( BASE_OBJECT ):
     """
-    AST: TEXT([ SET | MACRO | APPLY | STR | REMARK | PLAIN ]) <-- [ ___ ]
-                                                                  ]<EOL> ___ <EOL>[
+    AST: TEXT([ SET | LET | MACRO | APPLY | STR | REMARK | PLAIN ]) <-- [ ___ ]
+                                                                        ]<EOL> ___ <EOL>[
     """
 #   -----------------------------------
     def __init__( self, ast, pth_sq = 0, pth = 0 ):
@@ -586,6 +586,26 @@ class SET( BASE_OBJECT ):
 #   -----------------------------------
     def __eq__( self, other ):
         return isinstance( other, self.__class__ ) and ( self.lval == other.lval ) and ( self.ast == other.ast )
+
+#   ---------------------------------------------------------------------------
+class LET( BASE_OBJECT ):
+    """
+    AST: LET( ATOM | [ ATOM ], form, form ) <-- ($let ___ )
+    """
+#   -----------------------------------
+    def __init__( self, lval, ast, form ):
+        self.lval = lval
+        self.ast = ast
+        self.form = form
+
+#   -----------------------------------
+    def __repr__( self ):
+        return '%s(%s, %s, %s)' % ( self.__class__.__name__, repr( self.lval ), repr( self.ast ), repr( self.form ))
+
+#   -----------------------------------
+    def __eq__( self, other ):
+        return ( isinstance( other, self.__class__ ) and ( self.lval == other.lval ) and ( self.ast == other.ast )
+        and ( self.form == other.form ))
 
 #   ---------------------------------------------------------------------------
 class MACRO( BASE_OBJECT ):
@@ -718,6 +738,12 @@ l_SET = len( ps_SET )
 #   ---- set tag
 ps_SET_T = '\\set'
 l_SET_T = len( ps_SET_T )
+#   ---- let mark
+ps_LET = '($let'
+l_LET = len( ps_LET )
+#   ---- let tag
+ps_LET_T = '\\let'
+l_LET_T = len( ps_LET_T )
 #   ---- import mark
 ps_IMPORT = '($import'
 l_IMPORT = len( ps_IMPORT )
@@ -918,6 +944,7 @@ def ps_text( sou, depth = 0 ):
     """
     text ::= ($set (depth_pth_sq depth_pth) 0) {
           set
+        | let
         | import
         | macro
         | comment
@@ -936,6 +963,11 @@ def ps_text( sou, depth = 0 ):
         trace__ps_( 'ps_text', sou, depth )
 #   ---- set
         ( sou, leg ) = ps_set( sou, depth + 1 )
+        if leg is not None:
+            ast.append( leg )
+            continue
+#   ---- let
+        ( sou, leg ) = ps_let( sou, depth + 1 )
         if leg is not None:
             ast.append( leg )
             continue
@@ -997,7 +1029,7 @@ def ps_text( sou, depth = 0 ):
 @echo__ps_
 def ps_set( sou, depth = 0 ):
     """
-    set ::= '($set' ( '(' { atom }1... ')' | atom ) form { '\\set' } ')';
+    set ::= '($set' binding { '\\set' } ')';
     """
 #   ---------------
 #   ---- ($set
@@ -1006,6 +1038,59 @@ def ps_set( sou, depth = 0 ):
 
 #   ---- gap
     ( sou, _ ) = ps_gap( sou[ l_SET: ], depth + 1 )
+#   ---- binding
+    ( sou, binding ) = ps_binding( sou, depth + 1 )
+#   ---- gap
+    ( sou, _ ) = ps_gap( sou, depth + 1 )
+#   ---- { \set }
+    if sou[ :l_SET_T ] == ps_SET_T:
+        ( sou, _ ) = ps_gap( sou[ l_SET_T: ], depth + 1 )
+#   ---- )
+    if sou[ :1 ] != ')':
+        raise SyntaxError( '%s: ")" expected' % ( callee()) + sou.loc())
+
+    return ( sou[ 1: ], SET( *binding ))
+
+#   ---------------------------------------------------------------------------
+@echo__ps_
+def ps_let( sou, depth = 0 ):
+    """
+    let ::= '($let' binding form { '\\let' } ')';
+    """
+#   ---------------
+#   ---- ($let
+    if sou[ :l_LET ] != ps_LET:
+        return ( sou, None )
+
+#   ---- gap
+    ( sou, _ ) = ps_gap( sou[ l_LET: ], depth + 1 )
+#   ---- binding
+    ( sou, binding ) = ps_binding( sou, depth + 1 )
+#   ---- gap
+    ( sou, _ ) = ps_gap( sou, depth + 1 )
+#   ---- form
+    ( sou, leg ) = ps_form( sou, depth + 1 )
+    if leg is None:
+        raise SyntaxError( '%s: form expected' % ( callee()) + sou.loc())
+
+#   ---- gap
+    ( sou, _ ) = ps_gap( sou, depth + 1 )
+#   ---- { \let }
+    if sou[ :l_LET_T ] == ps_LET_T:
+        ( sou, _ ) = ps_gap( sou[ l_LET_T: ], depth + 1 )
+#   ---- )
+    if sou[ :1 ] != ')':
+        raise SyntaxError( '%s: ")" expected' % ( callee()) + sou.loc())
+
+    return ( sou[ 1: ], LET( binding[ 0 ], binding[ 1 ], leg ))
+
+#   ---------------------------------------------------------------------------
+@echo__ps_
+def ps_binding( sou, depth = 0 ):
+    """
+    binding ::= ( '(' { atom }1... ')' | atom ) form
+    """
+#   ---------------
 #   ---- (
     if sou[ :1 ] == '(':
 #   ---- gap
@@ -1038,16 +1123,7 @@ def ps_set( sou, depth = 0 ):
     if leg is None:
         raise SyntaxError( '%s: form expected' % ( callee()) + sou.loc())
 
-#   ---- gap
-    ( sou, _ ) = ps_gap( sou, depth + 1 )
-#   ---- { \set }
-    if sou[ :l_SET_T ] == ps_SET_T:
-        ( sou, _ ) = ps_gap( sou[ l_SET_T: ], depth + 1 )
-#   ---- )
-    if sou[ :1 ] != ')':
-        raise SyntaxError( '%s: ")" expected' % ( callee()) + sou.loc())
-
-    return ( sou[ 1: ], SET( lval, leg ))
+    return ( sou, ( lval, leg ))
 
 #   ---------------------------------------------------------------------------
 @echo__ps_
@@ -1650,6 +1726,7 @@ def ps_l_form( sou, depth = 0 ):
     l-form ::=
           code
         | infix
+        | let
         | application
         | list;
     """
@@ -1661,6 +1738,11 @@ def ps_l_form( sou, depth = 0 ):
 
 #   ---- infix
     ( sou, leg ) = ps_infix( sou, depth + 1 )
+    if leg is not None:
+        return ( sou, leg )
+
+#   ---- let
+    ( sou, leg ) = ps_let( sou, depth + 1 )
     if leg is not None:
         return ( sou, leg )
 
@@ -3268,8 +3350,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                 node = node.l_form
                 # fall through -- yueval( node )
 
-#   ---- SET --> ENV
-            elif isinstance( node, SET ):
+#   ---- SET | LET
+            elif isinstance( node, SET ) or isinstance( node, LET ):
                 env_l = ENV( env )
                 if isinstance( node.lval, ATOM ):
                     env_l[ node.lval ] = BOUND()
@@ -3291,7 +3373,14 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     else:
                         for var in node.lval:
                             env_l[ var ] = val
-                return env_l
+
+#   ---- SET --> ENV
+                if isinstance( node, SET ):
+                    return env_l
+#   ---- LET
+                env = env_l
+                node = node.form
+                # fall through -- yueval( node )
 
 #   ---- SET_CLOSURE
             elif isinstance( node, SET_CLOSURE ):
