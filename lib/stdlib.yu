@@ -31,11 +31,10 @@
 ($!
 	($unfold N [val_0] [val_1] [...] \n.(val_($n)))
 )
-($set unfold \count.\...]
-	($set __last ($sub ($len ($lazy __va_args__)) 1))
-	($set __func ($__last ($lazy __va_args__)))
+($set unfold \count.\...($let
+	(__last __func) (($sub ($len ($lazy __va_args__)) 1) ($__last ($lazy __va_args__)))
 	($($range count) \__i.($if { __i < __last } ($__i ($lazy __va_args__)) ($__func __i)))
-[\set )
+))
 
 ($!
 	($do,,foo(); bar(); )
@@ -113,7 +112,7 @@
 		va_end( argptr );
 	[\body )
 }
-[\set )
+[ )
 
 ($set INT_MAX { sys.maxint })
 
