@@ -1,0 +1,31 @@
+($__TITLE__ 0)
+
+#include <stdio.h>
+
+($import stdlib)
+
+($dict PLANET
+	(` NAME     )
+	(`
+	(  Mercury  )
+	(  Venus    )
+	(  Earth    )
+	(  Mars     )
+	(  Jupiter  )
+	(  Saturn   )
+	(  Uranus   )
+	(  Neptune  )
+	)
+)
+
+($! delimiters: '' - after the last word; ' and ' - after the last but one; ', ' - after the others )
+($set delim_tail ([] [($SPACE)and ] [, ]))
+
+($! delimiters for each planet )
+($set delim ($reversed ($unfold ($len NAME) *delim_tail)))
+
+int main( void )
+{
+    printf( ($"Hello ($0)!\n" ($each-PLANET \i.[($i NAME)($i delim)])) );
+    return 0;
+}
