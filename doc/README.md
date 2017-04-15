@@ -349,7 +349,7 @@ Switching between the generated text and its origin in VIM editor is
 ### TESTKIT
 
 **yupp** is currently in beta stage. The file called _"test_yup.py"_ contains
-a number of smoke tests.
+a number of _smoke_ tests.
 
 The preprocessor still needs testing and optimization. Also you may run
 into problems with completing of the eval-apply cycle when used recursion
