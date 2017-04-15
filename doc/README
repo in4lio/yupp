@@ -238,6 +238,12 @@
     -400
     400
 
+    ($! the atom binding in the expression )
+
+        ($let dec \val.($ub val 1) ($dec 100))
+
+    99
+
     Any functions from "string", "operator" and "math" modules of Python
     Standard Library can be used in preprocessor expressions
     (https://github.com/in4lio/yupp/blob/master/doc/builtin.md).
