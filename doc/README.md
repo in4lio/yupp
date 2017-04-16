@@ -53,7 +53,7 @@ language. Try them using [yupp Web Console](http://yup-py.appspot.com/).
 
     ($! this is a comment, won't be saved in the generated text )
 
-Binding of the atom (identifier) with the value:
+Binding of the atom (identifier) with the value – `($set )`:
 
     ($set a 'A')
 
@@ -226,6 +226,12 @@ Getting names of parameters from the list – `\(p).`:
 
     -400
     400
+
+The atom binding in the expression – `($let )`:
+
+    ($let (p2 p4) (\x.($mul x x) \x.($p2 ($p2 x))) ($p2 ($p4 2)))
+
+    256
 
 Any functions from _"string"_, _"operator"_ and _"math"_ modules of Python
 Standard Library can be used in preprocessor expressions –

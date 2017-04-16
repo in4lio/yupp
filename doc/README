@@ -64,7 +64,7 @@
 
     ($! this is a comment, won't be saved in the generated text )
 
-    ($! binding of the atom (identifier) with the value )
+    ($! binding of the atom (identifier) with the value – ($set ) )
 
         ($set a 'A')
 
@@ -238,11 +238,11 @@
     -400
     400
 
-    ($! the atom binding in the expression )
+    ($! the atom binding in the expression – ($let ) )
 
-        ($let dec \val.($ub val 1) ($dec 100))
+        ($let (p2 p4) (\x.($mul x x) \x.($p2 ($p2 x))) ($p2 ($p4 2)))
 
-    99
+    256
 
     Any functions from "string", "operator" and "math" modules of Python
     Standard Library can be used in preprocessor expressions
