@@ -22,6 +22,8 @@ for example:
 
     Hello world!
 
+`4.` The next run will be executed a bit fast because of the preprocessing phase is skipped.
+
 ### How to define source code encoding
 
     # coding: yupp.cp1252
