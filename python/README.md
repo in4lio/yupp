@@ -1,7 +1,7 @@
 ### How to start using `yupp` with Python 2
 
 `1.` Install Python package:
-  
+
     pip install --pre yupp
 
 `2.` Start your code in Python with:
@@ -28,8 +28,16 @@ for example:
 
     # coding: yupp.cp1252
 
+### Examples
+
+Source code                        | Preprocessed source code             | Description
+:---                               | :---                                 | :---
+[coding.yu-py](../eg/coding.yu-py) | [coding.py](../eg/coding.py)         | Source code encoding
+[coro.py](../eg/coro.py)           | [coro.yugen.py](../eg/coro.yugen.py) | Coroutines
+[dict.yu-py](../eg/dict.yu-py)     | [dict.py](../eg/dict.py)             | Code generated using dictionary
+
+[Further examples...](../eg/)
+
 ### See also
 
 [Configure Sublime Text](../sublime_text/)
-
-[Further examples](../eg/)
