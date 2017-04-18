@@ -30,11 +30,11 @@ for example:
 
 ### Examples
 
-Source code                        | Preprocessed source code             | Description
+Source code                        | Generated code                       | Description
 :---                               | :---                                 | :---
 [coding.yu-py](../eg/coding.yu-py) | [coding.py](../eg/coding.py)         | Source code encoding
 [coro.py](../eg/coro.py)           | [coro.yugen.py](../eg/coro.yugen.py) | Coroutines
-[dict.yu-py](../eg/dict.yu-py)     | [dict.py](../eg/dict.py)             | Code generated using dictionary
+[dict.yu-py](../eg/dict.yu-py)     | [dict.py](../eg/dict.py)             | Code generated using a dictionary
 
 [Further examples...](../eg/)
 
