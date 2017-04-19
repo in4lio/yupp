@@ -1,8 +1,8 @@
 # coding: utf8
 
 """
-yupp Python package – options for "coro.yu-c"
-will override options for the directory ".yuconfig"
+yupp Python package – options for "coro.py" file
+It will override options from ".yuconfig"
 """
 
 """

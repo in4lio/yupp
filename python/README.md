@@ -30,11 +30,13 @@ for example:
 
 ### Examples
 
-Source code                        | Generated code                       | Description
-:---                               | :---                                 | :---
-[coding.yu-py](../eg/coding.yu-py) | [coding.py](../eg/coding.py)         | Source code encoding
-[coro.py](../eg/coro.py)           | [coro.yugen.py](../eg/coro.yugen.py) | Coroutines
-[dict.yu-py](../eg/dict.yu-py)     | [dict.py](../eg/dict.py)             | Code generated using a dictionary
+Source code                          | Generated code                       | Description
+:---                                 | :---                                 | :---
+[.yuconfig](../eg/.yuconfig)         | -                                    | Preprocessor options for the entire directory
+[coding.yu-py](../eg/coding.yu-py)   | [coding.py](../eg/coding.py)         | Source code encoding
+[coro.py](../eg/coro.py)             | [coro.yugen.py](../eg/coro.yugen.py) | Coroutines
+[dict.yu-py](../eg/dict.yu-py)       | [dict.py](../eg/dict.py)             | Using a dictionary to generate code
+[dict.yuconfig](../eg/dict.yuconfig) | -                                    | Preprocessor options for the single file
 
 [Further examples...](../eg/)
 

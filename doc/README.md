@@ -332,7 +332,8 @@ code in Python, starting the script with:
     # coding: yupp
 
 Preprocessor options for all files in a directory can be specified into
-_".yuconfig"_ file, individual options for the file in _"file.yuconfig"_.
+[_".yuconfig"_](../../../tree/master/eg/.yuconfig) file, individual options
+for the file in [_"file.yuconfig"_](../../../tree/master/eg/dict.yuconfig).
 
 Nothing hinders to translate any file types using the package:
 
@@ -354,7 +355,8 @@ Switching between the generated text and its origin in VIM editor is
 
 ### TESTKIT
 
-**yupp** is currently in beta stage. The file called _"test_yup.py"_ contains
+**yupp** is currently in beta stage. The file called
+[_"test_yup.py"_](../../../tree/master/test_yup.py) contains
 a number of _smoke_ tests.
 
 The preprocessor still needs testing and optimization. Also you may run

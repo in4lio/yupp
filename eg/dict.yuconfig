@@ -1,8 +1,8 @@
 # coding: utf8
 
 """
-yupp Python package – options for "dict.yu-py"
-will override options for the directory ".yuconfig"
+yupp Python package – an example of options for the single file - "dict.yu-py"
+It will override options for the entire directory - ".yuconfig"
 """
 
 """
