@@ -2,6 +2,7 @@
 
 Source code                      | Generated code                   | Language | Description
 :---                             | :---                             | :---     | :---
+[[app]](./app/)                  | –                                | C        | Template of an application with coroutines
 [.yuconfig](./.yuconfig)         | –                                | Python   | Preprocessor options for the entire directory
 [argv.yu-c](./argv.yu-c)         | [argv.c](./argv.c)               | C        | Using late bound parameters
 [coding.yu-py](./coding.yu-py)   | [coding.py](./coding.py)         | Python   | Source code encoding
