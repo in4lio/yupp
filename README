@@ -18,9 +18,11 @@
     ___ WHAT IS IT? ______________________________
 
     yupp is a lexical preprocessor for C/C++, Python and
-    <you name it> languages. Read more:
+    <you name it> languages.
 
-        https://github.com/in4lio/yupp/blob/master/doc/
+    Read more:
+
+        https://github.com/in4lio/yupp/tree/master/doc/
 
     ___             ______________________________
     ___ HELLO WORLD ______________________________
