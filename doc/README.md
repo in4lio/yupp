@@ -6,7 +6,7 @@
 with Lisp-like Polish notation syntax in fully parenthesized form.
 **yupp** is intended to transform C programs before they are compiled.
 It can also be useful for more general purposes, if you would like
-to use the preprocessor with Python 2 just install [yupp package](../../../tree/master/python).
+to use the preprocessor with Python 2 just install [yupp package](../../../tree/master/python/).
 
 **yupp** allows to generate a well-formatted readable text. Special
 attention is paid to providing complete diagnostic information and
@@ -314,7 +314,7 @@ int main( void )
 }
 ```
 
-[Further examples...](https://github.com/in4lio/yupp/tree/master/eg)
+[Further examples...](https://github.com/in4lio/yupp/tree/master/eg/)
 
 ### MACROS IN PYTHON
 
@@ -332,18 +332,18 @@ code in Python, starting the script with:
     # coding: yupp
 
 Preprocessor options for all files in a directory can be specified into
-[_".yuconfig"_](../../../tree/master/eg/.yuconfig) file, individual options
-for the file in [_"file.yuconfig"_](../../../tree/master/eg/dict.yuconfig).
+[_".yuconfig"_](../../../blob/master/eg/.yuconfig) file, individual options
+for the file in [_"file.yuconfig"_](../../../blob/master/eg/dict.yuconfig).
 
 Nothing hinders to translate any file types using the package:
 
     python -c "from yupp import pp; pp.translate( 'file.yu-c' )"
 
-[Read more...](../../../tree/master/python)
+[Read more...](../../../tree/master/python/)
 
 ### SUBLIME TEXT
 
-The folder [_"sublime_text"_](../../../tree/master/sublime_text) contains
+The folder [_"sublime_text"_](../../../tree/master/sublime_text/) contains
 configuration files for comfortable
 usage of the preprocessor in Sublime Text 2 editor. In addition there is
 a plugin for quick navigation between the generated text and its origin.
@@ -356,7 +356,7 @@ Switching between the generated text and its origin in VIM editor is
 ### TESTKIT
 
 **yupp** is currently in beta stage. The file called
-[_"test_yup.py"_](../../../tree/master/test_yup.py) contains
+[_"test_yup.py"_](../../../blob/master/test_yup.py) contains
 a number of _smoke_ tests.
 
 The preprocessor still needs testing and optimization. Also you may run
