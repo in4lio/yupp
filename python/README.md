@@ -2,7 +2,7 @@
 
 `1.` Install Python package:
 
-    pip install --pre yupp
+    pip install yupp
 
 `2.` Start your code in Python with:
 
