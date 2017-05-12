@@ -224,7 +224,8 @@ def _pp_configure( cfg ):
     shell.type_output = cfg.get( 'type_output', TYPE_OUTPUT )
     shell.output_dir = cfg.get( 'output_dir', '' )
     shell.traceback = cfg.get( 'traceback', TRACEBACK )
-#debug!!!
+
+#  DEBUG OUTPUT
 #    if log.level != LOG_LEVEL * LOG_LEVEL__SCALE_:
 #        print 'log_level', log.level
 #    if trace.stage != TRACE_STAGE:
@@ -490,8 +491,8 @@ def proc_stream( _stream, fn ):
 #               -- ...just read output file
                 with open( fn_o, 'r' ) as f:
                     data = f.read()
-#debug!!!
-                print 'skip yupp'
+
+                # print 'skipped yupp running'
                 return ( True, data, fn_o, 1 if 'coding:' in _stream.readline() else 2 )
 
         except:                                                                                                        #pylint: disable=bare-except

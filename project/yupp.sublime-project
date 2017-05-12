@@ -4,7 +4,7 @@
 		{
 			"path": "..\\",
 			"file_exclude_patterns": ["*.bak", "*.bat", "*.sublime*", "*.ico", "*.png", "*.git*", "*.json", "args" ],
-			"folder_exclude_patterns": ["sublime_text", "object"]
+			"folder_exclude_patterns": ["sublime_text", ".idea", "object"]
 		}
 	],
 	"settings":

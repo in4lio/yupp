@@ -318,16 +318,16 @@ int main( void )
 
 ### MACROS IN PYTHON
 
-The easiest way to integrate the preprocessor into Python 2 – to install
+The easiest way to integrate the preprocessor into Python 2 is to install
 the corresponding package:
 
     pip install yupp
 
-You have to use **pip**, and may need to specify `--pre` key to install
-the beta version.
+You have to use **pip**, and may need to specify `--pre` key if you want
+to install a beta version.
 
-After that you will be able to apply macro expressions in the source
-code in Python, starting the script with:
+After that, you can use macro expressions in the source code in Python,
+starting your script with:
 
     # coding: yupp
 
@@ -335,7 +335,7 @@ Preprocessor options for all files in a directory can be specified into
 [_".yuconfig"_](../../../blob/master/eg/.yuconfig) file, individual options
 for the file in [_"file.yuconfig"_](../../../blob/master/eg/dict.yuconfig).
 
-Nothing hinders to translate any file types using the package:
+Nothing hinders you to translate any file types using the package:
 
     python -c "from yupp import pp; pp.translate( 'file.yu-c' )"
 
