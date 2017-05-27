@@ -7,5 +7,8 @@ First of all, you need to install [yupp package](https://pypi.python.org/pypi/yu
 
     pip install yupp
 
----
+Start your source file with:
+
+    # coding: yupp
+
 [yupp Wiki](https://github.com/in4lio/yupp/wiki/)
