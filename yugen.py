@@ -787,7 +787,7 @@ re_STR = re.compile( r'^"(?:\\.|[^\\"])*"' )
 #   ---- character literal
 re_CHR = re.compile( r"^'(?:\\.|[^\\'])*'" )
 #   ---- coding (Python)
-re_CODING = re.compile( r'coding:\s*yupp(\.[\-_a-zA-Z0-9]+)?(?:\W|$)', re.IGNORECASE )
+re_CODING = re.compile( r'coding[:=][ \t]*yupp(\.[-_a-zA-Z0-9]+)?(?:\W|$)', re.IGNORECASE )
 ps_CODING = 'yupp.'
 l_CODING = len( ps_CODING )
 
@@ -1180,7 +1180,7 @@ def ps_import( sou, depth = 0 ):
 @echo__ps_
 def ps_macro( sou, depth = 0 ):
     """
-    macro ::= '($macro' atom '(' { atom }0... ')' plain ')';
+    macro ::= '($macro' atom '(' { atom }0... ')' plain ')' & ($eq depth_pth 0);
     """
 #   ---------------
 #   ---- ($macro
@@ -1430,7 +1430,7 @@ def ps_remark_py( sou, depth = 0 ):
 @echo__ps_
 def ps_coding_py( sou, depth = 0 ):
     """
-    coding_py ::= { EOL } remark_py & ( 'coding:' 'yupp' { '.' encoding } );
+    coding_py ::= { EOL } remark_py & ( 'coding' + [ ':', '=' ] 'yupp' + { '.' + encoding } );
     encoding ::= name;
     """
 #   ---------------
