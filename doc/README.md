@@ -9,28 +9,28 @@ It can also be useful for more general purposes. For example, you will
 be able to use the preprocessor with Python if you install
 [yupp package](../../../tree/master/python/).
 
-**yupp** allows to generate a well-formatted readable text. Special
+**yupp** allows generating a well-formatted readable text. Special
 attention is paid to providing complete diagnostic information and
 navigational capabilities.
 
-Embedding of the preprocessor expressions into the source code occurs
+Embedding of preprocessor expressions into the source code occurs
 by using _an application form_, e.g. `($e)`.
 
 There is a small example with comments: ["A glance at the yupp"](glance.md).
 
 ### SYNTAX
 
-Main syntactic categories of the macro language are: **list**, **application**
-and **lambda expression**.
+The main syntactic categories of the macro language are **a list**,
+**an application** and **a lambda expression**.
 
-**List** is a sequence of expressions separated by blanks and enclosed
+**A list** is a sequence of expressions separated by blanks and enclosed
 in parentheses.
 
     <list> ::= '(' { <expression> } ')'
 
 e.g. `(0.5 "string" atom)`
 
-**Application** is an applying a function to arguments, it syntactically
+**An application** is an applying a function to arguments, it syntactically
 differs from a list in presence of the dollar sign after the open
 parenthesis.
 
@@ -38,8 +38,8 @@ parenthesis.
 
 e.g. `($add 2 3)`
 
-**Lambda expression** is an anonymous function, it consists of a sequence of parameters
-and a function body.
+**A lambda expression** is an anonymous function, it consists of a sequence of
+parameters and a function body.
 
     <lambda> ::= <param> { <param> } <expression>
     <param>  ::= '\' <name> [ ':' <default> ] '.'
