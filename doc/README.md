@@ -5,8 +5,9 @@
 **yupp** is a lexical preprocessor which implements the macro language
 with Lisp-like Polish notation syntax in fully parenthesized form.
 **yupp** is intended to transform C programs before they are compiled.
-It can also be useful for more general purposes, if you would like
-to use the preprocessor with Python 2 just install [yupp package](../../../tree/master/python/).
+It can also be useful for more general purposes. For example, you will
+be able to use the preprocessor with Python if you install
+[yupp package](../../../tree/master/python/).
 
 **yupp** allows to generate a well-formatted readable text. Special
 attention is paid to providing complete diagnostic information and
