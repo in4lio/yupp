@@ -5,16 +5,16 @@
 **yupp** is a lexical preprocessor which implements the macro language
 with Lisp-like Polish notation syntax in fully parenthesized form.
 **yupp** is intended to transform C programs before they are compiled.
-It can also be useful for more general purposes. For example, you will
-be able to use the preprocessor with Python if you install
+It can also be useful for more general purposes. For example, you
+will be able to use the preprocessor with Python if you install
 [yupp package](../../../tree/master/python/).
 
 **yupp** allows generating a well-formatted readable text. Special
 attention is paid to providing complete diagnostic information and
 navigational capabilities.
 
-Embedding of preprocessor expressions into the source code occurs by
-using **an application form**, e.g. `($e)`.
+Embedding of preprocessor expressions into the source code occurs
+by using **an application form**, e.g. `($e)`.
 
 There is a small example with comments: ["A glance at the preprocessing"](glance.md).
 
@@ -47,7 +47,7 @@ parameters and a function body.
 e.g. `\p.($sub p 1)`
 
 Syntactic forms can be nested within each other but, as mentioned above,
-only _an application_ can be embedded into the source code directly.
+only **an application** can be embedded into the source code directly.
 
 The following examples show various syntactic constructs of the macro
 language. Try them using [yupp Web Console](http://yup-py.appspot.com/).

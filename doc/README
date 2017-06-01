@@ -13,15 +13,16 @@
     yupp is a lexical preprocessor which implements the macro language
     with Lisp-like Polish notation syntax in fully parenthesized form.
     yupp is intended to transform C programs before they are compiled.
-    It can also be useful for more general purposes, if you would like
-    to use the preprocessor with Python 2 just install "yupp" package.
+    It can also be useful for more general purposes. For example, you
+    will be able to use the preprocessor with Python if you install 
+    "yupp" package.
 
-    yupp allows to generate a well-formatted readable text. Special
+    yupp allows generating a well-formatted readable text. Special
     attention is paid to providing complete diagnostic information and
     navigational capabilities.
 
-    Embedding of the preprocessor expressions into the source code occurs
-    by using an "application" form, e.g. ($e).
+    Embedding of preprocessor expressions into the source code occurs
+    by using an application form, e.g. ($e).
 
     There is a small example with comments:
 
@@ -30,17 +31,17 @@
     ___        ___________________________________
     ___ SYNTAX ___________________________________
 
-    Main syntactic categories of the macro language are: list, application
-    and lambda expression.
+    The main syntactic categories of the macro language are a list,
+    an application and a lambda expression.
 
-    List is a sequence of expressions separated by blanks and enclosed
+    A list is a sequence of expressions separated by blanks and enclosed
     in parentheses.
 
     <list> ::= '(' { <expression> } ')'
 
     e.g. (0.5 "string" atom)
 
-    Application is an applying a function to arguments, it syntactically
+    An application is an applying a function to arguments, it syntactically
     differs from a list in presence of the dollar sign after the open
     parenthesis.
 
@@ -48,8 +49,8 @@
 
     ($add 2 3)
 
-    Lambda is an anonymous function, it consists of a sequence of parameters
-    and a function body.
+    A Lambda expression is an anonymous function, it consists of a sequence of
+    parameters and a function body.
 
     <lambda> ::= <param> { <param> } <expression>
     <param>  ::= '\' <name> [ ':' <default> ] '.'
@@ -190,8 +191,8 @@
 
     25
 
-    ($! the iterator (modifier) – experimental!
-        NOT applicable into a loop or conditional expression )
+    ($! the iterator (modifier), NOT applicable into a loop
+        or conditional expression, EXPERIMENTAL )
 
         ($set i 0)
         ($emit i inc) ($emit i inc) ($emit i dec) ($emit i)
@@ -213,7 +214,7 @@
     "regular"
     "late_bound"
 
-    ($! the variable argument list – \... __va_args__ – experimental! )
+    ($! the variable argument list – \... __va_args__, EXPERIMENTAL )
 
         ($ \p1.\p2.\...($__va_args__) 1 2 v a _ a r g s)
 
@@ -331,7 +332,7 @@
     ___                   ________________________
     ___ MACROS IN PYTHON  ________________________
 
-    The easiest way to integrate the preprocessor into Python 2 – to install
+    The easiest way to integrate the preprocessor into Python 2 is to install
     the corresponding package:
 
         pip install yupp
@@ -347,7 +348,7 @@
     Preprocessor options for all files in a directory can be specified into
     ".yuconfig" file, individual options for the file in "file.yuconfig".
 
-    Nothing hinders to translate any file types using the package:
+    Nothing hinders you to translate any file types using the package:
 
         python -c "from yupp import pp; pp.translate( 'file.yu-c' )"
 
@@ -365,7 +366,7 @@
     ___     ______________________________________
     ___ VIM ______________________________________
 
-    Switching between the generated text and its origin in VIM editor:
+    Switching between the generated text and its origin in VIM editor is
 
         https://github.com/in4lio/vim-yupp (under development)
 
