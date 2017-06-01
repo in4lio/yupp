@@ -13,10 +13,10 @@ be able to use the preprocessor with Python if you install
 attention is paid to providing complete diagnostic information and
 navigational capabilities.
 
-Embedding of preprocessor expressions into the source code occurs
-by using _an application form_, e.g. `($e)`.
+Embedding of preprocessor expressions into the source code occurs by
+using **an application form**, e.g. `($e)`.
 
-There is a small example with comments: ["A glance at the yupp"](glance.md).
+There is a small example with comments: ["A glance at the preprocessing"](glance.md).
 
 ### SYNTAX
 

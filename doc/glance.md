@@ -1,5 +1,5 @@
-A glance at the yupp
---------------------
+A glance at the preprocessing
+-----------------------------
 
 Here you can get acquainted with __yupp__ lexical preprocessor by exploring a small example
 [glance.yu-cpp](pic/glance.yu-cpp.md).<br>

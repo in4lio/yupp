@@ -1,4 +1,4 @@
-[A glance at the yupp](../../master/doc/glance.md)
+[A glance at the preprocessing](../../master/doc/glance.md)
 
 Source code                      | Generated code                   | Language | Description
 :---                             | :---                             | :---:    | :---
