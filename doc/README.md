@@ -54,31 +54,31 @@ language. Try them using [yupp Web Console](http://yup-py.appspot.com/).
 
     ($! this is a comment, won't be saved in the generated text )
 
-Binding of the atom (identifier) with the value – `($set )`:
+Binding of an atom (identifier) with a value – `($set )`:
 
     ($set a 'A')
 
-The atom binding with the list:
+An atom binding with a list:
 
     ($set abc (a 'B' 'C' 'D' 'E'))
 
-Binding of the atom with the lambda is a function definition:
+Binding of an atom with a lambda is a function definition:
 
     ($set inc \val.($add val 1))
 
-Application of the number is subscripting:
+Application of a number is subscripting:
 
     ($2 miss miss HIT miss)
 
     HIT
 
-Getting the specific element of the list:
+Getting the specific element of a list:
 
     ($0 abc)
 
     'A'
 
-Application of the list is "for each" loop:
+Application of a list is a "for each" loop:
 
     ($(0 1 2) \i.($inc i))
 
@@ -88,46 +88,46 @@ Embedding of one list into another – `*list`:
 
     ($set mark (5 4 *(3 2) 1))
 
-Infix expression in Python – `{ }`:
+An infix expression in Python – `{ }`:
 
     ($set four { 2 + 2 })
 
-Infix expression straight into the source code:
+An infix expression straight into the source code:
 
     foo = (${} sqrt(four) * 5.0);
 
     foo = 10.0;
 
-Conditional expression – `consequent ? condition | alternative`:
+A conditional expression – `consequent ? condition | alternative`:
 
     ($set fact \n.($ 1 ? { n == 0 } | { ($fact { n - 1 }) * n }))
     ($fact 10)
 
     3628800
 
-Enclosing of the source code into the application:
+Enclosing of the source code into an application:
 
     ($abc \ch.($code putchar(($ch));))
 
     putchar('A'); putchar('B'); putchar('C'); putchar('D'); putchar('E');
 
-The source code enclosing with square brackets – `[ ]`:
+The source code enclosing with the square brackets – `[ ]`:
 
     ($mark \i.[($i), ])
 
     5, 4, 3, 2, 1,
 
-The function parameter with default value – `\p:val.`:
+A function parameter with a default value – `\p:val.`:
 
     ($set if \cond.\then:[].\else:[].($ then ? cond | else ))
 
-The named argument:
+A named argument:
 
     ($if { four != 4 } \else OK )
 
     OK
 
-The macro definition:
+A macro definition:
 
     ($macro GRADE ( PAIRS )
         ($set GRADE-name  ($ (($PAIRS)) \p.($0 p)))
@@ -135,7 +135,7 @@ The macro definition:
         ($set each-GRADE  ($range ($len (($PAIRS)) )))
     )
 
-The quote – ``(` )``:
+A quote – ``(` )``:
 
     ($GRADE
         (`
@@ -147,8 +147,8 @@ The quote – ``(` )``:
         )
     )
 
-Enclosing of the source code into the loop
-with reverse square brackets – `]<EOL> <EOL>[`:
+Enclosing of the source code into a loop
+with the reverse square brackets – `]<EOL> <EOL>[`:
 
     ($each-GRADE \i.]
         int ($i GRADE-name) = ($i GRADE-value);
@@ -161,41 +161,41 @@ with reverse square brackets – `]<EOL> <EOL>[`:
     int D = 2;
     int E = 1;
 
-The source code enclosing with double comma – `,,`:
+The source code enclosing with the double comma – `,,`:
 
     ($import stdlib)
     ($hex ($BB,,11000000,,11111111,,11101110))
 
     0xc0ffee
 
-The string substitution:
+A string substitution:
 
     ($ "Give ($0) ($p)." \p ($0 mark) me )
 
     "Give me 5."
 
-The string evaluation – `($$ )`:
+A string evaluation – `($$ )`:
 
     ($ ($$'($($func) ($0) ($1))' \func (`mul) 5 5))
 
     25
 
-The iterator (modifier), NOT applicable into a loop
-or conditional expression, **experimental**:
+An iterator (modifier) – NOT applicable into a loop
+or a conditional expression – **experimental**:
 
     ($set i 0)
     ($emit i inc) ($emit i inc) ($emit i dec) ($emit i)
 
     0 1 2 1
 
-The iterator (modifier) of the list:
+An iterator (modifier) of a list:
 
     ($set l ($range 5 25 5))
     ($emit l) ($emit l) ($emit l) ($emit l)
 
     5 10 15 20
 
-The late bound parameter – `\p.. &p`:
+A late bound parameter – `\p.. &p`:
 
     ($ \func.\val.($func val) \p.($q p) regular)
     ($ \p..\func.\val.($func val) ($q &p) late_bound)
@@ -203,7 +203,7 @@ The late bound parameter – `\p.. &p`:
     "regular"
     "late_bound"
 
-The variable argument list – `\... __va_args__`, **experimental**:
+A variable argument list – `\... __va_args__` – **experimental**:
 
     ($ \p1.\p2.\...($__va_args__) 1 2 v a _ a r g s)
 
@@ -218,7 +218,7 @@ The variable argument list – `\... __va_args__`, **experimental**:
 
     3.0 18.0 81.0
 
-Getting names of parameters from the list – `\(p).`:
+Getting names of parameters from a list – `\(p).`:
 
     ($set p (c d))
     ($ \(p).{ c - d } 100 500)
@@ -228,7 +228,7 @@ Getting names of parameters from the list – `\(p).`:
     -400
     400
 
-The atom binding in the expression – `($let )`:
+An atom binding in an expression – `($let )`:
 
     ($let (p2 p4) (\x.($mul x x) \x.($p2 ($p2 x))) ($p2 ($p4 2)))
 
