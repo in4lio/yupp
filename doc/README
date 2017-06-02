@@ -65,31 +65,31 @@
 
     ($! this is a comment, won't be saved in the generated text )
 
-    ($! binding of the atom (identifier) with the value – ($set ) )
+    ($! binding of an atom (identifier) with a value – ($set ) )
 
         ($set a 'A')
 
-    ($! the atom binding with the list )
+    ($! an atom binding with a list )
 
         ($set abc (a 'B' 'C' 'D' 'E'))
 
-    ($! binding of the atom with the lambda is a function definition )
+    ($! binding of an atom with a lambda is a function definition )
 
         ($set inc \val.($add val 1))
 
-    ($! application of the number is subscripting )
+    ($! application of a number is subscripting )
 
         ($2 miss miss HIT miss)
 
     HIT
 
-    ($! getting the specific element of the list )
+    ($! getting the specific element of a list )
 
         ($0 abc)
 
     'A'
 
-    ($! application of the list is "for each" loop )
+    ($! application of a list is a "for each" loop )
 
         ($(0 1 2) \i.($inc i))
 
@@ -99,46 +99,46 @@
 
         ($set mark (5 4 *(3 2) 1))
 
-    ($! infix expression in Python – { } )
+    ($! an infix expression in Python – { } )
 
         ($set four { 2 + 2 })
 
-    ($! infix expression straight into the source code )
+    ($! an infix expression straight into the source code )
 
         foo = (${} sqrt(four) * 5.0);
 
     foo = 10.0;
 
-    ($! conditional expression – consequent ? condition | alternative )
+    ($! a conditional expression – consequent ? condition | alternative )
 
         ($set fact \n.($ 1 ? { n == 0 } | { ($fact { n - 1 }) * n }))
         ($fact 10)
 
     3628800
 
-    ($! enclosing of the source code into the application )
+    ($! enclosing of the source code into an application )
 
         ($abc \ch.($code putchar(($ch));))
 
     putchar('A'); putchar('B'); putchar('C'); putchar('D'); putchar('E');
 
-    ($! the source code enclosing with square brackets – [ ] )
+    ($! the source code enclosing with the square brackets – [ ] )
 
         ($mark \i.[($i), ])
 
     5, 4, 3, 2, 1,
 
-    ($! the function parameter with default value – \p:val. )
+    ($! a function parameter with a default value – \p:val. )
 
         ($set if \cond.\then:[].\else:[].($ then ? cond | else ))
 
-    ($! the named argument )
+    ($! a named argument )
 
         ($if { four != 4 } \else OK )
 
     OK
 
-    ($! the macro definition )
+    ($! a macro definition )
 
         ($macro GRADE ( PAIRS )
             ($set GRADE-name  ($ (($PAIRS)) \p.($0 p)))
@@ -146,7 +146,7 @@
             ($set each-GRADE  ($range ($len (($PAIRS)) )))
         )
 
-    ($! the quote – (` ) )
+    ($! a quote – (` ) )
 
         ($GRADE
             (`
@@ -158,8 +158,8 @@
             )
         )
 
-    ($! enclosing of the source code into the loop
-        with reverse square brackets – ]<EOL> <EOL>[ )
+    ($! enclosing of the source code into a loop
+        with the reverse square brackets – ]<EOL> <EOL>[ )
 
         ($each-GRADE \i.]
             int ($i GRADE-name) = ($i GRADE-value);
@@ -172,41 +172,41 @@
     int D = 2;
     int E = 1;
 
-    ($! the source code enclosing with double comma – ,, )
+    ($! the source code enclosing with the double comma – ,, )
 
         ($import stdlib)
         ($hex ($BB,,11000000,,11111111,,11101110))
 
     0xc0ffee
 
-    ($! the string substitution )
+    ($! a string substitution )
 
         ($ "Give ($0) ($p)." \p ($0 mark) me )
 
     "Give me 5."
 
-    ($! the string evaluation – ($$ ) )
+    ($! a string evaluation – ($$ ) )
 
         ($ ($$'($($func) ($0) ($1))' \func (`mul) 5 5))
 
     25
 
-    ($! the iterator (modifier), NOT applicable into a loop
-        or conditional expression, EXPERIMENTAL )
+    ($! an iterator (modifier) – NOT applicable into a loop
+        or conditional expression – EXPERIMENTAL )
 
         ($set i 0)
         ($emit i inc) ($emit i inc) ($emit i dec) ($emit i)
 
     0 1 2 1
 
-    ($! the iterator (modifier) of the list )
+    ($! an iterator (modifier) of a list )
 
         ($set l ($range 5 25 5))
         ($emit l) ($emit l) ($emit l) ($emit l)
 
     5 10 15 20
 
-    ($! the late bound parameter – \p.. &p )
+    ($! a late bound parameter – \p.. &p )
 
         ($ \func.\val.($func val) \p.($q p) regular)
         ($ \p..\func.\val.($func val) ($q &p) late_bound)
@@ -214,7 +214,7 @@
     "regular"
     "late_bound"
 
-    ($! the variable argument list – \... __va_args__, EXPERIMENTAL )
+    ($! a variable argument list – \... __va_args__ – EXPERIMENTAL )
 
         ($ \p1.\p2.\...($__va_args__) 1 2 v a _ a r g s)
 
@@ -229,7 +229,7 @@
 
     3.0 18.0 81.0
 
-    ($! getting names of parameters from the list – \(p). )
+    ($! getting names of parameters from a list – \(p). )
 
         ($set p (c d))
         ($ \(p).{ c - d } 100 500)
@@ -239,7 +239,7 @@
     -400
     400
 
-    ($! the atom binding in the expression – ($let ) )
+    ($! an atom binding in an expression – ($let ) )
 
         ($let (p2 p4) (\x.($mul x x) \x.($p2 ($p2 x))) ($p2 ($p4 2)))
 

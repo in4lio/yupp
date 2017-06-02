@@ -16,7 +16,8 @@ navigational capabilities.
 Embedding of preprocessor expressions into the source code occurs
 by using **an application form**, e.g. `($e)`.
 
-There is a small example with comments: ["A glance at the preprocessing"](glance.md).
+There is a small example with comments:
+["A glance at the preprocessing"](glance.md).
 
 ### SYNTAX
 
