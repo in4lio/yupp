@@ -2,9 +2,9 @@
 
 [**yupp**](https://github.com/in4lio/yupp/) is a lexical macro processor designed
 primarily to compensate for the lack of metaprogramming facilities in the C language.
-The macro processor allows us to program transformation of the source code, before
-compiling, in the functional style. Equally well, **yupp** can be used with Python,
-since [PEP 263](https://www.python.org/dev/peps/pep-0263/) shows us the way to modify
+This macro processor allows us to program transformation of the source code in the
+functional style. ... Equally well, **yupp** can be used with Python, since
+[PEP 263](https://www.python.org/dev/peps/pep-0263/) shows us the way to modify
 any source file before calling Python’s internal parser.
 
 First of all, you need to install [yupp package](https://pypi.python.org/pypi/yupp/):
