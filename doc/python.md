@@ -9,11 +9,13 @@ the C++ templates. As well, **yupp** can be used with Python, since
 [PEP 263](https://www.python.org/dev/peps/pep-0263/)
 shows us the way to modify any source file before calling Python’s internal parser.
 
-First of all, you need to install [yupp package](https://pypi.python.org/pypi/yupp/):
+You have to install [yupp package](https://pypi.python.org/pypi/yupp/)
+to use the macro processor with Python:
 
     pip install yupp
 
-Start your source file with:
+Thereafter, in order to Python have called **yupp** before executing the source code,
+you must start the source file with the definition of "yupp" encoding:
 
     # coding: yupp
 
