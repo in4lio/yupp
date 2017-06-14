@@ -14,9 +14,14 @@ to use the macro processor with Python:
 
     pip install yupp
 
-Thereafter, in order to Python have called **yupp** before executing the source code,
-you must start the source file with the definition of "yupp" encoding:
+Thereafter, in order to Python have called **yupp** before running the source code,
+you must start the source file with the definition of `yupp` encoding:
 
     # coding: yupp
+
+**yupp** performs the macro-expansion of our source code and thus generates the pure
+Python source code at the initial stage of the first run. Every next run if our source
+code does not get changed, the macro-expansion phase will be skipped and the previously
+generated code will be executed directly.
 
 [yupp Wiki](https://github.com/in4lio/yupp/wiki/)
