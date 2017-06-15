@@ -9,14 +9,14 @@ It can also be useful for more general purposes. For example, you
 will be able to use the preprocessor with Python if you install
 [yupp package](../../../tree/master/python/).
 
-**yupp** allows generating a well-formatted readable text. Special
+**yupp** allows to generate a well-formatted readable text. Special
 attention is paid to providing complete diagnostic information and
 navigational capabilities.
 
 Embedding of preprocessor expressions into the source code occurs
 by using **an application form**, e.g. `($e)`.
 
-There is a small example with comments:
+There is a small example with comments –
 ["A glance at the preprocessing"](glance.md).
 
 ### SYNTAX
