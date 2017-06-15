@@ -24,4 +24,8 @@ Python source code at the initial stage of the first run. Every next run if our 
 code does not get changed, the macro-expansion phase will be skipped and the previously
 generated code will be executed directly.
 
+Macro processor options for all files in a directory can be specified into
+[_".yuconfig"_](../../../blob/master/eg/.yuconfig) file, individual options
+for a single file in [_"file.yuconfig"_](../../../blob/master/eg/dict.yuconfig).
+
 [yupp Wiki](https://github.com/in4lio/yupp/wiki/)
