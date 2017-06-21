@@ -5,8 +5,8 @@ designed primarily to compensate for the lack of metaprogramming facilities
 in the C language. The idea behind **yupp** is programming of a source code
 transformation in the functional style.
 
-If your task fits well into the metaprogramming paradigm, **yupp** able to
-replace the C preprocessor, giving you more options, or even can act as a
+If some task fits well into the metaprogramming paradigm, **yupp** able to
+replace the C preprocessor, giving us more options, or even can act as a
 viable alternative to the C++ templates. As well, **yupp** can be used with
 Python, since [PEP 263](https://www.python.org/dev/peps/pep-0263/) shows us
 the way to modify any source file before calling Python’s internal parser.
@@ -26,8 +26,8 @@ or with `yupp` encoding followed by a character encoding:
     # coding: yupp.<encoding name>
 
 **yupp** performs a macro-expansion of the source code and generates the
-source code in pure Python, it happens at the initial stage of your source
-file run. Every next run if your source code does not get changed, the
+source code in pure Python, it happens at the initial stage of the source
+file run. Every next run if the source code does not get changed, the
 macro-expansion phase will be skipped and the previously generated code will
 be executed directly.
 
