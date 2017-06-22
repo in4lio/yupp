@@ -13,11 +13,11 @@
     yupp is a lexical preprocessor which implements the macro language
     with Lisp-like Polish notation syntax in fully parenthesized form.
     yupp is intended to transform C programs before they are compiled.
-    It can also be useful for more general purposes. For example, you
-    will be able to use the preprocessor with Python if you install
-    "yupp" package.
+    It can also be useful for more general purposes. For example, it would
+    be possible to apply the preprocessor to the source code written in
+    Python if "yupp" package was installed.
 
-    yupp allows generating a well-formatted readable text. Special
+    yupp allows to generate a well-formatted readable text. Special
     attention is paid to providing complete diagnostic information and
     navigational capabilities.
 
@@ -332,21 +332,16 @@
     ___                   ________________________
     ___ MACROS IN PYTHON  ________________________
 
-    The easiest way to integrate the preprocessor into Python 2 is to install
-    the corresponding package:
+    You have to install "yupp" package to use the macro processor with Python 2:
 
         pip install yupp
 
-    You have to use "pip", and may need to specify "--pre" key if you want
-    to install a beta version.
+    You may need to specify "--pre" key if you want to install a beta version.
 
     After that, you can use macro expressions in the source code in Python,
     starting your script with:
 
         # coding: yupp
-
-    Preprocessor options for all files in a directory can be specified into
-    ".yuconfig" file, individual options for the file in "file.yuconfig".
 
     Nothing hinders you to translate any file types using the package:
 
