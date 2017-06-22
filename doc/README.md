@@ -6,8 +6,8 @@
 with Lisp-like Polish notation syntax in fully parenthesized form.
 **yupp** is intended to transform C programs before they are compiled.
 It can also be useful for more general purposes. For example, it would
-be possible to apply the preprocessor to the source code written in
-Python if [yupp package](../../../tree/master/python/) was installed.
+be possible to use macros in Python code if
+[yupp package](../../../tree/master/python/) was installed.
 
 **yupp** allows to generate a well-formatted readable text. Special
 attention is paid to providing complete diagnostic information and
