@@ -6,8 +6,8 @@
 with Lisp-like Polish notation syntax in fully parenthesized form.
 **yupp** is intended to transform C programs before they are compiled.
 It can also be useful for more general purposes. For example, it would
-be possible to use macros in Python code if
-[yupp package](../../../tree/master/python/) was installed.
+be possible to use macros in Python code if [yupp package](#macros-in-python)
+was installed.
 
 **yupp** allows to generate a well-formatted readable text. Special
 attention is paid to providing complete diagnostic information and
@@ -51,7 +51,7 @@ Syntactic forms can be nested within each other but, as mentioned above,
 only **an application** can be embedded into the source code directly.
 
 The following examples show various syntactic constructs of the macro
-language. Try them using [yupp Web Console](http://yup-py.appspot.com/).
+language. You can try them using [yupp Web Console](http://yup-py.appspot.com/).
 
     ($! this is a comment, won't be saved in the generated text )
 

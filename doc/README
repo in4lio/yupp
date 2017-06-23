@@ -61,7 +61,7 @@
     only an application can be embedded into the source code directly.
 
     The following examples show various syntactic constructs of the macro
-    language. Try them using yupp Web Console (http://yup-py.appspot.com/).
+    language. You can try them using yupp Web Console (http://yup-py.appspot.com/).
 
     ($! this is a comment, won't be saved in the generated text )
 
