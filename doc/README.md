@@ -231,7 +231,7 @@ Getting names of parameters from a list – `\(p).`:
 
 An atom binding in an expression – `($let )`:
 
-    ($let (p2 p4) (\x.($mul x x) \x.($p2 ($p2 x))) ($p2 ($p4 2)))
+    ($let (pow2 pow4) (\x.($mul x x) \x.($pow2 ($pow2 x))) ($pow2 ($pow4 2)))
 
     256
 
