@@ -120,11 +120,11 @@ The source code enclosing with the square brackets – `[<text>]`:
 
 A function (lambda) parameter with a default value – `\<atom>:<default>.<expr>`:
 
-    ($set if \cond.\then:[].\else:[].($ then ? cond | else ))
+    ($set if \cond.\then:[].\else:[].($then ? cond | else))
 
 A named argument – `($<function> \<atom> <argument>)`:
 
-    ($if { four != 4 } \else OK )
+    ($if { four != 4 } \else OK)
 
     OK
 
@@ -206,9 +206,9 @@ A late bound parameter – `\<late>..\<param>.<expr> <argument &<late>>`:
 
 A variable argument list – `\...<expr __va_args__>` – **experimental**:
 
-    ($ \param1.\param2.\...($__va_args__) 1 2 3 4 5 6 7)
+    ($ \param1.\param2.\...($__va_args__) 1 2 3 4 5)
 
-    34567
+    345
 
     ($ \val.\...($ ($lazy __va_args__) \func.[($func val) ])
         9.0
@@ -221,10 +221,10 @@ A variable argument list – `\...<expr __va_args__>` – **experimental**:
 
 Getting names of parameters from a list – `\(<list>).<expr>`:
 
-    ($set params (c d))
-    ($ \(params).{ c - d } 100 500)
-    ($set params (d c))
-    ($ \(params).{ c - d } 100 500)
+    ($set params (x y))
+    ($ \(params).{ x - y } 100 500)
+    ($set params (y x))
+    ($ \(params).{ x - y } 100 500)
 
     -400
     400
@@ -243,7 +243,7 @@ Any functions from _"string"_, _"operator"_ and _"math"_ modules of Python
 Standard Library can be used in preprocessor expressions –
 [Built-in Functions](builtin.md).
 
-The special `($import )` form is provided to include macros and functions
+The special `($import <expr>)` form is provided to include macros and functions
 from [yupp Standard Library](../../../blob/master/lib/README.md) or other libraries.
 
 ### USAGE
