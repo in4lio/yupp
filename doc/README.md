@@ -45,7 +45,7 @@ parameters and a function body.
     <lambda> ::= <param> { <param> } <expr>
     <param>  ::= '\' <atom> [ ':' <default> ] '.'
 
-e.g. `\p.($sub p 1)`
+e.g. `\val.($sub val 1)`
 
 Syntactic forms can be nested within each other but, as mentioned above,
 only **an application** can be embedded into the source code directly.
@@ -122,21 +122,21 @@ A function (lambda) parameter with a default value – `\<atom>:<default>.<expr>
 
     ($set if \cond.\then:[].\else:[].($ then ? cond | else ))
 
-A named argument – `($<lambda> \<atom> <argument>)`:
+A named argument – `($<function> \<atom> <argument>)`:
 
     ($if { four != 4 } \else OK )
 
     OK
 
-A macro definition:
+A macro definition – `($macro <atom> (<param> <param>) <text>)`:
 
     ($macro GRADE ( PAIRS )
-        ($set GRADE-name  ($ (($PAIRS)) \p.($0 p)))
-        ($set GRADE-value ($ (($PAIRS)) \p.($1 p)))
+        ($set GRADE-name  ($(($PAIRS)) \list.($0 list)))
+        ($set GRADE-value ($(($PAIRS)) \list.($1 list)))
         ($set each-GRADE  ($range ($len (($PAIRS)) )))
     )
 
-A quote – ``(` )``:
+A quote – ``(`<quote>)``:
 
     ($GRADE
         (`
@@ -149,7 +149,7 @@ A quote – ``(` )``:
     )
 
 Enclosing of the source code into a loop
-with the reverse square brackets – `]<EOL> <EOL>[`:
+with the reverse square brackets – `]<EOL> <text> <EOL>[`:
 
     ($each-GRADE \i.]
         int ($i GRADE-name) = ($i GRADE-value);
@@ -162,53 +162,53 @@ with the reverse square brackets – `]<EOL> <EOL>[`:
     int D = 2;
     int E = 1;
 
-The source code enclosing with the double comma – `,,`:
+The source code enclosing with the double comma – `($<function>,,<text>,,<text>)`:
 
     ($import stdlib)
     ($hex ($BB,,11000000,,11111111,,11101110))
 
     0xc0ffee
 
-A string substitution:
+A string substitution – `($<string> <argument> <argument>)`:
 
-    ($ "Give ($0) ($p)." \p ($0 mark) me )
+    ($ "Give ($0) ($named)." \named ($0 mark) me )
 
     "Give me 5."
 
-A string evaluation – `($$ )`:
+A string evaluation – `($$<string> <argument> <argument>)`:
 
     ($ ($$'($($func) ($0) ($1))' \func (`mul) 5 5))
 
     25
 
 An iterator (modifier) – NOT applicable into a loop
-or a conditional expression – **experimental**:
+or a conditional expression – `($emit <atom> <function>)` – **experimental** :
 
     ($set i 0)
     ($emit i inc) ($emit i inc) ($emit i dec) ($emit i)
 
     0 1 2 1
 
-An iterator (modifier) of a list:
+An iterator (modifier) of a list – `($emit <list>)`:
 
     ($set l ($range 5 25 5))
     ($emit l) ($emit l) ($emit l) ($emit l)
 
     5 10 15 20
 
-A late bound parameter – `\p.. &p`:
+A late bound parameter – `\<late>..\<param>.<expr> <argument &<late>>`:
 
-    ($ \func.\val.($func val) \p.($q p) regular)
-    ($ \p..\func.\val.($func val) ($q &p) late_bound)
+    ($         \func.\val.($func val) \param.($upper  param) "regular parameter")
+    ($ \param..\func.\val.($func val)        ($upper &param) "late bound parameter")
 
-    "regular"
-    "late_bound"
+    "REGULAR PARAMETER"
+    "LATE BOUND PARAMETER"
 
-A variable argument list – `\... __va_args__` – **experimental**:
+A variable argument list – `\...<expr __va_args__>` – **experimental**:
 
-    ($ \p1.\p2.\...($__va_args__) 1 2 v a _ a r g s)
+    ($ \param1.\param2.\...($__va_args__) 1 2 3 4 5 6 7)
 
-    va_args
+    34567
 
     ($ \val.\...($ ($lazy __va_args__) \func.[($func val) ])
         9.0
@@ -219,21 +219,22 @@ A variable argument list – `\... __va_args__` – **experimental**:
 
     3.0 18.0 81.0
 
-Getting names of parameters from a list – `\(p).`:
+Getting names of parameters from a list – `\(<list>).<expr>`:
 
-    ($set p (c d))
-    ($ \(p).{ c - d } 100 500)
-    ($set p (d c))
-    ($ \(p).{ c - d } 100 500)
+    ($set params (c d))
+    ($ \(params).{ c - d } 100 500)
+    ($set params (d c))
+    ($ \(params).{ c - d } 100 500)
 
     -400
     400
 
-Binding of a few atoms at once – `($set <list> <form>)`:
+Binding of a few atoms at once – `($set (<atom> <atom>) <expr>)`:
 
     ($set (b c d) ('B' 'C' 'D'))
 
-An atom binding in an expression – `($let )`:
+An atom binding in an expression – `($let <atom> <expr>)`
+or `($set (<atom> <atom>) <expr>)`:
 
     ($let (pow2 pow4) (\x.($mul x x) \x.($pow2 ($pow2 x))) ($pow2 ($pow4 2)))
 
