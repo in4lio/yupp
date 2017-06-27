@@ -27,7 +27,7 @@ The main syntactic categories of the macro language are **a list**,
 **A list** is a sequence of expressions separated by blanks and enclosed
 in parentheses.
 
-    <list> ::= '(' { <expression> } ')'
+    <list> ::= '(' { <expr> } ')'
 
 e.g. `(0.5 "string" atom)`
 
@@ -42,8 +42,8 @@ e.g. `($add 2 3)`
 **A lambda expression** is an anonymous function, it consists of a sequence of
 parameters and a function body.
 
-    <lambda> ::= <param> { <param> } <expression>
-    <param>  ::= '\' <name> [ ':' <default> ] '.'
+    <lambda> ::= <param> { <param> } <expr>
+    <param>  ::= '\' <atom> [ ':' <default> ] '.'
 
 e.g. `\p.($sub p 1)`
 
@@ -55,7 +55,7 @@ language. You can try them using [yupp Web Console](http://yup-py.appspot.com/).
 
     ($! this is a comment, won't be saved in the generated text )
 
-Binding of an atom (identifier) with a value – `($set )`:
+Binding of an atom (identifier) with a value – `($set <atom> <expr>)`:
 
     ($set a 'A')
 
@@ -63,7 +63,7 @@ An atom binding with a list:
 
     ($set abc (a 'B' 'C' 'D' 'E'))
 
-Binding of an atom with a lambda is a function definition:
+Binding of an atom with a lambda is a function definition – `($set <atom> <lambda>)`:
 
     ($set inc \val.($add val 1))
 
@@ -73,56 +73,56 @@ Application of a number is subscripting:
 
     HIT
 
-Getting the specific element of a list:
+Getting the specific element of a list – `($<number> <list>)`:
 
     ($0 abc)
 
     'A'
 
-Application of a list is a "for each" loop:
+Application of a list is a "for each" loop – `($<list> <lambda>)`:
 
     ($(0 1 2) \i.($inc i))
 
     123
 
-Embedding of one list into another – `*list`:
+Embedding of one list into another – `*<list>`:
 
     ($set mark (5 4 *(3 2) 1))
 
-An infix expression in Python – `{ }`:
+An infix expression in Python – `{<python>}`:
 
     ($set four { 2 + 2 })
 
-An infix expression straight into the source code:
+An infix expression straight into the source code – `(${} <python>)`:
 
     foo = (${} sqrt(four) * 5.0);
 
     foo = 10.0;
 
-A conditional expression – `consequent ? condition | alternative`:
+A conditional expression – `<consequent> ? <condition> | <alternative>`:
 
     ($set fact \n.($ 1 ? { n == 0 } | { ($fact { n - 1 }) * n }))
     ($fact 10)
 
     3628800
 
-Enclosing of the source code into an application:
+Enclosing of the source code into an application – `($code <text>)`:
 
     ($abc \ch.($code putchar(($ch));))
 
     putchar('A'); putchar('B'); putchar('C'); putchar('D'); putchar('E');
 
-The source code enclosing with the square brackets – `[ ]`:
+The source code enclosing with the square brackets – `[<text>]`:
 
     ($mark \i.[($i), ])
 
     5, 4, 3, 2, 1,
 
-A function parameter with a default value – `\p:val.`:
+A function (lambda) parameter with a default value – `\<atom>:<default>.<expr>`:
 
     ($set if \cond.\then:[].\else:[].($ then ? cond | else ))
 
-A named argument:
+A named argument – `($<lambda> \<atom> <argument>)`:
 
     ($if { four != 4 } \else OK )
 
@@ -228,6 +228,10 @@ Getting names of parameters from a list – `\(p).`:
 
     -400
     400
+
+Binding of a few atoms at once – `($set <list> <form>)`:
+
+    ($set (b c d) ('B' 'C' 'D'))
 
 An atom binding in an expression – `($let )`:
 
