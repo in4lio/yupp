@@ -128,7 +128,7 @@ A named argument – `($<function> \<atom> <argument>)`:
 
     OK
 
-A macro definition – `($macro <atom> (<param> <param>) <text>)`:
+A macro definition – `($macro <atom> (<params>) <text>)`:
 
     ($macro GRADE ( PAIRS )
         ($set GRADE-name  ($(($PAIRS)) \list.($0 list)))
@@ -169,20 +169,20 @@ The source code enclosing with the double comma – `($<function>,,<text>,,<text
 
     0xc0ffee
 
-A string substitution – `($<string> <argument> <argument>)`:
+A string substitution – `($<string> <arguments>)`:
 
-    ($ "Give ($0) ($named)." \named ($0 mark) me )
+    ($ "($0) = ($val)" \val ($round ($pi) 2) (`Pi))
 
-    "Give me 5."
+    "Pi = 3.14"
 
-A string evaluation – `($$<string> <argument> <argument>)`:
+A string evaluation – `($$<string> <arguments>)`:
 
     ($ ($$'($($func) ($0) ($1))' \func (`mul) 5 5))
 
     25
 
-An iterator (modifier) – NOT applicable into a loop
-or a conditional expression – `($emit <atom> <function>)` – **experimental** :
+An iterator (modifier) – `($emit <atom> <function>)` – NOT applicable into a loop
+or a conditional expression – **experimental** :
 
     ($set i 0)
     ($emit i inc) ($emit i inc) ($emit i dec) ($emit i)
@@ -229,12 +229,11 @@ Getting names of parameters from a list – `\(<list>).<expr>`:
     -400
     400
 
-Binding of a few atoms at once – `($set (<atom> <atom>) <expr>)`:
+Binding of a few atoms at once – `($set (<atoms>) <expr>)`:
 
     ($set (b c d) ('B' 'C' 'D'))
 
-An atom binding in an expression – `($let <atom> <expr>)`
-or `($set (<atom> <atom>) <expr>)`:
+An atom binding in an expression – `($let <atom> <expr>)` or `($let (<atoms>) <expr>)`:
 
     ($let (pow2 pow4) (\x.($mul x x) \x.($pow2 ($pow2 x))) ($pow2 ($pow4 2)))
 
