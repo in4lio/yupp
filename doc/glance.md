@@ -1,38 +1,35 @@
 A glance at the preprocessing
 -----------------------------
 
-Here you can get acquainted with __yupp__ lexical preprocessor by exploring a small example
-[glance.yu-cpp](pic/glance.yu-cpp.md).<br>
-The preprocessing result is [glance.cpp](../eg/glance/glance.cpp).
+Let's get acquainted with __yupp__ lexical preprocessor exploring a small example
+from [_"glance.yu-cpp"_](pic/glance.yu-cpp.md) file.
+The result of preprocessing is [_"glance.cpp"_](../eg/glance/glance.cpp) file.
 
-Embedding of the preprocessor expressions into the source code occurs using
-an __application__ form `($ ... )`.<br>
-The first element of an application is a function, that can be called with
-arguments, e.g. `($div 22 7)`.<br>
-The application `($! ... )` is used for __comments__.
+Embedding of preprocessor expressions into the source code occurs using
+__an application__ form `($<function> <arguments>)`.
+The first element of an application is a function, that can be called with arguments,
+e.g. `($div 22 7)`. The `($!<text>)` application is used for __comments__.
 
-Looking at the preprocessor expressions of this example, you will also meet
-the following syntactic categories:
-* __simple lists__, e.g. `(0 1 2 3)`;
+Looking at preprocessor expressions our example, you will also meet the following
+syntactic categories:
+* __simple lists__, like `(0 1 2 3)`;
 * __quotes__ – irreducible expressions or strings without quotation marks –
-```(` ... )```;
-* __source code insertions__ using square brackets `[ ... ]` or reverse square
-brackets `]<EOL> ... <EOL>[`<br>
-(the insertions also can contain the preprocessor expressions);
-* __lambda expressions__ – expressions with parameters – `\a.\b.\c.<EXPR>`.
+```(`<quote>)```;
+* __source code insertions__ using square brackets `[<text>]` or reverse square
+brackets `]<EOL> ... <EOL>[`. Insertions also can contain preprocessor expressions;
+* __lambda expressions__ – expressions with parameters – `\<param>.\<param>.<expr>`.
 
-__Set__ form `($set ... )` allows to bound an atom (identifier) with a value,
-for example the decrement function<br>
-definition is `($set dec \p.($sub p 1))`.
+__The set__ form `($set <atom> <expr>)` allows to bound an atom (identifier) with a value,
+for example a function for decrement could be defined as `($set dec \val.($sub val 1))`.
 
-The example begins with `($import ... )` of [__yupp__ Standard Library](../lib/README.md).
-The [stdlib.yu](../lib/stdlib.yu), in particular, contains __dict__<br>
-macro intended to define a series of lists that make it easy to
-generate repeating code structures by a dictionary.
+Our example begins with an application of the `($import <file>)` form for including
+[__yupp__ Standard Library](../lib/README.md). The [_"stdlib.yu"_](../lib/stdlib.yu)
+in particular contains __dict__ macro intended to define a series of lists that makes
+it easy to generate repeating code structures by a dictionary.
 
 ![screenshot](pic/glance_01.png)
 
-The foregoing application of __dict__ macro corresponds to:
+The foregoing application of the __dict__ macro is equal to:
 
 ```cpp
 ($set each-INI (  0                        1     2                         3       ))
