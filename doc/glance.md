@@ -1,31 +1,30 @@
 A glance at the preprocessing
 -----------------------------
 
-Let's get acquainted with __yupp__ lexical preprocessor exploring a small example
-from [_"glance.yu-cpp"_](pic/glance.yu-cpp.md) file.
-The result of preprocessing is [_"glance.cpp"_](../eg/glance/glance.cpp) file.
+Let's get acquainted with __yupp__ lexical preprocessor exploring a small example from
+[_"glance.yu-cpp"_](pic/glance.yu-cpp.md) file. The result of preprocessing is 
+[_"glance.cpp"_](../eg/glance/glance.cpp) file.
 
-Embedding of preprocessor expressions into the source code occurs using
-__an application__ form `($<function> <arguments>)`.
-The first element of an application is a function, that can be called with arguments,
-e.g. `($div 22 7)`. The `($!<text>)` application is used for __comments__.
+Embedding of preprocessor expressions into the source code occurs using __an application__
+form `($<function> <arguments>)`. The first element of an application is a function which
+can be called with arguments, for instance `($div 22 7)`. The `($!<comment>)` form is used
+for __comments__.
 
-Looking at preprocessor expressions our example, you will also meet the following
-syntactic categories:
+Looking at preprocessor expressions our example, we also can meet the following syntactic
+categories:
 * __simple lists__, like `(0 1 2 3)`;
-* __quotes__ – irreducible expressions or strings without quotation marks –
-```(`<quote>)```;
-* __source code insertions__ using square brackets `[<text>]` or reverse square
-brackets `]<EOL> ... <EOL>[`. Insertions also can contain preprocessor expressions;
+* __quotes__ – irreducible expressions or strings without quotation marks – ```(`<quote>)```;
+* __source code insertions__ using square brackets `[<text>]` or reverse square brackets
+`]<EOL> <text> <EOL>[`. Insertions also can contain preprocessor expressions;
 * __lambda expressions__ – expressions with parameters – `\<param>.\<param>.<expr>`.
 
 __The set__ form `($set <atom> <expr>)` allows to bound an atom (identifier) with a value,
-for example a function for decrement could be defined as `($set dec \val.($sub val 1))`.
+for example a function of decrement could be defined as `($set dec \val.($sub val 1))`.
 
-Our example begins with an application of the `($import <file>)` form for including
-[__yupp__ Standard Library](../lib/README.md). The [_"stdlib.yu"_](../lib/stdlib.yu)
-in particular contains __dict__ macro intended to define a series of lists that makes
-it easy to generate repeating code structures by a dictionary.
+Our example begins with an application of the `($import <file>)` form for using
+[__yupp__ Standard Library](../lib/README.md). In particular [_"stdlib.yu"_](../lib/stdlib.yu)
+contains __dict__ macro intended to define a series of lists that makes it easy to generate
+repeating code structures by a dictionary.
 
 ![screenshot](pic/glance_01.png)
 
