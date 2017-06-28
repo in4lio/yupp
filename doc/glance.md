@@ -7,16 +7,18 @@ Let's get acquainted with __yupp__ lexical preprocessor exploring a small exampl
 
 Embedding of preprocessor expressions into the source code occurs using __an application__
 form `($<function> <arguments>)`. The first element of an application is a function which
-can be called with arguments, for instance `($div 22 7)`. The `($!<comment>)` form is used
-for __comments__.
+can be called with arguments, for instance `($div 22 7)`. 
 
-Looking at preprocessor expressions our example, we also can meet the following syntactic
-categories:
-* __simple lists__, like `(0 1 2 3)`;
-* __quotes__ – irreducible expressions or strings without quotation marks – ```(`<quote>)```;
-* __source code insertions__ using square brackets `[<text>]` or reverse square brackets
-`]<EOL> <text> <EOL>[`. Insertions also can contain preprocessor expressions;
-* __lambda expressions__ – expressions with parameters – `\<param>.\<param>.<expr>`.
+For __comments__ that should not be saved in the genarated text the `($!<comment>)` form
+is used.
+
+Looking at preprocessor expressions of our example, we also are facing with the following
+syntactic categories:
+* __Simple lists__, like `(0 1 2 3)`.
+* __Quotes__ – irreducible expressions or strings without quotation marks – ```(`<quote>)```.
+* __Source code insertions__ using square brackets `[<text>]` or reverse square brackets
+`]<EOL> <text> <EOL>[`. Insertions also can contain preprocessor expressions.
+* __Lambda expressions__ – expressions with parameters – `\<param>.\<param>.<expr>`.
 
 __The set__ form `($set <atom> <expr>)` allows to bound an atom (identifier) with a value,
 for example a function of decrement could be defined as `($set dec \val.($sub val 1))`.
