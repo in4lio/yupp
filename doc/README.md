@@ -336,7 +336,7 @@ starting your script with:
 
     # coding: yupp
 
-Nothing hinders you to translate any file types using the package:
+Nothing hinders you to translate any file types using this package:
 
     python -c "from yupp import pp; pp.translate('file.yu-c')"
 
