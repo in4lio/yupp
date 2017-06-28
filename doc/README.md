@@ -79,7 +79,7 @@ Getting the specific element of a list – `($<number> <list>)`:
 
     'A'
 
-Application of a list is a "for each" loop – `($<list> <lambda>)`:
+Application of a list is a _for each_ loop – `($<list> <lambda>)`:
 
     ($(0 1 2) \i.($inc i))
 
@@ -191,8 +191,8 @@ or a conditional expression – **experimental** :
 
 An iterator (modifier) of a list – `($emit <list>)`:
 
-    ($set l ($range 5 25 5))
-    ($emit l) ($emit l) ($emit l) ($emit l)
+    ($set list ($range 5 25 5))
+    ($emit list) ($emit list) ($emit list) ($emit list)
 
     5 10 15 20
 
