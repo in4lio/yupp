@@ -1,16 +1,17 @@
 A glance at the preprocessing
 -----------------------------
 
-Let's get acquainted with __yupp__ lexical preprocessor exploring a small example from
+Let's get acquainted with __yupp__ lexical preprocessor that allows metaprogramming in
+the functional style. For that purpose, we will explore a small example from
 [_"glance.yu-cpp"_](pic/glance.yu-cpp.md) file. The result of preprocessing is 
 [_"glance.cpp"_](../eg/glance/glance.cpp) file.
 
-Embedding of preprocessor expressions into the source code occurs using __an application__
-form `($<function> <arguments>)`. The first element of an application is a function which
-can be called with arguments, for instance `($div 22 7)`. 
+To begin with, embedding of preprocessor expressions into the source code occurs using
+__an application form__ – `($<function> <arguments>)`. The first element of an application
+is a function which can be called with arguments, for instance `($div 22 7)`.
 
-For __comments__ that should not be saved in the genarated text the `($!<comment>)` form
-is used.
+__Comments__ that should not be saved in the generated text must be enclosed in the next
+form – `($!<comment>)`.
 
 Looking at preprocessor expressions of our example, we also are facing with the following
 syntactic categories:
@@ -20,16 +21,16 @@ syntactic categories:
 `]<EOL> <text> <EOL>[`. Insertions also can contain preprocessor expressions.
 * __Lambda expressions__ – expressions with parameters – `\<param>.\<param>.<expr>`.
 
-__The set__ form `($set <atom> <expr>)` allows to bound an atom (identifier) with a value,
+__The set form__ – `($set <atom> <expr>)` allows to bound an atom (identifier) with a value,
 for example a function of decrement could be defined as `($set dec \val.($sub val 1))`.
 
-Our example begins with an application of the `($import <file>)` form for using
-[__yupp__ Standard Library](../lib/README.md). In particular [_"stdlib.yu"_](../lib/stdlib.yu)
-contains __dict__ macro intended to define a series of lists that makes it easy to generate
-repeating code structures by a dictionary.
+Our example begins with importing of [__yupp__ Standard Library](../lib/README.md) using
+__the import form__ – `($import <file>)`.
 
 ![screenshot](pic/glance_01.png)
 
+In particular, [_"stdlib.yu"_](../lib/stdlib.yu) contains __dict__ macro intended to define
+a series of lists that makes it easy to generate repeating code structures by a dictionary.
 The foregoing application of the __dict__ macro is equal to:
 
 ```cpp
