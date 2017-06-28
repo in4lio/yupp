@@ -29,9 +29,9 @@ __the import form__ – `($import <file>)`.
 
 ![screenshot](pic/glance_01.png)
 
-In particular, [_"stdlib.yu"_](../lib/stdlib.yu) contains __dict__ macro intended to define
-a series of lists that makes it easy to generate repeating code structures by a dictionary.
-The foregoing application of the __dict__ macro is equal to:
+In particular, [_"stdlib.yu"_](../lib/stdlib.yu) contains the __dict__ macro which allows to
+define a bunch of lists at once, that makes it easy to generate repeating code structures by
+a dictionary. The foregoing application of the __dict__ macro is equal to:
 
 ```cpp
 ($set each-INI (  0                        1     2                         3       ))
