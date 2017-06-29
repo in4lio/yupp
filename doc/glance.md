@@ -41,14 +41,14 @@ a dictionary. The foregoing application of the __dict__ macro is equal to:
 ($set DEFAULT  (  (`QDate::currentDate())  0     "Hello! Improving Pi..."  0.0     ))
 ```
 
-The application of a list spawns the __cycle__, lambda expressions (or functions) passed as
+The application of a list spawns the __cycle__, lambda expressions or functions passed as
 arguments will be applied to each element of the list, e.g. `($(2 1 0) \i.($pow 10 i))`.
 
-The application of a number retrieves an argument by index, or if the only argument is a list,
-retrieves an element from this list, e.g. `($2 (miss miss HIT miss))`.
+The application of a number retrieves an argument of this application by index, or if the only
+argument is a list, retrieves an element of that list, e.g. `($2 (miss miss HIT miss))`.
 
-An unbound atoms (names) that are used in __dict__ (`QString`, `Pi` etc.)
-will be processed like quotes.
+Unbound atoms (identifiers) that are used in __dict__ (`QString`, `Pi` etc.) will be processed
+like quotes.
 
 ![screenshot](pic/glance_02.png)
 
