@@ -4,11 +4,12 @@ A glance at the preprocessing
 Let's get acquainted with __yupp__ lexical preprocessor that allows metaprogramming in
 the functional style. For that purpose, we will explore a small example from
 [_"glance.yu-cpp"_](pic/glance.yu-cpp.md) file. The result of preprocessing is 
-[_"glance.cpp"_](../eg/glance/glance.cpp) file.
+[_"glance.cpp"_](../eg/glance/glance.cpp) file. This example calculates the value of Pi
+by the Leibniz formula increasing its accuracy at each run.
 
 To begin with, embedding of preprocessor expressions into the source code occurs using
-__an application form__ – `($<function> <arguments>)`. The first element of an application
-is a function which can be called with arguments, for instance `($div 22 7)`.
+__an application form__ – `($<function> <arguments>)`. The first element of an application
+is a function which can be called with arguments, for instance `($div 22 7)`.
 
 __Comments__ that should not be saved in the generated text must be enclosed in the next
 form – `($!<comment>)`.
