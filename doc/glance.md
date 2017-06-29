@@ -4,7 +4,7 @@ A glance at the preprocessing
 Let's get acquainted with __yupp__ lexical preprocessor that allows metaprogramming in
 the functional style. For that purpose, we will explore a small example from
 [_"glance.yu-cpp"_](pic/glance.yu-cpp.md) file. The result of preprocessing is 
-[_"glance.cpp"_](../eg/glance/glance.cpp) file. This example calculates the value of Pi
+[_"glance.cpp"_](../eg/glance/glance.cpp) file. This example calculates the value of _Pi_
 by the Leibniz formula increasing its accuracy at each run.
 
 To begin with, embedding of preprocessor expressions into the source code occurs using
@@ -19,8 +19,8 @@ syntactic categories:
 * __Simple lists__, like `(0 1 2 3)`.
 * __Quotes__ – irreducible expressions or strings without quotation marks – ```(`<quote>)```.
 * __Source code insertions__ using square brackets `[<text>]` or reverse square brackets
-`]<EOL> <text> <EOL>[`. Insertions also can contain preprocessor expressions.
-* __Lambda expressions__ – expressions with parameters – `\<param>.\<param>.<expr>`.
+`]<EOL> <text> <EOL>[`. Source code insertions can also contain preprocessor expressions.
+* __Lambda expressions__ – preprocessor expressions with parameters – `\<param>.\<param>.<expr>`.
 
 __The set form__ – `($set <atom> <expr>)` allows to bound an atom (identifier) with a value,
 for example a function of decrement could be defined as `($set dec \val.($sub val 1))`.
@@ -41,13 +41,11 @@ a dictionary. The foregoing application of the __dict__ macro is equal to:
 ($set DEFAULT  (  (`QDate::currentDate())  0     "Hello! Improving Pi..."  0.0     ))
 ```
 
-The application of a list spawns a __cycle__, lambda expressions (or functions)
-passed as arguments will be applied<br>
-to each element of the list, e.g. `($(2 1 0) \i.($pow 10 i))`.
+The application of a list spawns the __cycle__, lambda expressions (or functions) passed as
+arguments will be applied to each element of the list, e.g. `($(2 1 0) \i.($pow 10 i))`.
 
-The application of a number retrieves an argument by index, or if the only
-argument is a list, retrieves an element<br>
-from this list, e.g. `($2 (miss miss HIT miss))`.
+The application of a number retrieves an argument by index, or if the only argument is a list,
+retrieves an element from this list, e.g. `($2 (miss miss HIT miss))`.
 
 An unbound atoms (names) that are used in __dict__ (`QString`, `Pi` etc.)
 will be processed like quotes.
