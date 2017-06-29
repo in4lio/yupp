@@ -79,7 +79,7 @@ Getting the specific element of a list – `($<number> <list>)`:
 
     'A'
 
-Application of a list is a _for each_ loop – `($<list> <lambda>)`:
+Application of a list is a _for each_ loop – `($<list> <functions>)`:
 
     ($(0 1 2) \i.($inc i))
 
