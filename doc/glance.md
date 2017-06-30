@@ -105,14 +105,13 @@ void ini_save( const QString &fn )
 }
 ```
 
-The function `($q <string>)` encloses an argument in the quotation marks. For more
-information, please goto [Built-in Functions](../doc/builtin.md).
+The function `($q <expr>)` encloses an argument in the quotation marks. For more
+information, please see [Built-in Functions](../doc/builtin.md).
 
-__String formatting__ performs using the application of a string.
-If the replacement field in the string contains<br>
-a number, it refers to a positional argument, and if it contains an name,
-it refers to a named argument, e.g.<br>
-```($ "Lock, ($1) and ($p) Smoking ($0)" Barrels Stock \p 2)```.
+__A string formatting__ is performed using the string application. If a replacement
+field in the string contains a number, this field will be replaced with the positional
+argument, but if this field contains an atom, it will be replaced with the named
+argument, e.g. ```($ "Lock, ($1) and ($p) Smoking ($0)" Barrels Stock \p 2)```.
 
 ![screenshot](pic/glance_04.png)
 
