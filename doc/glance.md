@@ -30,9 +30,9 @@ __the import form__ – `($import <file>)`.
 
 ![screenshot](pic/glance_01.png)
 
-In particular, [_"stdlib.yu"_](../lib/stdlib.yu) contains the __dict__ macro which allows to
+In particular, [_"stdlib.yu"_](../lib/stdlib.yu) contains __the dict macro__ which allows to
 define a bunch of lists at once, that makes it easy to generate repeating code structures by
-a dictionary. The foregoing application of the __dict__ macro is equal to:
+a dictionary. The foregoing application of __the dict macro__ is equal to:
 
 ```cpp
 ($set each-INI (  0                        1     2                         3       ))
@@ -41,13 +41,13 @@ a dictionary. The foregoing application of the __dict__ macro is equal to:
 ($set DEFAULT  (  (`QDate::currentDate())  0     "Hello! Improving Pi..."  0.0     ))
 ```
 
-The application of a list spawns the __cycle__, lambda expressions or functions passed as
+The application of a list spawns __a cycle__, lambda expressions or functions passed as
 arguments will be applied to each element of the list, e.g. `($(0 1 2) \i.($pow 10 i))`.
 
-The application of a number retrieves an argument of this application by index, or if the only
-argument is a list, retrieves an element of that list, e.g. `($2 (miss miss HIT miss))`.
+The application of a number retrieves an argument of that application by index, or if the only
+argument is a list, retrieves an element of that list, e.g. `($2 (o o x o))`.
 
-Unbound atoms (identifiers) that are used in __dict__ (`QString`, `Pi` etc.) will be processed
+Unbound atoms (identifiers) from `INI` dictionary (`QString`, `Pi` etc.) will be processed
 like quotes.
 
 ![screenshot](pic/glance_02.png)
