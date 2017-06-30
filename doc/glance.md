@@ -66,24 +66,20 @@ QString ini_greeting = "Hello! Improving Pi...";
 double ini_Pi = 0.0;
 ```
 
-You probably noticed a few weird using of square brackets. The construction
-`]<EOL> ... <EOL>[`<br>
-equals to ordinary `[ ... ]` but makes expressions, I dare say, more readable.
+You probably noticed a bit weird using of square brackets. The construction
+`]<EOL> <text> <EOL>[` is equal to ordinary `[<text>]` but allows to arrange expressions.
 
-Another way to insert a short piece of code into the preprocessor expressions
-is the double comma, e.g.<br>
-`($count,,Wild Wild World,,W)`.
+Another way to insert a short piece of a code into preprocessor expressions is using of
+the double comma, for example `($count,,Wild Wild World,,W)`.
 
-__Conditional expression__ contains: __condition__,
-__alternative__ – an expression to be evaluated if the condition<br>
-evaluates to zero (empty list `()`, empty code `[]` or empty quote ```(`)```)
-and __consequent__ – an expression<br>
-to be evaluated for other values of the condition –
-```consequent ? condition | alternative```.
+__A conditional expression__ contains: __a condition__, __ an alternative__ – an expression
+which will be evaluated if the condition evaluates to zero or empty list `()` or empty code
+`[]` or empty quote ```(`)```, and __a consequent__ – an expression that will be evaluated
+for other values of the condition – ```<consequent> ? <condition> | <alternative>```.
 
 ![screenshot](pic/glance_03.png)
 
-The above functions after preprocessing:
+The above functions after the macro-expansion:
 
 ```cpp
 void ini_load( const QString &fn )
@@ -109,9 +105,8 @@ void ini_save( const QString &fn )
 }
 ```
 
-The function `($q ... )` encloses an argument in quotation marks. For more
-information, please goto<br>
-[Built-in Functions](../doc/builtin.md).
+The function `($q <string>)` encloses an argument in the quotation marks. For more
+information, please goto [Built-in Functions](../doc/builtin.md).
 
 __String formatting__ performs using the application of a string.
 If the replacement field in the string contains<br>
