@@ -72,7 +72,7 @@ You probably noticed a bit weird using of square brackets. The construction
 Another way to insert a short piece of a code into preprocessor expressions is using of
 the double comma, for example `($count,,Wild Wild World,,W)`.
 
-__A conditional expression__ contains: __a condition__, __ an alternative__ – an expression
+__A conditional expression__ contains: __a condition__, __an alternative__ – an expression
 which will be evaluated if the condition evaluates to zero or empty list `()` or empty code
 `[]` or empty quote ```(`)```, and __a consequent__ – an expression that will be evaluated
 for other values of the condition – ```<consequent> ? <condition> | <alternative>```.
