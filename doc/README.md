@@ -39,8 +39,8 @@ parenthesis.
 
 e.g. `($add 2 3)`
 
-**A lambda expression** is an anonymous function, it consists of a sequence of
-parameters and a function body.
+**A lambda expression** is an anonymous function, it consists of a sequence
+of parameters and a function body.
 
     <lambda> ::= <param> { <param> } <expr>
     <param>  ::= '\' <atom> [ ':' <default> ] '.'
@@ -63,7 +63,8 @@ An atom binding with a list:
 
     ($set abc (a 'B' 'C' 'D' 'E'))
 
-Binding of an atom with a lambda is a function definition – `($set <atom> <lambda>)`:
+Binding of an atom with a lambda is a function definition
+ – `($set <atom> <lambda>)`:
 
     ($set inc \val.($add val 1))
 
@@ -118,7 +119,8 @@ The source code enclosing with the square brackets – `[<text>]`:
 
     5, 4, 3, 2, 1,
 
-A function (lambda) parameter with a default value – `\<atom>:<default>.<expr>`:
+A function (lambda) parameter with a default value
+– `\<atom>:<default>.<expr>`:
 
     ($set if \cond.\then:[].\else:[].($then ? cond | else))
 
@@ -148,8 +150,8 @@ A quote – ``(`<quote>)``:
         )
     )
 
-Enclosing of the source code into a loop
-with the reverse square brackets – `]<EOL> <text> <EOL>[`:
+Enclosing of the source code into a loop with the reverse square brackets
+– `]<EOL> <text> <EOL>[`:
 
     ($each-GRADE \i.]
         int ($i GRADE-name) = ($i GRADE-value);
@@ -162,7 +164,8 @@ with the reverse square brackets – `]<EOL> <text> <EOL>[`:
     int D = 2;
     int E = 1;
 
-The source code enclosing with the double comma – `($<function>,,<text>,,<text>)`:
+The source code enclosing with the double comma
+– `($<function>,,<text>,,<text>)`:
 
     ($import stdlib)
     ($hex ($BB,,11000000,,11111111,,11101110))
@@ -181,8 +184,8 @@ A string evaluation – `($$<string> <arguments>)`:
 
     25
 
-An iterator (modifier) – `($emit <atom> <function>)` – NOT applicable into a loop
-or a conditional expression – **experimental** :
+An iterator (modifier) – `($emit <atom> <function>)` – NOT applicable
+into a loop or a conditional expression – **experimental** :
 
     ($set i 0)
     ($emit i inc) ($emit i inc) ($emit i dec) ($emit i)
@@ -198,11 +201,11 @@ An iterator (modifier) of a list – `($emit <list>)`:
 
 A late bound parameter – `\<late>..\<param>.<expr> <argument &<late>>`:
 
-    ($         \func.\val.($func val) \param.($upper  param) "regular parameter")
-    ($ \param..\func.\val.($func val)        ($upper &param) "late bound parameter")
+    ($         \func.\val.($func val) \param.($upper  param) "regular param")
+    ($ \param..\func.\val.($func val)        ($upper &param) "late bound param")
 
-    "REGULAR PARAMETER"
-    "LATE BOUND PARAMETER"
+    "REGULAR PARAM"
+    "LATE BOUND PARAM"
 
 A variable argument list – `\...<expr __va_args__>` – **experimental**:
 
@@ -233,7 +236,8 @@ Binding of a few atoms at once – `($set (<atoms>) <expr>)`:
 
     ($set (b c d) ('B' 'C' 'D'))
 
-An atom binding in an expression – `($let <atom> <expr>)` or `($let (<atoms>) <expr>)`:
+An atom binding in an expression – `($let <atom> <expr>)`
+or `($let (<atoms>) <expr>)`:
 
     ($let (pow2 pow4) (\x.($mul x x) \x.($pow2 ($pow2 x))) ($pow2 ($pow4 2)))
 
@@ -243,8 +247,9 @@ Any functions from _"string"_, _"operator"_ and _"math"_ modules of Python
 Standard Library can be used in preprocessor expressions –
 [Built-in Functions](builtin.md).
 
-The special `($import <expr>)` form is provided to include macros and functions
-from [yupp Standard Library](../../../blob/master/lib/README.md) or other libraries.
+The special `($import <expr>)` form is provided to include macros and
+functions from [yupp Standard Library](../../../blob/master/lib/README.md)
+or other libraries.
 
 ### USAGE
 

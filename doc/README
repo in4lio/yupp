@@ -37,7 +37,7 @@
     A list is a sequence of expressions separated by blanks and enclosed
     in parentheses.
 
-    <list> ::= '(' { <expression> } ')'
+    <list> ::= '(' { <expr> } ')'
 
     e.g. (0.5 "string" atom)
 
@@ -49,23 +49,25 @@
 
     ($add 2 3)
 
-    A lambda expression is an anonymous function, it consists of a sequence of
-    parameters and a function body.
+    A lambda expression is an anonymous function, it consists of a sequence
+    of parameters and a function body.
 
-    <lambda> ::= <param> { <param> } <expression>
-    <param>  ::= '\' <name> [ ':' <default> ] '.'
+    <lambda> ::= <param> { <param> } <expr>
+    <param>  ::= '\' <atom> [ ':' <default> ] '.'
 
-    \p.($sub p 1)
+    \val.($sub val 1)
 
     Syntactic forms can be nested within each other but, as mentioned above,
     only an application can be embedded into the source code directly.
 
     The following examples show various syntactic constructs of the macro
-    language. You can try them using yupp Web Console (http://yup-py.appspot.com/).
+    language. You can try them using yupp Web Console:
+
+        http://yup-py.appspot.com/
 
     ($! this is a comment, won't be saved in the generated text )
 
-    ($! binding of an atom (identifier) with a value – ($set ) )
+    ($! binding of an atom (identifier) with a value – ($set <atom> <expr>) )
 
         ($set a 'A')
 
@@ -73,7 +75,8 @@
 
         ($set abc (a 'B' 'C' 'D' 'E'))
 
-    ($! binding of an atom with a lambda is a function definition )
+    ($! binding of an atom with a lambda is a function definition
+        – ($set <atom> <lambda>) )
 
         ($set inc \val.($add val 1))
 
@@ -83,70 +86,71 @@
 
     HIT
 
-    ($! getting the specific element of a list )
+    ($! getting the specific element of a list– ($<number> <list>) )
 
         ($0 abc)
 
     'A'
 
-    ($! application of a list is a "for each" loop )
+    ($! application of a list is a "for each" loop – ($<list> <functions>) )
 
         ($(0 1 2) \i.($inc i))
 
     123
 
-    ($! embedding of one list into another – *list )
+    ($! embedding of one list into another – *<list> )
 
         ($set mark (5 4 *(3 2) 1))
 
-    ($! an infix expression in Python – { } )
+    ($! an infix expression in Python – {<python>} )
 
         ($set four { 2 + 2 })
 
-    ($! an infix expression straight into the source code )
+    ($! an infix expression straight into the source code – (${} <python>) )
 
         foo = (${} sqrt(four) * 5.0);
 
     foo = 10.0;
 
-    ($! a conditional expression – consequent ? condition | alternative )
+    ($! a conditional expression – <consequent> ? <condition> | <alternative> )
 
         ($set fact \n.($ 1 ? { n == 0 } | { ($fact { n - 1 }) * n }))
         ($fact 10)
 
     3628800
 
-    ($! enclosing of the source code into an application )
+    ($! enclosing of the source code into an application – ($code <text>) )
 
         ($abc \ch.($code putchar(($ch));))
 
     putchar('A'); putchar('B'); putchar('C'); putchar('D'); putchar('E');
 
-    ($! the source code enclosing with the square brackets – [ ] )
+    ($! the source code enclosing with the square brackets – [<text>] )
 
         ($mark \i.[($i), ])
 
     5, 4, 3, 2, 1,
 
-    ($! a function parameter with a default value – \p:val. )
+    ($! a function (lambda) parameter with a default value
+        – \<atom>:<default>.<expr> )
 
         ($set if \cond.\then:[].\else:[].($ then ? cond | else ))
 
-    ($! a named argument )
+    ($! a named argument – ($<function> \<atom> <argument>) )
 
         ($if { four != 4 } \else OK )
 
     OK
 
-    ($! a macro definition )
+    ($! a macro definition – ($macro <atom> (<params>) <text>) )
 
         ($macro GRADE ( PAIRS )
-            ($set GRADE-name  ($ (($PAIRS)) \p.($0 p)))
-            ($set GRADE-value ($ (($PAIRS)) \p.($1 p)))
+            ($set GRADE-name  ($ (($PAIRS)) \list.($0 list)))
+            ($set GRADE-value ($ (($PAIRS)) \list.($1 list)))
             ($set each-GRADE  ($range ($len (($PAIRS)) )))
         )
 
-    ($! a quote – (` ) )
+    ($! a quote – (`<quote>) )
 
         ($GRADE
             (`
@@ -158,8 +162,8 @@
             )
         )
 
-    ($! enclosing of the source code into a loop
-        with the reverse square brackets – ]<EOL> <EOL>[ )
+    ($! enclosing of the source code into a loop with the reverse square brackets
+        – ]<EOL> <text> <EOL>[ )
 
         ($each-GRADE \i.]
             int ($i GRADE-name) = ($i GRADE-value);
@@ -172,53 +176,54 @@
     int D = 2;
     int E = 1;
 
-    ($! the source code enclosing with the double comma – ,, )
+    ($! the source code enclosing with the double comma
+        – ($<function>,,<text>,,<text>) )
 
         ($import stdlib)
         ($hex ($BB,,11000000,,11111111,,11101110))
 
     0xc0ffee
 
-    ($! a string substitution )
+    ($! a string substitution – ($<string> <arguments>) )
 
-        ($ "Give ($0) ($p)." \p ($0 mark) me )
+        ($ "($0) = ($val)" \val ($round ($pi) 2) (`Pi))
 
-    "Give me 5."
+    "Pi = 3.14"
 
-    ($! a string evaluation – ($$ ) )
+    ($! a string evaluation – ($$<string> <arguments>) )
 
         ($ ($$'($($func) ($0) ($1))' \func (`mul) 5 5))
 
     25
 
-    ($! an iterator (modifier) – NOT applicable into a loop
-        or conditional expression – EXPERIMENTAL )
+    ($! an iterator (modifier) – ($emit <atom> <function>) – NOT applicable
+        into a loop or a conditional expression – EXPERIMENTAL )
 
         ($set i 0)
         ($emit i inc) ($emit i inc) ($emit i dec) ($emit i)
 
     0 1 2 1
 
-    ($! an iterator (modifier) of a list )
+    ($! an iterator (modifier) of a list – ($emit <list>) )
 
-        ($set l ($range 5 25 5))
-        ($emit l) ($emit l) ($emit l) ($emit l)
+        ($set list ($range 5 25 5))
+        ($emit list) ($emit list) ($emit list) ($emit list)
 
     5 10 15 20
 
-    ($! a late bound parameter – \p.. &p )
+    ($! a late bound parameter – \<late>..\<param>.<expr> <argument &<late>> )
 
-        ($ \func.\val.($func val) \p.($q p) regular)
-        ($ \p..\func.\val.($func val) ($q &p) late_bound)
+        ($ \func.\val.($func val) \param.($upper  param) "regular param")
+        ($ \param..\func.\val.($func val) ($upper &param) "late bound param")
 
-    "regular"
-    "late_bound"
+    "REGULAR PARAM"
+    "LATE BOUND PARAM"
 
-    ($! a variable argument list – \... __va_args__ – EXPERIMENTAL )
+    ($! a variable argument list – \...<expr __va_args__> – EXPERIMENTAL )
 
-        ($ \p1.\p2.\...($__va_args__) 1 2 v a _ a r g s)
+        ($ \param1.\param2.\...($__va_args__) 1 2 3 4 5)
 
-    va_args
+    345
 
         ($ \val.\...($ ($lazy __va_args__) \func.[($func val) ])
             9.0
@@ -229,17 +234,22 @@
 
     3.0 18.0 81.0
 
-    ($! getting names of parameters from a list – \(p). )
+    ($! getting names of parameters from a list – \(<list>).<expr> )
 
-        ($set p (c d))
-        ($ \(p).{ c - d } 100 500)
-        ($set p (d c))
-        ($ \(p).{ c - d } 100 500)
+        ($set params (x y))
+        ($ \(params).{ x - y } 100 500)
+        ($set params (y x))
+        ($ \(params).{ x - y } 100 500)
 
     -400
     400
 
-    ($! an atom binding in an expression – ($let ) )
+    ($! binding of a few atoms at once – ($set (<atoms>) <expr>) )
+
+        ($set (b c d) ('B' 'C' 'D'))
+
+    ($! an atom binding in an expression – ($let <atom> <expr>)
+        or ($let (<atoms>) <expr>) )
 
         ($let (pow2 pow4) (\x.($mul x x) \x.($pow2 ($pow2 x))) ($pow2 ($pow4 2)))
 
@@ -249,8 +259,8 @@
     Standard Library can be used in preprocessor expressions
     (https://github.com/in4lio/yupp/blob/master/doc/builtin.md).
 
-    The special ($import ) form is provided to include macros and functions
-    from yupp Standard Library or other libraries
+    The special ($import <expr>) form is provided to include macros and
+    functions from yupp Standard Library or other libraries
     (https://github.com/in4lio/yupp/blob/master/lib/README.md).
 
     ___       ____________________________________
@@ -332,18 +342,20 @@
     ___                   ________________________
     ___ MACROS IN PYTHON  ________________________
 
-    You have to install "yupp" package to use the macro processor with Python 2:
+    You have to install "yupp" package to use the macro processor with
+    Python 2:
 
         pip install yupp
 
-    You may need to specify "--pre" key if you want to install a beta version.
+    You may need to specify "--pre" key if you want to install a beta
+    version.
 
     After that, you can use macro expressions in the source code in Python,
     starting your script with:
 
         # coding: yupp
 
-    Nothing hinders you to translate any file types using the package:
+    Nothing hinders you to translate any file types using this package:
 
         python -c "from yupp import pp; pp.translate( 'file.yu-c' )"
 
