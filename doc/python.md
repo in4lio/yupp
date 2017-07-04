@@ -6,7 +6,7 @@ in the C language. The idea behind **yupp** is programming of a source code
 transformation in the functional style.
 
 If a given task fits well into the metaprogramming paradigm, **yupp** able
-to replace the C preprocessor, giving us more options, or even can act as
+to replace the C preprocessor, offering us more options, or even can act as
 a viable alternative to the C++ templates. As well, **yupp** can be used with
 Python, since [PEP 263](https://www.python.org/dev/peps/pep-0263/) shows us
 the way to modify any source file before calling Python’s internal parser.
@@ -36,5 +36,8 @@ for all files of a directory should be specified in
 [_".yuconfig"_](../../../blob/master/eg/.yuconfig) file, whereas individual
 options for a single file in
 [_"file.yuconfig"_](../../../blob/master/eg/dict.yuconfig).
+
+Here is a small example of using macros in Python code:
+
 
 [yupp Wiki](https://github.com/in4lio/yupp/wiki/)
