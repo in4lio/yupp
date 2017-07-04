@@ -1,11 +1,11 @@
 A glance at the preprocessing
 -----------------------------
 
-Let's get acquainted with __yupp__ lexical preprocessor that allows metaprogramming in
-the functional style. For that purpose, we will explore a small example from
-[_"glance.yu-cpp"_](pic/glance.yu-cpp.md) file. The result of preprocessing is 
-[_"glance.cpp"_](../eg/glance/glance.cpp) file. This example calculates the value of _Pi_
-by the Leibniz formula increasing its accuracy at each run.
+Let's get acquainted with __yupp__ lexical preprocessor which allows to generate snippets
+of source code applying meta-constructs in the functional style. For that purpose, we will
+explore a small example from [_"glance.yu-cpp"_](pic/glance.yu-cpp.md) file. The result of
+preprocessing is [_"glance.cpp"_](../eg/glance/glance.cpp) file. Our example calculates
+the value of _Pi_ by the Leibniz formula increasing its accuracy at each run.
 
 To begin with, embedding of preprocessor expressions into the source code occurs using
 __an application form__ – `($<function> <arguments>)`. The first element of an application
@@ -30,9 +30,9 @@ __the import form__ – `($import <file>)`.
 
 ![screenshot](pic/glance_01.png)
 
-In particular, [_"stdlib.yu"_](../lib/stdlib.yu) contains the __dict__ macro which allows to
+In particular, [_"stdlib.yu"_](../lib/stdlib.yu) contains __the dict macro__ which allows to
 define a bunch of lists at once, that makes it easy to generate repeating code structures by
-a dictionary. The foregoing application of the __dict__ macro is equal to:
+a dictionary. The foregoing application of __the dict macro__ is equal to:
 
 ```cpp
 ($set each-INI (  0                        1     2                         3       ))
@@ -41,13 +41,13 @@ a dictionary. The foregoing application of the __dict__ macro is equal to:
 ($set DEFAULT  (  (`QDate::currentDate())  0     "Hello! Improving Pi..."  0.0     ))
 ```
 
-The application of a list spawns the __cycle__, lambda expressions or functions passed as
+The application of a list spawns __a cycle__, lambda expressions or functions passed as
 arguments will be applied to each element of the list, e.g. `($(0 1 2) \i.($pow 10 i))`.
 
-The application of a number retrieves an argument of this application by index, or if the only
-argument is a list, retrieves an element of that list, e.g. `($2 (miss miss HIT miss))`.
+The application of a number retrieves an argument of that application by index, or if the only
+argument is a list, retrieves an element of that list, e.g. `($2 (o o x o))`.
 
-Unbound atoms (identifiers) that are used in __dict__ (`QString`, `Pi` etc.) will be processed
+Unbound atoms (identifiers) from `INI` dictionary (`QString`, `Pi` etc.) will be processed
 like quotes.
 
 ![screenshot](pic/glance_02.png)
@@ -66,24 +66,20 @@ QString ini_greeting = "Hello! Improving Pi...";
 double ini_Pi = 0.0;
 ```
 
-You probably noticed a few weird using of square brackets. The construction
-`]<EOL> ... <EOL>[`<br>
-equals to ordinary `[ ... ]` but makes expressions, I dare say, more readable.
+You probably noticed a bit weird using of square brackets. The construction
+`]<EOL> <text> <EOL>[` is equal to ordinary `[<text>]` but allows to arrange expressions.
 
-Another way to insert a short piece of code into the preprocessor expressions
-is the double comma, e.g.<br>
-`($count,,Wild Wild World,,W)`.
+Another way to insert a short piece of a code into preprocessor expressions is using of
+the double comma, for example `($count,,Wild Wild World,,W)`.
 
-__Conditional expression__ contains: __condition__,
-__alternative__ – an expression to be evaluated if the condition<br>
-evaluates to zero (empty list `()`, empty code `[]` or empty quote ```(`)```)
-and __consequent__ – an expression<br>
-to be evaluated for other values of the condition –
-```consequent ? condition | alternative```.
+__A conditional expression__ contains: __a condition__, __an alternative__ – an expression
+which will be evaluated if the condition evaluates to zero or empty list `()` or empty code
+`[]` or empty quote ```(`)```, and __a consequent__ – an expression that will be evaluated
+for other values of the condition – ```<consequent> ? <condition> | <alternative>```.
 
 ![screenshot](pic/glance_03.png)
 
-The above functions after preprocessing:
+The above functions after the macro-expansion:
 
 ```cpp
 void ini_load( const QString &fn )
@@ -109,15 +105,13 @@ void ini_save( const QString &fn )
 }
 ```
 
-The function `($q ... )` encloses an argument in quotation marks. For more
-information, please goto<br>
-[Built-in Functions](../doc/builtin.md).
+The function `($q <expr>)` encloses an argument in the quotation marks. For more
+information, please see [Built-in Functions](../doc/builtin.md).
 
-__String formatting__ performs using the application of a string.
-If the replacement field in the string contains<br>
-a number, it refers to a positional argument, and if it contains an name,
-it refers to a named argument, e.g.<br>
-```($ "Lock, ($1) and ($p) Smoking ($0)" Barrels Stock \p 2)```.
+__A string formatting__ is performed using the string application. If a replacement
+field in the string contains a number, this field will be replaced with the positional
+argument, but if this field contains an atom, it will be replaced with the named
+argument, e.g. ```($ "Lock, ($1) and ($p) Smoking ($0)" Barrels Stock \p 2)```.
 
 ![screenshot](pic/glance_04.png)
 
