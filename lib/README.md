@@ -310,14 +310,19 @@ For example, `module.yu-h`:
 ($import h)
 ($h-begin-named)
 
-($extern-init,,unsigned int foo[ 4 ],,{ 0, 1, 2, 3 })
-($extern) int bar;
-($extern-c) void fn( char *a );
+($extern) void foo( char *a );
+($extern) char *bar ($init,,"The Blind Beggar");
+($extern-c) int corge( double val );
 
-($inline) int max( int a, b ) { return (( a > b ) ? a : b ); }
+($var,,bool plugh)
+($var-init,,short fred[ 3 ],,{ 7, 11, 13 })
+($var-c,,float flob)
+($var-c-init,,char *xyzzy,,"off")
+
+($inline) int qux( int a, b ) { return (( a > b ) ? a : b ); }
 
 ($extern-c-begin)
-int fn2( void );
+bool waldo( void );
 ($extern-c-end)
 
 ($h-end)
@@ -331,57 +336,106 @@ will be translated into `module.h`:
 
 #ifdef  MODULE_IMPLEMENT
 #define MODULE_EXT
-#define MODULE_EXT_INIT( dec, init ) \
-	dec = init
-#define MODULE_EXT_C
-#define MODULE_EXT_C_INIT( dec, init ) \
-	dec = init
-#define MODULE_INL
-#else
-#define MODULE_EXT extern
-#define MODULE_EXT_INIT( dec, init ) \
-	extern dec
+#define MODULE_INIT( ... ) \
+	= __VA_ARGS__
+
 #ifdef __cplusplus
-#define MODULE_C "C"
+#define MODULE_EXT_C \
+	extern "C"
 #else
-#define MODULE_C
+#define MODULE_EXT_C \
+	extern
 #endif
-#define MODULE_EXT_C extern MODULE_C
-#define MODULE_EXT_C_INIT( dec, init ) \
-	extern MODULE_C dec
+
+#define MODULE_VAR( decl ) \
+	decl
+#define MODULE_VAR_INIT( decl, ... ) \
+	decl = __VA_ARGS__
+
+#ifdef __cplusplus
+#define MODULE_VAR_C( decl ) \
+	extern "C" decl; decl
+#define MODULE_VAR_C_INIT( decl, ... ) \
+	extern "C" decl; decl = __VA_ARGS__
+#else
+#define MODULE_VAR_C( decl ) \
+	decl
+#define MODULE_VAR_C_INIT( decl, ... ) \
+	decl = __VA_ARGS__
+#endif
+
+#define MODULE_INL
+
+#else  /* MODULE_IMPLEMENT */
+
+#define MODULE_EXT \
+	extern
+#define MODULE_INIT( ... )
+
+#ifdef __cplusplus
+#define MODULE_EXT_C \
+	extern "C"
+#else
+#define MODULE_EXT_C \
+	extern
+#endif
+
+#define MODULE_VAR( decl ) \
+	extern decl
+#define MODULE_VAR_INIT( decl, ... ) \
+	extern decl
+
+#ifdef __cplusplus
+#define MODULE_VAR_C( decl ) \
+	extern "C" decl
+#define MODULE_VAR_C_INIT( decl, ... ) \
+	extern "C" decl
+#else
+#define MODULE_VAR_C( decl ) \
+	extern decl
+#define MODULE_VAR_C_INIT( decl, ... ) \
+	extern decl
+#endif
+
 #if __GNUC__ && !__GNUC_STDC_INLINE__
-#define MODULE_INL extern inline
+#define MODULE_INL \
+	extern inline
 #else
-#define MODULE_INL inline
-#endif
-#endif
-
-#ifndef COMMA
-#define COMMA   ,
+#define MODULE_INL \
+	inline
 #endif
 
-MODULE_EXT_INIT( unsigned int foo[ 4 ], { 0 COMMA  1 COMMA  2 COMMA  3 } );
-MODULE_EXT int bar;
-MODULE_EXT_C void fn( char *a );
+#endif /* MODULE_IMPLEMENT */
 
-MODULE_INL int max( int a, b ) { return (( a > b ) ? a : b ); }
+MODULE_EXT void foo( char *a );
+MODULE_EXT char *bar MODULE_INIT( "The Blind Beggar" );
+MODULE_EXT_C int corge( double val );
+
+MODULE_VAR( bool plugh );
+MODULE_VAR_INIT( short fred[ 3 ], { 7, 11, 13 } );
+MODULE_VAR_C( float flob );
+MODULE_VAR_C_INIT( char *xyzzy, "off" );
+
+MODULE_INL int qux( int a, b ) { return (( a > b ) ? a : b ); }
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int fn2( void );
+bool waldo( void );
 
 #ifdef __cplusplus
 }
 #endif
 
 #undef MODULE_EXT
-#undef MODULE_EXT_INIT
+#undef MODULE_INIT
 #undef MODULE_EXT_C
-#undef MODULE_EXT_C_INIT
+#undef MODULE_VAR
+#undef MODULE_VAR_INIT
+#undef MODULE_VAR_C
+#undef MODULE_VAR_C_INIT
 #undef MODULE_INL
-#undef MODULE_C
 #endif
 ```
 
@@ -391,13 +445,18 @@ And `module.yu-c`:
 ($import h)
 ($implement-named)
 
-void fn( char *a )
+void foo( char *a )
 {
 }
 
-int fn2( void )
+int corge( double val )
 {
 	return ( -1 );
+}
+
+bool waldo( void )
+{
+	return false;
 }
 ```
 
@@ -406,12 +465,17 @@ will spawn `module.c`:
 ```cpp
 #define MODULE_IMPLEMENT
 
-void fn( char *a )
+void foo( char *a )
 {
 }
 
-int fn2( void )
+int corge( double val )
 {
 	return ( -1 );
+}
+
+bool waldo( void )
+{
+	return false;
 }
 ```
