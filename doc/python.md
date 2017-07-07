@@ -39,5 +39,11 @@ options for a single file in
 
 Here is a small example of using macros in Python code:
 
+    # coding: yupp
+
+    ($set greeting '!dlrow olleH')
+
+    print ($reversed greeting)
+
 
 [yupp Wiki](https://github.com/in4lio/yupp/wiki/)
