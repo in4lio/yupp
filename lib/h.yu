@@ -1,14 +1,19 @@
 ($!
 	($h-begin-named)
 
-	($extern-init,,unsigned int foo[ 4 ],,{ 0, 1, 2, 3 })
-	($extern) int bar;
-	($extern-c) void fn( char *a );
+	($extern) void foo( char *a );
+	($extern) char *bar ($init,,"The Blind Beggar");
+	($extern-c) int corge( double val );
 
-	($inline) int max( int a, b ) { return (( a > b ) ? a : b ); }
+	($var,,bool plugh)
+	($var-init,,short fred[ 3 ],,{ 7, 11, 13 })
+	($var-c,,float flob)
+	($var-c-init,,char *xyzzy,,"off")
+
+	($inline) int qux( int a, b ) { return (( a > b ) ? a : b ); }
 
 	($extern-c-begin)
-	int fn2( void );
+	bool waldo( void );
 	($extern-c-end)
 
 	($h-end)
@@ -21,43 +26,87 @@
 
 #ifdef  ($h-name)_IMPLEMENT
 #define ($h-name)_EXT
-#define ($h-name)_EXT_INIT( dec, init ) \
-	dec = init
-#define ($h-name)_EXT_C
-#define ($h-name)_EXT_C_INIT( dec, init ) \
-	dec = init
-#define ($h-name)_INL
-#else
-#define ($h-name)_EXT extern
-#define ($h-name)_EXT_INIT( dec, init ) \
-	extern dec
+#define ($h-name)_INIT( ... ) \
+	= __VA_ARGS__
+
 #ifdef __cplusplus
-#define ($h-name)_C "C"
+#define ($h-name)_EXT_C \
+	extern "C"
 #else
-#define ($h-name)_C
-#endif
-#define ($h-name)_EXT_C extern ($h-name)_C
-#define ($h-name)_EXT_C_INIT( dec, init ) \
-	extern ($h-name)_C dec
-#if __GNUC__ && !__GNUC_STDC_INLINE__
-#define ($h-name)_INL extern inline
-#else
-#define ($h-name)_INL inline
-#endif
+#define ($h-name)_EXT_C \
+	extern
 #endif
 
-#ifndef COMMA
-#define COMMA ,
+#define ($h-name)_VAR( decl ) \
+	decl
+#define ($h-name)_VAR_INIT( decl, ... ) \
+	decl = __VA_ARGS__
+
+#ifdef __cplusplus
+#define ($h-name)_VAR_C( decl ) \
+	extern "C" decl; decl
+#define ($h-name)_VAR_C_INIT( decl, ... ) \
+	extern "C" decl; decl = __VA_ARGS__
+#else
+#define ($h-name)_VAR_C( decl ) \
+	decl
+#define ($h-name)_VAR_C_INIT( decl, ... ) \
+	decl = __VA_ARGS__
 #endif
+
+#define ($h-name)_INL
+
+#else  /* ($h-name)_IMPLEMENT */
+
+#define ($h-name)_EXT \
+	extern
+#define ($h-name)_INIT( ... )
+
+#ifdef __cplusplus
+#define ($h-name)_EXT_C \
+	extern "C"
+#else
+#define ($h-name)_EXT_C \
+	extern
+#endif
+
+#define ($h-name)_VAR( decl ) \
+	extern decl
+#define ($h-name)_VAR_INIT( decl, ... ) \
+	extern decl
+
+#ifdef __cplusplus
+#define ($h-name)_VAR_C( decl ) \
+	extern "C" decl
+#define ($h-name)_VAR_C_INIT( decl, ... ) \
+	extern "C" decl
+#else
+#define ($h-name)_VAR_C( decl ) \
+	extern decl
+#define ($h-name)_VAR_C_INIT( decl, ... ) \
+	extern decl
+#endif
+
+#if __GNUC__ && !__GNUC_STDC_INLINE__
+#define ($h-name)_INL \
+	extern inline
+#else
+#define ($h-name)_INL \
+	inline
+#endif
+
+#endif /* ($h-name)_IMPLEMENT */
 )
 
 ($macro h-end ()
 #undef ($h-name)_EXT
-#undef ($h-name)_EXT_INIT
+#undef ($h-name)_INIT
 #undef ($h-name)_EXT_C
-#undef ($h-name)_EXT_C_INIT
+#undef ($h-name)_VAR
+#undef ($h-name)_VAR_INIT
+#undef ($h-name)_VAR_C
+#undef ($h-name)_VAR_C_INIT
 #undef ($h-name)_INL
-#undef ($h-name)_C
 #endif
 )
 
@@ -85,7 +134,12 @@ extern "C" {
 )
 
 ($macro extern ()($h-name)_EXT)
-($macro extern-init ( dec init )($h-name)_EXT_INIT( ($dec), ($replace [($init)] [,] [ COMMA ]) );)
+($macro init ( init )($h-name)_INIT( ($init) ))
 ($macro extern-c ()($h-name)_EXT_C)
-($macro extern-c-init ( dec init )($h-name)_EXT_C_INIT( ($dec), ($replace [($init)] [,] [ COMMA ]) );)
+
+($macro var ( dec )($h-name)_VAR( ($dec) );)
+($macro var-init ( dec init )($h-name)_VAR_INIT( ($dec), ($init) );)
+($macro var-c ( dec )($h-name)_VAR_C( ($dec) );)
+($macro var-c-init ( dec init )($h-name)_VAR_C_INIT( ($dec), ($init) );)
+
 ($macro inline ()($h-name)_INL)
