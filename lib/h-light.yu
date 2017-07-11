@@ -1,0 +1,83 @@
+($!
+	($set hlib-light 1)
+	($import h)
+	($h-begin-named)
+
+	($var,,bool plugh)
+	($var-init,,short fred[ 3 ],,{ 7, 11, 13 })
+
+	($extern-c-begin)
+	($var,,float flob)
+	($var-init,,char *xyzzy,,"off")
+
+	extern bool waldo( void );
+	($extern-c-end)
+
+	($inline) int qux( int a, b ) { return (( a > b ) ? a : b ); }
+
+	($h-end)
+)
+
+($macro h-begin (name)
+($set h-name ($upper ($name)))
+#ifndef ($h-name)_H
+#define ($h-name)_H
+
+#ifdef  ($h-name)_IMPLEMENT
+#define ($h-name)_VAR( decl ) \
+	decl
+#define ($h-name)_VAR_INIT( decl, ... ) \
+	decl = __VA_ARGS__
+
+#define ($h-name)_INL
+
+#else  /* ($h-name)_IMPLEMENT */
+#define ($h-name)_VAR( decl ) \
+	extern decl
+#define ($h-name)_VAR_INIT( decl, ... ) \
+	extern decl
+
+#if __GNUC__ && !__GNUC_STDC_INLINE__
+#define ($h-name)_INL \
+	extern inline
+#else
+#define ($h-name)_INL \
+	inline
+#endif
+
+#endif /* ($h-name)_IMPLEMENT */
+)
+
+($macro h-end ()
+#undef ($h-name)_VAR
+#undef ($h-name)_VAR_INIT
+#undef ($h-name)_INL
+#endif
+)
+
+($macro h-begin-named ()
+($set h-name ($__MODULE_NAME__))
+($h-begin ($__MODULE_NAME__))
+)
+
+($macro implement (name)
+#define ($upper ($name))_IMPLEMENT
+)
+
+($macro implement-named ()($implement ($__MODULE_NAME__)))
+
+($macro extern-c-begin ()
+#ifdef __cplusplus
+extern "C" {
+#endif
+)
+
+($macro extern-c-end ()
+#ifdef __cplusplus
+}
+#endif
+)
+
+($macro var ( dec )($h-name)_VAR( ($dec) );)
+($macro var-init ( dec init )($h-name)_VAR_INIT( ($dec), ($init) );)
+($macro inline ()($h-name)_INL)

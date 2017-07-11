@@ -1,0 +1,10 @@
+($!
+	($set hlib-light 0) to use full version of storage classes macros,
+	($set hlib-light 1) to use light version of storage classes macros.
+)
+
+($import h-light)
+
+($skip-if ($0 ? ($isatom hlib-light) | hlib-light))
+
+($import h)
