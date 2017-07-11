@@ -1,4 +1,5 @@
 ($!
+	($set hlib-light 0)
 	($import h)
 	($h-begin-named)
 
@@ -8,14 +9,15 @@
 
 	($var,,bool plugh)
 	($var-init,,short fred[ 3 ],,{ 7, 11, 13 })
+
 	($var-c,,float flob)
 	($var-c-init,,char *xyzzy,,"off")
 
-	($inline) int qux( int a, b ) { return (( a > b ) ? a : b ); }
-
 	($extern-c-begin)
-	bool waldo( void );
+	($extern) bool waldo( void );
 	($extern-c-end)
+
+	($inline) int qux( int a, b ) { return (( a > b ) ? a : b ); }
 
 	($h-end)
 )
@@ -58,7 +60,6 @@
 #define ($h-name)_INL
 
 #else  /* ($h-name)_IMPLEMENT */
-
 #define ($h-name)_EXT \
 	extern
 #define ($h-name)_INIT( ... )
