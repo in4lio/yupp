@@ -304,26 +304,30 @@ See also - [coro.yu-py](../eg/coro.yu-py)
 
 ## Header Files Helper ([h.yu](./h.yu))
 
+Set of macros for declaration of variables and functions with various storage classes.
+
+`($set hlib-light 0)` to use full version of storage classes macros,<br>
+`($set hlib-light 1)` to use light version of storage classes macros.
+
 For example, `module.yu-h`:
 
 ```cpp
-($import h)
+($set hlib-light 1)
+($import stdlib)
+($import hlib)
 ($h-begin-named)
-
-($extern) void foo( char *a );
-($extern) char *bar ($init,,"The Blind Beggar");
-($extern-c) int corge( double val );
 
 ($var,,bool plugh)
 ($var-init,,short fred[ 3 ],,{ 7, 11, 13 })
-($var-c,,float flob)
-($var-c-init,,char *xyzzy,,"off")
-
-($inline) int qux( int a, b ) { return (( a > b ) ? a : b ); }
 
 ($extern-c-begin)
-bool waldo( void );
+($var,,float flob)
+($var-init,,char *xyzzy,,"off")
+
+extern bool waldo( void );
 ($extern-c-end)
+
+($inline) int qux( int a, b ) { return (( a > b ) ? a : b ); }
 
 ($h-end)
 ```
@@ -335,67 +339,18 @@ will be translated into `module.h`:
 #define MODULE_H
 
 #ifdef  MODULE_IMPLEMENT
-#define MODULE_EXT
-#define MODULE_INIT( ... ) \
-	= __VA_ARGS__
-
-#ifdef __cplusplus
-#define MODULE_EXT_C \
-	extern "C"
-#else
-#define MODULE_EXT_C \
-	extern
-#endif
-
 #define MODULE_VAR( decl ) \
 	decl
 #define MODULE_VAR_INIT( decl, ... ) \
 	decl = __VA_ARGS__
-
-#ifdef __cplusplus
-#define MODULE_VAR_C( decl ) \
-	extern "C" decl; decl
-#define MODULE_VAR_C_INIT( decl, ... ) \
-	extern "C" decl; decl = __VA_ARGS__
-#else
-#define MODULE_VAR_C( decl ) \
-	decl
-#define MODULE_VAR_C_INIT( decl, ... ) \
-	decl = __VA_ARGS__
-#endif
 
 #define MODULE_INL
 
 #else  /* MODULE_IMPLEMENT */
-
-#define MODULE_EXT \
-	extern
-#define MODULE_INIT( ... )
-
-#ifdef __cplusplus
-#define MODULE_EXT_C \
-	extern "C"
-#else
-#define MODULE_EXT_C \
-	extern
-#endif
-
 #define MODULE_VAR( decl ) \
 	extern decl
 #define MODULE_VAR_INIT( decl, ... ) \
 	extern decl
-
-#ifdef __cplusplus
-#define MODULE_VAR_C( decl ) \
-	extern "C" decl
-#define MODULE_VAR_C_INIT( decl, ... ) \
-	extern "C" decl
-#else
-#define MODULE_VAR_C( decl ) \
-	extern decl
-#define MODULE_VAR_C_INIT( decl, ... ) \
-	extern decl
-#endif
 
 #if __GNUC__ && !__GNUC_STDC_INLINE__
 #define MODULE_INL \
@@ -407,34 +362,26 @@ will be translated into `module.h`:
 
 #endif /* MODULE_IMPLEMENT */
 
-MODULE_EXT void foo( char *a );
-MODULE_EXT char *bar MODULE_INIT( "The Blind Beggar" );
-MODULE_EXT_C int corge( double val );
-
 MODULE_VAR( bool plugh );
 MODULE_VAR_INIT( short fred[ 3 ], { 7, 11, 13 } );
-MODULE_VAR_C( float flob );
-MODULE_VAR_C_INIT( char *xyzzy, "off" );
-
-MODULE_INL int qux( int a, b ) { return (( a > b ) ? a : b ); }
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-bool waldo( void );
+MODULE_VAR( float flob );
+MODULE_VAR_INIT( char *xyzzy, "off" );
+
+extern bool waldo( void );
 
 #ifdef __cplusplus
 }
 #endif
 
-#undef MODULE_EXT
-#undef MODULE_INIT
-#undef MODULE_EXT_C
+MODULE_INL int qux( int a, b ) { return (( a > b ) ? a : b ); }
+
 #undef MODULE_VAR
 #undef MODULE_VAR_INIT
-#undef MODULE_VAR_C
-#undef MODULE_VAR_C_INIT
 #undef MODULE_INL
 #endif
 ```
@@ -442,17 +389,10 @@ bool waldo( void );
 And `module.yu-c`:
 
 ```cpp
-($import h)
+($set hlib-light 1)
+($import stdlib)
+($import hlib)
 ($implement-named)
-
-void foo( char *a )
-{
-}
-
-int corge( double val )
-{
-	return ( -1 );
-}
 
 bool waldo( void )
 {
@@ -460,19 +400,10 @@ bool waldo( void )
 }
 ```
 
-will spawn `module.c`:
+will be translated into `module.c`:
 
 ```cpp
 #define MODULE_IMPLEMENT
-
-void foo( char *a )
-{
-}
-
-int corge( double val )
-{
-	return ( -1 );
-}
 
 bool waldo( void )
 {
