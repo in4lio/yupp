@@ -5,6 +5,6 @@
 
 ($import h-light)
 
-($skip-if ($0 ? ($isatom hlib-light) | hlib-light))
+($skip ? ($0 ? ($isatom hlib-light) | hlib-light))
 
 ($import h)

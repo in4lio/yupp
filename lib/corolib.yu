@@ -5,6 +5,6 @@
 
 ($import coroutine)
 
-($skip-if-not ($0 ? ($isatom corolib-use-c-macro) | corolib-use-c-macro))
+($skip ? ($not ($0 ? ($isatom corolib-use-c-macro) | corolib-use-c-macro)))
 
 ($import coroutine-h)

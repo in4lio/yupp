@@ -1,6 +1,5 @@
 ($!
 	($set hlib-light 1)
-	($import stdlib)
 	($import hlib)
 	($h-begin-named)
 

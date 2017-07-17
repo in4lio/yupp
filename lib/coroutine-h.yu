@@ -30,8 +30,6 @@
 	}
 )
 
-($import stdlib)
-
 ($macro coro-h ()#include "coroutine.h")
 
 ($macro coro-context (name) CORO_CONTEXT( ($name) ))
