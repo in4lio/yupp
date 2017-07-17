@@ -1,6 +1,7 @@
 ($!
 	($set hlib-light 0)
-	($import h)
+	($import stdlib)
+	($import hlib)
 	($h-begin-named)
 
 	($extern) void foo( char *a );

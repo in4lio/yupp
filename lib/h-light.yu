@@ -1,6 +1,7 @@
 ($!
 	($set hlib-light 1)
-	($import h)
+	($import stdlib)
+	($import hlib)
 	($h-begin-named)
 
 	($var,,bool plugh)
