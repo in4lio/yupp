@@ -313,7 +313,6 @@ For example, `module.yu-h`:
 
 ```cpp
 ($set hlib-light 1)
-($import stdlib)
 ($import hlib)
 ($h-begin-named)
 
@@ -389,8 +388,6 @@ MODULE_INL int qux( int a, b ) { return (( a > b ) ? a : b ); }
 And `module.yu-c`:
 
 ```cpp
-($set hlib-light 1)
-($import stdlib)
 ($import hlib)
 ($implement-named)
 
