@@ -385,7 +385,7 @@ MODULE_INL int qux( int a, b ) { return (( a > b ) ? a : b ); }
 #endif
 ```
 
-And `module.yu-c`:
+in a couple with `module.yu-c`:
 
 ```cpp
 ($import hlib)
@@ -397,7 +397,7 @@ bool waldo( void )
 }
 ```
 
-will be translated into `module.c`:
+which will be translated into `module.c`:
 
 ```cpp
 #define MODULE_IMPLEMENT
