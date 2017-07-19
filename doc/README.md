@@ -185,7 +185,7 @@ A string evaluation – `($$<string> <arguments>)`:
     25
 
 An iterator (modifier) – `($emit <atom> <function>)` – NOT applicable
-into a loop or a conditional expression – **experimental** :
+into a loop or a conditional expression – **experimental**:
 
     ($set i 0)
     ($emit i inc) ($emit i inc) ($emit i dec) ($emit i)

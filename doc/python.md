@@ -45,5 +45,6 @@ Here is a small example of using macros in Python code:
 
     print ($reversed greeting)
 
+To be continued...
 
 [yupp Wiki](https://github.com/in4lio/yupp/wiki/)
