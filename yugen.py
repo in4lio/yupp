@@ -903,7 +903,7 @@ def echo__ps_( fn ):
 #   ---------------------------------------------------------------------------
 def yuparse( input_file ):
     """
-    source ::= { coding_py } text EOF;
+    source ::= { PYTHON_CODE & header_python } text EOF;
     """
 #   ---------------
     source = yushell.source[ input_file ][ 1 ]
@@ -912,19 +912,18 @@ def yuparse( input_file ):
 
     sou = SOURCE( source, input_file )
     try:
-        if ( yushell.input_file == input_file ) and yushell.output_py:
-#   ---- { coding_py }
-            ( sou, coding ) = ps_coding_py( sou, 0 )
-        else:
-            coding = None
+#   ---- { PYTHON_CODE & header_python }
+        header = None
+        if ( yushell.input_file == input_file ) and yushell.output_python:
+            ( sou, header ) = ps_header_python( sou, 0 )
 
 #   ---- text
         text = ps_text( sou, 0 )
         while sou:
             ( sou, ast ) = text.next()
 
-        if coding is not None:
-            ast.extend_text( 0, coding )
+        if header is not None:
+            ast.extend_text( 0, header )
 
         return ast
 
@@ -950,7 +949,8 @@ def ps_text( sou, depth = 0 ):
         | comment
         | application
         | quote
-        | remark_(c|py)
+        | C_CODE & remark_c
+        | PYTHON_CODE & remark_python
         | YIELD
         | plain
     }0...;
@@ -1007,8 +1007,8 @@ def ps_text( sou, depth = 0 ):
                 ast.append( leg )
                 continue
         elif yushell.pp_skip_comments == PP_SKIP_PYTHON_COMMENTS:
-#   ---- remark_py
-            ( sou, leg ) = ps_remark_py( sou, depth + 1 )
+#   ---- remark_python
+            ( sou, leg ) = ps_remark_python( sou, depth + 1 )
             if leg is not None:
                 ast.append( leg )
                 continue
@@ -1406,9 +1406,9 @@ def ps_remark_c( sou, depth = 0 ):
 
 #   ---------------------------------------------------------------------------
 @echo__ps_
-def ps_remark_py( sou, depth = 0 ):
+def ps_remark_python( sou, depth = 0 ):
     """
-    remark_py ::= '#' { ANY YIELD }0... >> EOL <<;
+    remark_python ::= '#' { ANY YIELD }0... >> EOL <<;
     """
 #   ---------------
     del depth
@@ -1428,18 +1428,20 @@ def ps_remark_py( sou, depth = 0 ):
 
 #   ---------------------------------------------------------------------------
 @echo__ps_
-def ps_coding_py( sou, depth = 0 ):
+def ps_header_python( sou, depth = 0 ):
     """
-    coding_py ::= { EOL } remark_py & ( 'coding' + [ ':', '=' ] 'yupp' + { '.' + encoding } );
-    encoding ::= name;
+    header_python ::= coding_remark | { NEOL }0... EOL coding_remark;
+    coding_remark ::= '#' { NEOL YIELD }0... >> 'coding' + [ ':', '=' ] 'yupp' + { '.' + coding } << { NEOL }0... EOL;
+    NEOL ::= ANY - EOL;
+    coding ::= name;
     """
 #   ---------------
 #   ---- { EOL }
     ( rest, _ ) = ps_space( sou, depth + 1 )
     ( rest, eol ) = ps_eol( rest, depth + 1 )
     ( rest, _ ) = ps_space( rest, depth + 1 )
-#   ---- remark_py
-    ( rest, leg ) = ps_remark_py( rest, depth + 1 )
+#   ---- remark_python
+    ( rest, leg ) = ps_remark_python( rest, depth + 1 )
     if leg is not None:
 #   ---- ( 'coding:' 'yupp' { '.' encoding } )
         mch = re_CODING.search( str( leg ))
@@ -2001,9 +2003,9 @@ def ps_quote( sou, depth = 0 ):
         | ( '($quote' | '(`' ) plain ')' & ($eq depth_pth 0);
     """
 #   ---------------
-    if yushell.output_py:
+    if yushell.output_python:
 #   ---- Python string
-        ( sou, leg ) = ps_string_py( sou, depth + 1 )
+        ( sou, leg ) = ps_string_python( sou, depth + 1 )
         if leg is not None:
             return ( sou, leg )
 
@@ -2046,19 +2048,19 @@ def _getline( st, _from = 0 ):
 
 #   ---------------------------------------------------------------------------
 @echo__ps_
-def ps_string_py( sou, depth = 0 ):
+def ps_string_python( sou, depth = 0 ):
     del depth
     #   -- the first line
     ln_start, ln_end = _getline( sou )
     ln = sou[ ln_start:ln_end ]
 #   -- look for head
-    mch_head = ps_string_py.re_STR_HEAD.match( ln )
+    mch_head = ps_string_python.re_STR_HEAD.match( ln )
     if mch_head:
         p = mch_head.end()
         head = ln[ :p ]
-        if mch_head.group( ps_string_py.group_3x ) is not None:
+        if mch_head.group( ps_string_python.group_3x ) is not None:
 #           -- head of ''' or """ string
-            re_tail = ps_string_py.re_STR_3x1_TAIL if "'" in head else ps_string_py.re_STR_3x2_TAIL
+            re_tail = ps_string_python.re_STR_3x1_TAIL if "'" in head else ps_string_python.re_STR_3x2_TAIL
 #           -- look for tail
             mch_tail = re_tail.match( ln, p )
             if mch_tail:
@@ -2075,7 +2077,7 @@ def ps_string_py( sou, depth = 0 ):
                 return ( sou[ p: ], STR( sou[ :p ]))
 
 #           -- tail on other line
-            re_tail = ps_string_py.re_STR_1x1_TAIL if "'" in head else ps_string_py.re_STR_1x2_TAIL
+            re_tail = ps_string_python.re_STR_1x1_TAIL if "'" in head else ps_string_python.re_STR_1x2_TAIL
             _1x = True
     else:
         return ( sou, None )
@@ -2102,7 +2104,7 @@ def ps_string_py( sou, depth = 0 ):
         sou_p += len( ln )
 
 # -- regexes will be initialized in the yuinit(), if required
-ps_string_py.initialized = False
+ps_string_python.initialized = False
 
 #   ---------------------------------------------------------------------------
 @echo__ps_
@@ -2605,7 +2607,7 @@ def yushell( text, _input = None, _output = None ):
     yushell.input_file = os.path.basename( _input ) if _input else '<stdin>'
     yushell.output_file = os.path.basename( _output ) if _output else '<stdout>'
 #   -- output file is in Python
-    yushell.output_py = os.path.splitext( yushell.output_file )[ 1 ].lower() == E_PY
+    yushell.output_python = os.path.splitext( yushell.output_file )[ 1 ].lower() == E_PY
     yushell.source = { SOURCE_EMPTY: ( '', '' ), yushell.input_file: ( _input, _unify_eol( text ))}
     yushell.script = []
     yushell.inclusion = []
@@ -2626,7 +2628,7 @@ def yushell( text, _input = None, _output = None ):
 #   -- to skip comments we have to parse them
     yushell.pp_skip_comments = config.pp_skip_comments
     if yushell.pp_skip_comments == PP_SKIP_COMMENTS_AUTO:
-        yushell.pp_skip_comments = PP_SKIP_PYTHON_COMMENTS if yushell.output_py else PP_SKIP_C_COMMENTS
+        yushell.pp_skip_comments = PP_SKIP_PYTHON_COMMENTS if yushell.output_python else PP_SKIP_C_COMMENTS
 #   -- the number of deleted lines at the beginning (Python)
     yushell.shrink = 0
 
@@ -2634,7 +2636,7 @@ _title_template_c = r"""/*  %(output)s was generated by %(app)s %(version)s
     out of %(input)s %(datetime)s
  */"""
 
-_title_template_py = """#  %(output)s was generated by %(app)s %(version)s
+_title_template_python = """#  %(output)s was generated by %(app)s %(version)s
 #  out of %(input)s %(datetime)s"""
 
 builtin = dict()
@@ -2645,7 +2647,7 @@ builtin.update({
     '__FILE__': lambda : '"%s"' % yushell.input_file,
     '__OUTPUT_FILE__': lambda : '"%s"' % yushell.output_file,
     '__MODULE_NAME__': lambda : ATOM( yushell.module ),
-    '__TITLE__': lambda dt=True : PLAIN(( _title_template_py if yushell.output_py else _title_template_c ) % {
+    '__TITLE__': lambda dt=True : PLAIN(( _title_template_python if yushell.output_python else _title_template_c ) % {
       'app': APP, 'version': VERSION
     , 'input': yushell.input_file, 'output': yushell.output_file
     , 'datetime': 'at ' + datetime.datetime.now().strftime( '%Y-%m-%d %H:%M' ) if dt else ''
@@ -3586,11 +3588,11 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 def yuinit():
     RESULT.clean()
 
-    if yushell.output_py and not ps_string_py.initialized:
-#       -- initialize regexes for ps_string_py()
-        ps_string_py.initialized = True
+    if yushell.output_python and not ps_string_python.initialized:
+#       -- initialize regexes for ps_string_python()
+        ps_string_python.initialized = True
 #       -- head of any string
-        ps_string_py.re_STR_HEAD = re.compile( r"""
+        ps_string_python.re_STR_HEAD = re.compile( r"""
         ^[uU]?[rR]?(?:
             ( '''
             | \"\"\"
@@ -3600,15 +3602,15 @@ def yuinit():
             )
         )
         """, re.VERBOSE )
-        ps_string_py.group_3x = 1
+        ps_string_python.group_3x = 1
 #       -- tail of ' string
-        ps_string_py.re_STR_1x1_TAIL = re.compile( r"[^'\\]*(?:\\.[^'\\]*)*'" )
+        ps_string_python.re_STR_1x1_TAIL = re.compile( r"[^'\\]*(?:\\.[^'\\]*)*'" )
 #       -- tail of " string
-        ps_string_py.re_STR_1x2_TAIL = re.compile( r'[^"\\]*(?:\\.[^"\\]*)*"' )
+        ps_string_python.re_STR_1x2_TAIL = re.compile( r'[^"\\]*(?:\\.[^"\\]*)*"' )
 #       -- tail of ''' string
-        ps_string_py.re_STR_3x1_TAIL = re.compile( r"[^'\\]*(?:(?:\\.|'(?!''))[^'\\]*)*'''" )
+        ps_string_python.re_STR_3x1_TAIL = re.compile( r"[^'\\]*(?:(?:\\.|'(?!''))[^'\\]*)*'''" )
 #       --  tail of """ string
-        ps_string_py.re_STR_3x2_TAIL = re.compile( r'[^"\\]*(?:(?:\\.|"(?!""))[^"\\]*)*"""' )
+        ps_string_python.re_STR_3x2_TAIL = re.compile( r'[^"\\]*(?:(?:\\.|"(?!""))[^"\\]*)*"""' )
 
 
 #   * * * * * * * * * * * * * * * * * *
