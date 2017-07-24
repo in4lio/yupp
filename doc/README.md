@@ -268,6 +268,8 @@ the evaluation result will be saved as _".ast"_ file.
 
 ### EXAMPLE
 
+Display the original source code:
+
     >cd yupp
     >more "./eg/hello.yu-c"
 
@@ -301,9 +303,12 @@ int main( void )
 }
 ```
 
+Run the preprocessor with the source file name as a parameter and `-q` for
+suppressing the greeting showing.
+
     >python yup.py -q "./eg/hello.yu-c"
 
-The `-q` parameter suppresses the greeting showing.
+Display the generated source code:
 
     >more "./eg/hello.c"
 
