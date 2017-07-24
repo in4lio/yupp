@@ -303,6 +303,8 @@ int main( void )
 
     >python yup.py -q "./eg/hello.yu-c"
 
+The `-q` parameter suppresses the greeting showing.
+
     >more "./eg/hello.c"
 
 ```cpp
