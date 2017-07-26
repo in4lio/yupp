@@ -282,6 +282,9 @@
     ___         __________________________________
     ___ EXAMPLE __________________________________
 
+    At first, we would like to display the original source code of an example
+    in terminal:
+
     >cd yupp
     >more "./eg/hello.yu-c"
 
@@ -313,7 +316,12 @@
             return ( 0 );
         }
 
+    Then we will run the preprocessor with the source file name as a parameter
+    and "-q" for suppressing the greeting showing:
+
     >python yup.py -q "./eg/hello.yu-c"
+
+    At last, we wish to see the generated source code:
 
     >more "./eg/hello.c"
 
