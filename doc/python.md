@@ -1,9 +1,9 @@
 ## Macros in Python _(still in the writing process)_
 
 [**yupp**](https://github.com/in4lio/yupp/) is a lexical macro processor
-designed primarily to compensate for the lack of metaprogramming facilities
-in the C language. The idea behind **yupp** is programming of a source code
-transformation in the functional style.
+designed primarily to make up for the poor metaprogramming facilities of
+the C language. The basic idea behind **yupp** is programming of a source
+code transformation in the functional style.
 
 If a given task fits well into the metaprogramming paradigm, **yupp** able
 to replace the C preprocessor, offering us more options, or even can act as
