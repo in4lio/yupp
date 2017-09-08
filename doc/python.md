@@ -5,11 +5,12 @@ designed primarily to make up for the poor metaprogramming facilities of
 the C language. The basic idea behind **yupp** is programming of a source
 code transformation in the functional style.
 
-If a given task fits well into the metaprogramming paradigm, **yupp** able
-to replace the C preprocessor, offering us more options, or even can act as
-a viable alternative to the C++ templates. As well, **yupp** can be used with
-Python, since [PEP 263](https://www.python.org/dev/peps/pep-0263/) shows us
-the way to modify any source file before calling Python’s internal parser.
+If a given task fits in well with the metaprogramming paradigm, **yupp** not
+only able to replace the C preprocessor, offering us more options, but also
+can serve as a fully viable alternative to the C++ templates. As well,
+**yupp** can be used with Python, since 
+[PEP 263](https://www.python.org/dev/peps/pep-0263/) shows us the way to
+modify any source file before calling Python’s internal parser.
 
 You have to install [yupp package](https://pypi.python.org/pypi/yupp/)
 to use the macro processor with Python:
