@@ -125,6 +125,11 @@ setup(
         only_in_packages=False
     ),
     data_files=[(get_python_lib().split( sys.prefix + os.sep )[ 1 ], ["yupp.pth"])],
+    entry_points={
+        'console_scripts': [
+            'yupp = yupp.__main__:main'
+        ]
+    },
     classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Console",
