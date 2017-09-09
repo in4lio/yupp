@@ -85,7 +85,7 @@ SYSTEM_EXIT_HELP = 'Moreover, you can pass the arguments through a response file
 ' or zero in case of successful execution.'
 
 #   ---------------------------------------------------------------------------
-def shell_parse_cli_args():
+def shell_parse_cli_arguments( argv ):
     argp = ArgumentParser(
       description = 'yupp, %(description)s' % { 'description': DESCRIPTION }
     , version = '%(app)s %(version)s' % { 'app': APP, 'version': VERSION }
@@ -139,10 +139,10 @@ def shell_parse_cli_args():
     , pp_browse = PP_BROWSE
     , warn_unbound_application = WARN_UNBOUND_APPLICATION
     )
-    if ( len( sys.argv ) == 2 ) and sys.argv[ 1 ].startswith( '@' ):
+    if ( len( argv ) == 2 ) and argv[ 1 ].startswith( '@' ):
 #       -- get arguments from response file
         try:
-            with open( sys.argv[ 1 ][ 1: ], 'r' ) as f:
+            with open( argv[ 1 ][ 1: ], 'r' ) as f:
                 return argp.parse_args( f.read().split())
 
         except IOError as e:
@@ -519,8 +519,8 @@ def proc_file( fn ):
     return ( ok, fn_o )
 
 #   ---------------------------------------------------------------------------
-if __name__ == '__main__':
-    args = shell_parse_cli_args()
+def main( argv ):
+    args = shell_parse_cli_arguments( argv )
     if not args.files:
         args.pp_browse = False
     _pp_configure( args.__dict__ )
@@ -562,3 +562,7 @@ if __name__ == '__main__':
             else:
                 test += line + '\n'
         sys.exit( 0 )
+
+#   ---------------------------------------------------------------------------
+if __name__ == '__main__':
+    main( sys.argv )
