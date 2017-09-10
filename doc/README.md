@@ -357,7 +357,7 @@ starting your script with:
 
     # coding: yupp
 
-In addition, this package allows you to call **yupp** preprocessor from
+In addition, this package allows us to call **yupp** preprocessor from
 the command-line just by its name:
 
     yupp "file.yu-c"
