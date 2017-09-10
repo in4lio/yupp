@@ -259,7 +259,7 @@ example:
 
     python yup.py "./eg/hello.yu-c"
 
-However, if [yupp package](https://pypi.python.org/pypi/yupp/) is installed,
+In case [yupp package](https://pypi.python.org/pypi/yupp/) is installed,
 you can simply write:
 
     yupp "./eg/hello.yu-c"
