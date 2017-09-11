@@ -11,15 +11,32 @@
 **yupp** is a lexical preprocessor for C/C++, Python and
 `<you name it>` languages.
 
-[READ MORE...](doc/README.md)
+[Read more...](doc/README.md)
 
 ### HELLO WORLD
 
-![screenshot](doc/pic/hello_c.png)
+```
+#include <stdio.h>
+
+($set greeting "Hello ($0)!\n")
+
+int main( void )
+{
+    printf( ($greeting (`world)) );
+    return ( 0 );
+}
+```
 
 ### HELLO IN PYTHON
 
-![screenshot](doc/pic/hello_py.png)
+```
+# coding: yupp
+
+($set greeting '!dlrow olleH')
+
+if __name__ == '__main__':
+    print ($reversed greeting)
+```
 
 ### LICENSE
 
