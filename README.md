@@ -1,10 +1,11 @@
-![screenshot](doc/pic/logo.png)
+[![logo](doc/pic/logo.png)](README.md)
 
 ### VERSION
 
 ```
 yupp        1.0c3
             2017-09-09
+
 python      2.7
 ```
 

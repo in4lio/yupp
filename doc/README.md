@@ -1,4 +1,4 @@
-![screenshot](pic/logo.png)
+[![logo](pic/logo.png)](README.md)
 
 ### WHAT IS IT?
 

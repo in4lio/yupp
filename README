@@ -12,6 +12,7 @@
 
     yup.py      1.0c3
                 2017-09-09
+
     python      2.7
 
     ___             ______________________________
@@ -44,7 +45,8 @@
 
     ($set greeting '!dlrow olleH')
 
-    print ($reversed greeting)
+    if __name__ == '__main__':
+        print ($reversed greeting)
 
     ___         __________________________________
     ___ LICENSE __________________________________
