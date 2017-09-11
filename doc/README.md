@@ -341,7 +341,7 @@ int main( void )
 }
 ```
 
-[Further examples...](https://github.com/in4lio/yupp/tree/master/eg/)
+[Further examples...](../../../tree/master/eg/)
 
 ### MACROS IN PYTHON
 
