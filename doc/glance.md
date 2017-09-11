@@ -29,7 +29,7 @@ for example a function of decrement could be defined as `($set dec \val.($sub va
 Our example begins with importing of [__yupp__ Standard Library](../lib/README.md) using
 __the import form__ – `($import <file>)`.
 
-![screenshot](pic/glance_01.png)
+![dict definition](pic/glance_01.png)
 
 In particular, [_"stdlib.yu"_](../lib/stdlib.yu) contains __the dict macro__ which allows to
 define a bunch of lists at once, that makes it easy to generate repeating code structures by
@@ -51,7 +51,7 @@ argument is a list, retrieves an element of that list, e.g. `($2 (o o x o))`.
 Unbound atoms (identifiers) from `INI` dictionary (`QString`, `Pi` etc.) will be processed
 like quotes.
 
-![screenshot](pic/glance_02.png)
+![dict unwinding](pic/glance_02.png)
 
 The above snippet generates the following code:
 
@@ -78,7 +78,7 @@ which will be evaluated if the condition evaluates to zero or empty list `()` or
 `[]` or empty quote ```(`)```, and __a consequent__ – an expression that will be evaluated
 for other values of the condition – ```<consequent> ? <condition> | <alternative>```.
 
-![screenshot](pic/glance_03.png)
+![dict unwinding](pic/glance_03.png)
 
 The above functions after the macro-expansion:
 
@@ -114,7 +114,7 @@ field in the string contains a number, this field will be replaced with the posi
 argument, but if this field contains an atom, it will be replaced with the named
 argument, e.g. ```($ "Lock, ($1) and ($p) Smoking ($0)" Barrels Stock \p 2)```.
 
-![screenshot](pic/glance_04.png)
+![dict unwinding](pic/glance_04.png)
 
 The foregoing snippet results in:
 

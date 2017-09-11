@@ -47,7 +47,7 @@ repeating code structures by a dictionary.
 
 For example:
 
-![screenshot](../doc/pic/library_01.png)
+![dict definition](../doc/pic/library_01.png)
 
 The foregoing application of `dict` macro corresponds to:
 
@@ -60,7 +60,7 @@ The foregoing application of `dict` macro corresponds to:
 
 The application of `each-INI` spawns cycle from 0 to 3.
 
-![screenshot](../doc/pic/library_02.png)
+![dict unwinding](../doc/pic/library_02.png)
 
 This snippet generates the following code:
 
