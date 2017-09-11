@@ -2,9 +2,11 @@
 
 ### VERSION
 
-    yupp        1.0c3
-                2017-09-09
-    python      2.7
+```
+yupp        1.0c3
+            2017-09-09
+python      2.7
+```
 
 ### WHAT IS IT?
 
