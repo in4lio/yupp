@@ -1,4 +1,6 @@
-## Table of Contents
+## **yupp** Libraries
+
+### Table of Contents
 
 <!-- MarkdownTOC autolink="true" bracket="round" depth=0 style="unordered" autoanchor="false" -->
 
@@ -22,7 +24,7 @@
 
 <!-- /MarkdownTOC -->
 
-## Standard Library ([stdlib.yu](./stdlib.yu))
+### Standard Library ([stdlib.yu](./stdlib.yu))
 
 ```
 ($import stdlib)
@@ -224,7 +226,7 @@ int sumi( int argcnt, ... )
 Minimal and maximal values of `int32_t`.
 
 
-## Coroutines in C ([corolib.yu](./corolib.yu))
+### Coroutines in C ([corolib.yu](./corolib.yu))
 
 Coroutine mechanics, implemented using the C language extensions "Labels as Values",
 "Statements and Declarations in Expressions" (only in [coroutine.h](./coroutine.h))
@@ -270,7 +272,7 @@ int main( void )
 See also - [ulam.yu-c](../eg/ulam.yu-c)
 
 
-## Coroutines in Python ([coroutine-py.yu](./coroutine-py.yu))
+### Coroutines in Python ([coroutine-py.yu](./coroutine-py.yu))
 
 Coroutine mechanics, implemented using generators.
 
@@ -302,7 +304,7 @@ if __name__ == '__main__':
 See also - [coro.yu-py](../eg/coro.yu-py)
 
 
-## Header Files Helper ([h.yu](./h.yu))
+### Header Files Helper ([h.yu](./h.yu))
 
 Set of macros for declaration of variables and functions with various storage classes.
 
