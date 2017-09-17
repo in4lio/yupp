@@ -1,4 +1,4 @@
-#### Sublime Text 2
+## **yupp** and Sublime Text 2
 
 This folder contains a "navigational" plugin and configuration files for Sublime Text 2 editor.
 The plugin allows to switch between the generated text and its origin.

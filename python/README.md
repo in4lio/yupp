@@ -1,6 +1,6 @@
 ## **yupp** Python Package
 
-### How to start using `yupp` with Python 2
+### How to start using **yupp** with Python 2
 
 `1.` Install Python package:
 
