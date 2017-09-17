@@ -248,7 +248,7 @@ Standard Library can be used in preprocessor expressions –
 [Built-in Functions](builtin.md).
 
 The special `($import <expr>)` form is provided to include macros and
-functions from [yupp Standard Library](../../../blob/master/lib/README.md)
+functions from [yupp Standard Library](../lib/README.md)
 or other libraries.
 
 ### USAGE
@@ -341,7 +341,7 @@ int main( void )
 }
 ```
 
-[Further examples...](../../../tree/master/eg/)
+[Further examples...](../eg/)
 
 ### MACROS IN PYTHON
 
@@ -362,11 +362,11 @@ the command-line just by its name:
 
     yupp "file.yu-c"
 
-[Read more...](../../../blob/master/doc/python.md)
+[Read more...](python.md)
 
 ### SUBLIME TEXT
 
-The folder [_"sublime_text"_](../../../tree/master/sublime_text/) contains
+The folder [_"sublime_text"_](../sublime_text/) contains
 configuration files for comfortable
 usage of the preprocessor in Sublime Text 2 editor. In addition there is
 a plugin for quick navigation between the generated text and its origin.
@@ -379,7 +379,7 @@ Switching between the generated text and its origin in VIM editor is
 ### TESTKIT
 
 **yupp** is currently in beta stage. The file called
-[_"test_yup.py"_](../../../blob/master/test_yup.py) contains
+[_"test_yup.py"_](../test_yup.py) contains
 a number of _smoke_ tests.
 
 The preprocessor still needs testing and optimization. Also you may run

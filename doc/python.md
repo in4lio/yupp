@@ -8,7 +8,7 @@ code transformation in the functional style.
 If a given task fits in well with the metaprogramming paradigm, **yupp** not
 only able to replace the C preprocessor, offering us more options, but also
 can serve as a fully viable alternative to the C++ templates. As well,
-**yupp** can be used with Python, since 
+**yupp** can be used with Python, since
 [PEP 263](https://www.python.org/dev/peps/pep-0263/) shows us the way to
 modify any source file before calling Python’s internal parser.
 
@@ -34,9 +34,9 @@ be executed directly.
 
 The macro processor gets various options from configuration files. Options
 for all files of a directory should be specified in
-[_".yuconfig"_](../../../blob/master/eg/.yuconfig) file, whereas individual
+[_".yuconfig"_](../eg/.yuconfig) file, whereas individual
 options for a single file in
-[_"file.yuconfig"_](../../../blob/master/eg/dict.yuconfig).
+[_"file.yuconfig"_](../eg/dict.yuconfig).
 
 Here is a small example of using macros in Python code:
 
