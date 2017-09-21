@@ -358,8 +358,8 @@ the command-line interface:
     ___                   ________________________
     ___ MACROS IN PYTHON  ________________________
 
-    You have to install "yupp" package to use the macro processor with
-    Python 2:
+    You need to install "yupp" package in order to use the macro processor
+    with Python 2:
 
         pip install yupp
 
@@ -419,7 +419,7 @@ the command-line interface:
     ___          _________________________________
     ___ PROJECTS _________________________________
 
-    o   LEGO Mindstorms EV3 Debian C library:
+    o   LEGO MINDSTORMS EV3 Debian C library:
         https://github.com/in4lio/ev3dev-c/
 
     o   predict – an embedded application framework:

@@ -395,7 +395,7 @@ or experimental features.
 
 ### PROJECTS
 
-- [LEGO Mindstorms EV3 Debian C library](https://github.com/in4lio/ev3dev-c/)
+- [LEGO MINDSTORMS EV3 Debian C library](https://github.com/in4lio/ev3dev-c/)
 - [predict – an embedded application framework](https://github.com/in4lio/predict/)
 
 ### GIT
