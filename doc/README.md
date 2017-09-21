@@ -259,10 +259,11 @@ example:
 
     python yup.py "./eg/hello.yu-c"
 
-In case [yupp package](https://pypi.python.org/pypi/yupp/) is installed,
-you can simply write:
+In case [yupp package][package] is installed, you can simply write:
 
     yupp "./eg/hello.yu-c"
+
+[package]: https://pypi.python.org/pypi/yupp/
 
 To learn more about the preprocessor parameters, please get help on
 the command-line interface:
@@ -345,8 +346,8 @@ int main( void )
 
 ### MACROS IN PYTHON
 
-You have to install [yupp package](https://pypi.python.org/pypi/yupp/)
-to use the macro processor with Python 2:
+You need to install [yupp package][package] in order to use the macro
+processor with Python 2:
 
     pip install yupp
 
