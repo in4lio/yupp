@@ -25,27 +25,14 @@ The main syntactic categories of the macro language are **a list**,
 **an application** and **a lambda expression**.
 
 **A list** is a sequence of expressions separated by blanks and enclosed
-in parentheses.
-
-    <list> ::= '(' { <expr> } ')'
-
-e.g. `(0.5 "string" atom)`
+in parentheses, e.g. `(0.5 "string" atom)`.
 
 **An application** is an applying a function to arguments, it syntactically
 differs from a list in presence of the dollar sign after the open
-parenthesis.
+parenthesis, e.g. `($add 2 3)`.
 
-    <application> ::= '($' <function> { <argument> } ')'
-
-e.g. `($add 2 3)`
-
-**A lambda expression** is an anonymous function, it consists of a sequence
-of parameters and a function body.
-
-    <lambda> ::= <param> { <param> } <expr>
-    <param>  ::= '\' <atom> [ ':' <default> ] '.'
-
-e.g. `\val.($sub val 1)`
+**A lambda expression** is an anonymous function consisting of a sequence
+of parameters and a function body, e.g. `\param1.\param2.($sub param1 param2)`
 
 Syntactic forms can be nested within each other but, as mentioned above,
 only **an application** can be embedded into the source code directly.
