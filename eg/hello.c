@@ -13,5 +13,5 @@ int main( void )
 	printf( "F = %.10f\n", F );
 	printf( "Zu = %.6f\n", Zu );
 
-	return ( 0 );
+	return 0;
 }

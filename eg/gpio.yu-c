@@ -206,4 +206,5 @@ int main( void )
 		printf( ($"($0) = %d\n" ($i IN_NAME)), get_($i IN_NAME)());
 
 	[ )
+	return 0;
 }

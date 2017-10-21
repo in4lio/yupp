@@ -26,7 +26,7 @@ Python      2.7
 int main( void )
 {
     printf( ($greeting (`world)) );
-    return ( 0 );
+    return 0;
 }
 ```
 

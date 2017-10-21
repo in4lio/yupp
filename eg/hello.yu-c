@@ -22,5 +22,5 @@ int main( void )
 		printf( ($"($0) = ($1)\n" ($i name) ($unq ($i format))), ($i name) );
 
 	[ )
-	return ( 0 );
+	return 0;
 }

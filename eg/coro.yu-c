@@ -13,7 +13,7 @@ int coro_($name)( void **ip )
 	*ip = &&LC__END_($name);
 
 	LC__END_($name):
-	return ( 0 );
+	return 0;
 }
 [\set )
 
@@ -23,7 +23,7 @@ int coro_($name)( void **ip )
 do {
 	($set __label (LC__($emit __label_iter inc)))
 	*ip = &&($__label);
-	return ( 1 );
+	return 1;
 
 	($__label):;
 } while ( 0 ))
