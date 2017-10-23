@@ -32,7 +32,7 @@ in parentheses, for example:
 - **An application** is an applying a function to arguments, it syntactically
 differs from a list in presence of the dollar sign after the open
 parenthesis:
-    
+
     `($add 2 3)`
 
 - **A lambda expression** is an anonymous function consisting of a sequence
@@ -301,7 +301,7 @@ int main( void )
         printf( ($"($0) = ($1)\n" ($n) ($unq ($i format))), ($n) );
 
     [ )
-    return ( 0 );
+    return 0;
 }
 ```
 
@@ -330,7 +330,7 @@ int main( void )
     printf( "F = %.10f\n", F );
     printf( "Zu = %.6f\n", Zu );
 
-    return ( 0 );
+    return 0;
 }
 ```
 

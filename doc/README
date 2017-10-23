@@ -320,7 +320,7 @@ the command-line interface:
                 printf( ($"($0) = ($1)\n" ($n) ($unq ($i format))), ($n) );
 
             [ )
-            return ( 0 );
+            return 0;
         }
 
     Then, we run the preprocessor with the name of this file as a parameter
@@ -347,7 +347,7 @@ the command-line interface:
             printf( "F = %.10f\n", F );
             printf( "Zu = %.6f\n", Zu );
 
-            return ( 0 );
+            return 0;
         }
 
     Further examples:
