@@ -44,7 +44,7 @@ Syntactic forms can be nested within each other but, as mentioned above,
 only **an application** can be embedded into the source code directly.
 
 The following examples show various syntactic constructs of the macro
-language. You can try them using [yupp Web Console](http://yup-py.appspot.com/).
+language. You can try them using [yupp Web Console][console].
 
     ($! this is a comment, won't be saved in the generated text )
 
@@ -256,8 +256,6 @@ In case [yupp package][package] is installed, you can simply write:
 
     yupp "./eg/hello.yu-c"
 
-[package]: https://pypi.python.org/pypi/yupp/
-
 To learn more about the preprocessor parameters, please get help on
 the command-line interface:
 
@@ -367,7 +365,7 @@ a plugin for quick navigation between the generated text and its origin.
 ### VIM
 
 Switching between the generated text and its origin in VIM editor is
-[under development](https://github.com/in4lio/vim-yupp/).
+[under development][vim].
 
 ### TESTKIT
 
@@ -381,14 +379,14 @@ or experimental features.
 
 ### WEB
 
-- [yupp Wiki](https://github.com/in4lio/yupp/wiki/)
-- [yupp Blog](http://yup-py.blogspot.com/)
-- [yupp Web Console](http://yup-py.appspot.com/)
+- [yupp Wiki][wiki]
+- [yupp Blog][blog]
+- [yupp Web Console][console]
 
 ### PROJECTS
 
-- [LEGO MINDSTORMS EV3 Debian C library](https://github.com/in4lio/ev3dev-c/)
-- [predict – an embedded application framework](https://github.com/in4lio/predict/)
+- [LEGO MINDSTORMS EV3 Debian C library][ev3dev-c]
+- [predict – an embedded application framework][predict]
 
 ### GIT
 
@@ -400,3 +398,11 @@ Enter in the following on your command-line to clone **yupp** repository:
 
 Please feel free to contact me at in4lio+yupp@gmail.com if you have
 any questions about the preprocessor.
+
+[console]:  http://yup-py.appspot.com/
+[blog]:     http://yup-py.blogspot.com/
+[package]:  https://pypi.python.org/pypi/yupp/
+[wiki]:     https://github.com/in4lio/yupp/wiki/
+[vim]:      https://github.com/in4lio/vim-yupp/
+[ev3dev-c]: https://github.com/in4lio/ev3dev-c/
+[predict]:  https://github.com/in4lio/predict/

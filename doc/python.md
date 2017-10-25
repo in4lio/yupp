@@ -48,7 +48,7 @@ To be continued...
 
 [yupp Wiki][wiki]
 
-[yupp]: https://github.com/in4lio/yupp/
-[wiki]: https://github.com/in4lio/yupp/wiki/
-[package]: https://pypi.python.org/pypi/yupp/
 [pep-0263]: https://www.python.org/dev/peps/pep-0263/
+[package]:  https://pypi.python.org/pypi/yupp/
+[yupp]:     https://github.com/in4lio/yupp/
+[wiki]:     https://github.com/in4lio/yupp/wiki/
