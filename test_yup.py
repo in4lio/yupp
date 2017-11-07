@@ -741,8 +741,8 @@ def test( kit, t ):                                                             
         i += 1
         trace.stages = TR
         trace.set_current( TRACE_STAGE_PARSE )
-        TR2F = trace.enabled and trace.to_file
-        LOG = not trace.enabled or trace.to_file
+        TR2F = trace.enabled and trace.file
+        LOG = not trace.enabled or trace.file
         e = None
         try:
             print '* %d *' % ( i )
@@ -789,8 +789,8 @@ def test( kit, t ):                                                             
 
         if evaluated and e is None:
             trace.set_current( TRACE_STAGE_EVAL )
-            TR2F = trace.enabled and trace.to_file
-            LOG = not trace.enabled or trace.to_file
+            TR2F = trace.enabled and trace.file
+            LOG = not trace.enabled or trace.file
             try:
                 trace.deepest = 0
 #   ---- eval

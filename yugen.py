@@ -98,7 +98,7 @@ def _create_trace( default_stage ):
         hl = logging.StreamHandler( sys.stdout )                                                                       #pylint: disable=redefined-variable-type
 
     _trace = _create_logger( 'trace', hl, TRACE_FORMAT )
-    _trace.to_file = _to_file
+    _trace.file = fn if _to_file else None
 #   -- default trace
     _trace.stage = default_stage
     _trace.enabled = False

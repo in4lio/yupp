@@ -53,6 +53,7 @@ ___       = '.' * 79
 PROMPT    = '[yupp]# '
 REPL_TEST = 'test'
 REPL_EXIT = 'exit'
+TR_FILE   = 'trace.file = %s\n'
 
 E_YUGEN   = '.yugen'
 E_YUCFG   = '.yuconfig'
@@ -259,8 +260,8 @@ def _pp():                                                                      
     """
 #   ---------------
     trace.set_current( TRACE_STAGE_PARSE )
-    TR2F = trace.enabled and trace.to_file
-    LOG = not trace.enabled or trace.to_file
+    TR2F = trace.enabled and trace.file
+    LOG = not trace.enabled or trace.file
 #   -- parse
     try:
         if TR2F:
@@ -292,8 +293,8 @@ def _pp():                                                                      
 
 #   -- eval
     trace.set_current( TRACE_STAGE_EVAL )
-    TR2F = trace.enabled and trace.to_file
-    LOG = not trace.enabled or trace.to_file
+    TR2F = trace.enabled and trace.file
+    LOG = not trace.enabled or trace.file
     try:
         plain = yueval( ast )
 
@@ -527,6 +528,8 @@ def main( argv ):
 
     if not shell.quiet:
         print TITLE
+        if trace.stage > 0:
+            print TR_FILE % trace.file
 #       -- startup testing
         _pp_test( r"""($($\y:u.\m.\...(m y($\C.\p.(r)e p)($\ro.(ce)s)))so r)""" )
         _pp_test( r"""
