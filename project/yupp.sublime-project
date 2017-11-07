@@ -13,5 +13,22 @@
 		{
 			"pylint_rc": "project\\pylint.rc"
 		}
-	}
+	},
+	"build_systems":
+	[
+		{
+			"name": "yupp (develop)",
+			"cmd": ["$project_path/../yup.py", "--pp-browse", "--type-file", "$file"],
+			"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
+			"working_dir": "$project_path/../",
+			"shell": true
+ 		},
+		{
+			"name": "yupp (trace)",
+			"cmd": ["$project_path/../yup.py", "--pp-browse", "--type-file", "--trace=2", "$file"],
+			"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
+			"working_dir": "$project_path/../",
+			"shell": true
+ 		}
+	]
 }
