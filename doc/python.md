@@ -36,13 +36,10 @@ Options for all files of a directory should be specified in
 [_".yuconfig"_](../eg/.yuconfig) file. Whereas individual options
 for a particular file in [_"file.yuconfig"_](../eg/dict.yuconfig).
 
-Here is a small example of using macros in Python:
+The following example demonstrates how to generate the source code in Python
+using a dictionary:
 
     # coding: yupp
-
-    ($set greeting '!dlrow olleH')
-
-    print ($reversed greeting)
 
 To be continued...
 
