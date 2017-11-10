@@ -37,7 +37,8 @@ Options for all files of a directory should be specified in
 for a particular file in [_"file.yuconfig"_](../eg/dict.yuconfig).
 
 The following example demonstrates how to generate the source code in Python
-using a dictionary:
+using a dictionary. Data collected in this dictionary is used to create a set
+of functions, which provide access to attributes of a motor.
 
     # coding: yupp
 
