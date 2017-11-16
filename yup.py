@@ -28,12 +28,12 @@ from yuconfig import *                                                          
 
 __version__ = VERSION
 
+
 #   * * * * * * * * * * * * * * * * * *
 #   *                                 *
 #   *           S H E L L             *
 #   *                                 *
 #   * * * * * * * * * * * * * * * * * *
-
 
 TITLE = r""" __    __    _____ _____
 /\ \  /\ \  /\  _  \  _  \  %(description)s

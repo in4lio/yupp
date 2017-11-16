@@ -277,8 +277,8 @@
 
         yupp "./eg/hello.yu-c"
 
-To learn more about the preprocessor parameters, please get help on
-the command-line interface:
+    To learn more about the preprocessor parameters, please get help on
+    the command-line interface:
 
         python yup.py -h | more
 
