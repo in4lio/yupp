@@ -31,11 +31,6 @@ a source file run. Every next run if the original source code does not get
 changed, the macro-expansion phase will be skipped and the previously
 generated code will be executed directly.
 
-The macro processor gets various options from configuration files.
-Options for all files of a directory should be specified in
-[_".yuconfig"_](../eg/.yuconfig) file. Whereas individual options
-for a particular file in [_"file.yuconfig"_](../eg/dict.yuconfig).
-
 The following example demonstrates how to generate the source code in Python
 using a dictionary. Data collected in this dictionary is used to create a set
 of functions, which provide access to attributes of a motor.
@@ -43,6 +38,11 @@ of functions, which provide access to attributes of a motor.
     # coding: yupp
 
 To be continued...
+
+The macro processor gets various options from configuration files.
+Options for all files of a directory should be specified in
+[_".yuconfig"_](../eg/.yuconfig) file. Whereas individual options
+for a particular file in [_"file.yuconfig"_](../eg/dict.yuconfig).
 
 [yupp Wiki][wiki]
 
