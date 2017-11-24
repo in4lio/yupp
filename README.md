@@ -1,5 +1,7 @@
 [![logo](doc/pic/logo.png)](README.md)
 
+[![test status](https://travis-ci.org/in4lio/yupp.svg?branch=master)](https://travis-ci.org/in4lio/yupp)
+
 ### VERSION
 
 ```
