@@ -2735,6 +2735,34 @@ def _is_term( node ):                                                           
     return False
 
 #   ---------------------------------------------------------------------------
+def _detect_deadlock( node ):                                                                                          #pylint: disable=too-many-return-statements
+    """
+    Initial, simplistic release of unreducible expressions detection.
+    """
+#   ---------------
+    if node is None:
+        return False
+
+#   ---- TRIM
+    if isinstance( node, TRIM ):
+        return _detect_deadlock( node.ast )
+
+#   ---- list
+    if isinstance( node, list ):
+        for i in node:
+            if _detect_deadlock( i ):
+                return True
+
+        return False
+
+#   ---- BUILTIN
+    if isinstance( node, BUILTIN ):
+#       -- built-in function without application
+        return True
+
+    return False
+
+#   ---------------------------------------------------------------------------
 def _plain( node ):                                                                                                    #pylint: disable=too-many-return-statements
     """
     Represent terminal AST as plain text.
@@ -3106,6 +3134,9 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                                 raise e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb
 
                             return int( val ) if isinstance( val, bool ) else val
+
+                        if _detect_deadlock( node.args ):
+                            raise TypeError( '%s: unreducible expression' % ( _callee()) + node.loc())
 
 #                       -- unreducible
                         return node
