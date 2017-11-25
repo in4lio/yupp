@@ -1,6 +1,6 @@
 [![logo](doc/pic/logo.png)](README.md)
 
-[![status][travis-status]][travis-pic]
+[![status][travis-pic]][travis-status]
 
 ### VERSION
 
