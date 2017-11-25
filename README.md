@@ -1,6 +1,6 @@
 [![logo](doc/pic/logo.png)](README.md)
 
-[![test status](https://travis-ci.org/in4lio/yupp.svg?branch=master)](https://travis-ci.org/in4lio/yupp)
+[![status][travis-status]][travis-pic]
 
 ### VERSION
 
@@ -46,3 +46,6 @@ if __name__ == '__main__':
 ### LICENSE
 
 Please see the file called [_"LICENSE"_](LICENSE).
+
+[travis-status]: https://travis-ci.org/in4lio/yupp
+[travis-pic]:    https://travis-ci.org/in4lio/yupp.svg?branch=master
