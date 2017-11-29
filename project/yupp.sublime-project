@@ -21,6 +21,7 @@
 			"cmd": ["$project_path/../yup.py", "--pp-browse", "--type-file", "$file"],
 			"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
 			"working_dir": "$project_path/../",
+			"encoding": "utf8",
 			"shell": true
  		},
 		{
@@ -28,6 +29,7 @@
 			"cmd": ["$project_path/../yup.py", "--pp-browse", "--type-file", "--trace=2", "$file"],
 			"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
 			"working_dir": "$project_path/../",
+			"encoding": "utf8",
 			"shell": true
  		}
 	]
