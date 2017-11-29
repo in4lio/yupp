@@ -697,13 +697,13 @@ class COND( BASE_OBJECT ):
 #   ---------------------------------------------------------------------------
 def ps_term( _ ):
     """
-    ANY ::= [ '\n', '\r', '\t', '\x20'..'\xFF' ];
+    ANY ::= '\n' | '\r' | '\t' | '\x20'..'\xFF';
     string ::= '"' { CHAR YIELD | char_code }0... '"';
     char ::= '\'' { CHAR YIELD | char_code }0... '\'';
-    CHAR ::= ANY - EOL - [ '\\', '\t' ];
+    CHAR ::= ANY - EOL - '\\' - '\t';
     char_code ::= '\\n' | '\\r' | '\\t' | '\\\\'
-        | '\\' { [ '0'..'7' ] }1..4
-        | '\\x' { [ '0'..'9', 'A'..'F', 'a'..'f' ] }1..4;
+        | '\\' { '0'..'7' }1..4
+        | '\\x' { '0'..'9' | 'A'..'F' | 'a'..'f' }1..4;
     EMBED ::= '*';
     """
 #   ---------------
@@ -903,7 +903,7 @@ def echo__ps_( fn ):
 #   ---------------------------------------------------------------------------
 def yuparse( input_file ):
     """
-    source ::= { PYTHON_CODE & header_python } text EOF;
+    source ::= { [PYTHON_CODE] & header_python } text EOF;
     """
 #   ---------------
     source = yushell.source[ input_file ][ 1 ]
@@ -912,7 +912,7 @@ def yuparse( input_file ):
 
     sou = SOURCE( source, input_file )
     try:
-#   ---- { PYTHON_CODE & header_python }
+#   ---- { [PYTHON_CODE] & header_python }
         header = None
         if ( yushell.input_file == input_file ) and yushell.output_python:
             ( sou, header ) = ps_header_python( sou, 0 )
@@ -922,7 +922,7 @@ def yuparse( input_file ):
         while sou:
             ( sou, ast ) = text.next()
 
-        if header is not None:
+        if header:
             ast.extend_text( 0, header )
 
         return ast
@@ -941,7 +941,7 @@ def yuparse( input_file ):
 #   ---------------------------------------------------------------------------
 def ps_text( sou, depth = 0 ):
     """
-    text ::= ($set (depth_pth_sq depth_pth) 0) {
+    text ::= [set (depth_pth_sq depth_pth) 0] {
           set
         | let
         | import
@@ -1180,7 +1180,7 @@ def ps_import( sou, depth = 0 ):
 @echo__ps_
 def ps_macro( sou, depth = 0 ):
     """
-    macro ::= '($macro' atom '(' { atom }0... ')' plain ')' & ($eq depth_pth 0);
+    macro ::= '($macro' atom '(' { atom }0... ')' plain ')' & [eq depth_pth 0];
     """
 #   ---------------
 #   ---- ($macro
@@ -1222,7 +1222,7 @@ def ps_macro( sou, depth = 0 ):
     while True:
 #   ---- plain
         ( sou, leg, _, depth_pth ) = plain.next()
-#   ---- ) & ($eq depth_pth 0)
+#   ---- ) & [eq depth_pth 0]
         if ( sou[ :1 ] == ')' ) and ( depth_pth == 0 ):
             return ( sou[ 1: ], MACRO( name, pars, str( leg )))
 
@@ -1265,9 +1265,9 @@ def ps_emit( sou, depth = 0 ):
 @echo__ps_
 def ps_application( sou, depth = 0 ):
     """
-    application ::= '($' function ($set fn ::function::text) { argument }0... { tag } ')';
+    application ::= '($' function [set fn ::function::text] { argument }0... { tag } ')';
     argument ::= { name ! '.' | EMBED } form;
-    tag ::= name & ($eq fn ::name::atom::text);
+    tag ::= name & [eq fn ::name::atom::text];
     name ::= '\\' atom GAP;
     """
 #   ---------------
@@ -1304,7 +1304,7 @@ def ps_application( sou, depth = 0 ):
     if func is None:
         raise SyntaxError( '%s: function expected' % ( callee()) + sou.loc())
 
-#   ---- ($set fn ::function::text)
+#   ---- [set fn ::function::text]
     fn = ( func.atom if isinstance( func, VAR ) else None )
     named = []
     args = []
@@ -1328,7 +1328,7 @@ def ps_application( sou, depth = 0 ):
                     sou = look
 
         if name is not None:
-#   ---- ($eq fn ::name::atom::text)
+#   ---- [eq fn ::name::atom::text]
             if fn != name:
 #   ---- argument -- name
 #   ---- gap
@@ -1430,30 +1430,42 @@ def ps_remark_python( sou, depth = 0 ):
 @echo__ps_
 def ps_header_python( sou, depth = 0 ):
     """
-    header_python ::= coding_remark | { NEOL }0... EOL coding_remark;
-    coding_remark ::= '#' { NEOL YIELD }0... >> 'coding' + [ ':', '=' ] 'yupp' + { '.' + coding } << { NEOL }0... EOL;
-    NEOL ::= ANY - EOL;
-    coding ::= name;
+    header_python ::= { EOL } coding ) | { shebang } coding;
+    coding ::= remark_python & [in ::remark_python 'coding' + [ ':', '=' ] 'yupp' + { '.' + encoding } ];
+    shebang ::= remark_python;
+    encoding ::= name;
     """
 #   ---------------
-#   ---- { EOL }
     ( rest, _ ) = ps_space( sou, depth + 1 )
     ( rest, eol ) = ps_eol( rest, depth + 1 )
-    ( rest, _ ) = ps_space( rest, depth + 1 )
-#   ---- remark_python
-    ( rest, leg ) = ps_remark_python( rest, depth + 1 )
-    if leg is not None:
-#   ---- ( 'coding:' 'yupp' { '.' encoding } )
-        mch = re_CODING.search( str( leg ))
-        if mch:
-            yushell.shrink = 2 if eol else 1
-            if mch.group( 1 ) is None:
-#               -- encoding is absent - delete the magic comment
-                return ( rest, None )
 
-#           -- delete 'yupp.' from the magic comment
-            i = leg.find( ps_CODING )
-            return ( rest, [ REMARK( leg[ :i ]), REMARK( leg[( i + l_CODING ): ])])
+    header = []
+    ln_count = 1 if eol else 2
+    while ln_count:
+        ( rest, _ ) = ps_space( rest, depth + 1 )
+        ( rest, leg ) = ps_remark_python( rest, depth + 1 )
+        if leg is not None:
+            mch = re_CODING.search( str( leg ))
+            if mch:
+#               -- magic comment
+                yushell.shrink = 3 - ln_count # = 2 (shebang and magic comment) or 1 (magic comment only)
+                if mch.group( 1 ) is None:
+#                   -- encoding is absent - delete an entire magic comment
+                    return ( rest, header )
+
+#               -- delete 'yupp.' from a magic comment
+                i = leg.find( ps_CODING )
+                header.extend(( REMARK( leg[ :i ]), REMARK( leg[( i + l_CODING ): ])))
+                return ( rest, header )
+
+#           -- save shebang and goto the next line
+            header.append( leg )
+            ( rest, eol ) = ps_eol( rest, depth + 1 )
+            header.append( eol )
+            ln_count -= 1
+        else:
+#           -- not a Python remark
+            break
 
     return ( sou, None )
 
@@ -1461,12 +1473,12 @@ def ps_header_python( sou, depth = 0 ):
 def ps_plain( sou, pth_sq, pth, indent, depth = 0 ):
     """
     plain ::= { ANY
-        ($switch ::prev::text
-            "[" ($inc depth_pth_sq)
-            "]" ($dec depth_pth_sq)
-            "(" ($inc depth_pth)
-            ")" ($dec depth_pth)
-        )
+        [switch ::prev::text
+            "[" [inc depth_pth_sq]
+            "]" [dec depth_pth_sq]
+            "(" [inc depth_pth]
+            ")" [dec depth_pth]
+        ]
         YIELD }1...;
     """
 #   ---------------
@@ -1484,7 +1496,7 @@ def ps_plain( sou, pth_sq, pth, indent, depth = 0 ):
         if symbol not in ps_ANY:
             raise SyntaxError( '%s: forbidden character' % ( callee()) + sou.loc())
 
-#   ---- ($switch ...
+#   ---- [switch ...
         if symbol == ord( '[' ):
             depth_pth_sq += 1
         elif symbol == ord( ']' ):
@@ -1769,9 +1781,9 @@ def ps_code( sou, depth = 0 ):                                                  
     code ::=
           ']' EOL text EOL { '\\' } '['
         | ']' text { '\\' } '[' >> { tag } ')' <<
-        | '[' text ']' & ($eq depth_pth_sq 0)
-        | ',,' text ( ';;' | >> ( ',,' | { tag } ')' & ($eq depth_pth 0) ) << )
-        | '($code' text ')' & ($eq depth_pth 0);
+        | '[' text ']' & [eq depth_pth_sq 0]
+        | ',,' text ( ';;' | >> ( ',,' | { tag } ')' & [eq depth_pth 0] ) << )
+        | '($code' text ')' & [eq depth_pth 0];
     """
 #   ---------------
 #   ---- ]
@@ -1788,7 +1800,7 @@ def ps_code( sou, depth = 0 ):                                                  
                 ( rest, eol ) = ps_eol( rest, depth + 1 )
                 if eol:
                     ( rest, _ ) = ps_space( rest, depth + 1 )
-#   ---- [
+#   ---- '['
                     pos = _open_sq_bracket( rest )
                     if pos:
                         return ( rest[ pos: ], leg )
@@ -1796,7 +1808,7 @@ def ps_code( sou, depth = 0 ):                                                  
 #               -- show warning in case of empty code without EOL before ending [
                 elif not leg.ast:
                     ( rest, _ ) = ps_space( rest, depth + 1 )
-#   ---- [
+#   ---- '['
                     pos = _open_sq_bracket( rest )
                     if pos:
                         log.warn( 'there is no EOL before "["' + sou.loc())
@@ -1805,7 +1817,7 @@ def ps_code( sou, depth = 0 ):                                                  
             while True:
 #   ---- text
                 ( rest, leg ) = text.next()
-#   ---- [ >>
+#   ---- '[' >>
                 pos = _open_sq_bracket( rest )
                 if pos:
 #   ---- gap
@@ -1822,13 +1834,13 @@ def ps_code( sou, depth = 0 ):                                                  
                     if look[ :1 ] == ')':
                         return ( rest[ pos: ], leg )
 
-#   ---- [
+#   ---- '['
     elif sou[ :1 ] == '[':
         text = ps_text( sou[ 1: ], depth + 1 )
         while True:
 #   ---- text
             ( rest, leg ) = text.next()
-#   ---- ] & ($eq depth_pth_sq 0)
+#   ---- ']' & [eq depth_pth_sq 0]
             if ( rest[ :1 ] == ']' ) and ( leg.depth_pth_sq == 0 ):
                 return ( rest[ 1: ], leg )
 
@@ -1838,7 +1850,7 @@ def ps_code( sou, depth = 0 ):                                                  
         while True:
 #   ---- text
             ( rest, leg ) = text.next()
-#   ---- ) & ($eq depth_pth 0)
+#   ---- ) & [eq depth_pth 0]
             if ( rest[ :1 ] == ')' ) and ( leg.depth_pth == 0 ):
                 return ( rest[ 1: ], leg )
 
@@ -1866,7 +1878,7 @@ def ps_code( sou, depth = 0 ):                                                  
                     continue
 #   ---- gap
                 ( look, _ ) = ps_gap( look, depth + 1 )
-#   ---- ) & ($eq depth_pth 0) <<
+#   ---- ) & [eq depth_pth 0] <<
             if ( look[ :1 ] == ')' )  and ( leg.depth_pth == 0 ):
                 return ( rest, leg )
 
@@ -1910,7 +1922,7 @@ def ps_infix( sou, depth = 0 ):
     """
     infix ::=
           '{' text '}'
-        | '(${}' text ')' & ($eq depth_pth 0);
+        | '(${}' text ')' & [eq depth_pth 0];
     """
 #   ---------------
 #   -- infix was released as a expression in Python
@@ -1930,7 +1942,7 @@ def ps_infix( sou, depth = 0 ):
         while True:
 #   ---- text
             ( rest, leg ) = text.next()
-#   ---- ) & ($eq depth_pth 0)
+#   ---- ) & [eq depth_pth 0]
             if ( rest[ :1 ] == ')' ) and ( leg.depth_pth == 0 ):
                 return ( rest[ 1: ], INFIX( leg, sou.input_file, sou.pos + 1 ))
 
@@ -1956,7 +1968,7 @@ def ps_atom( sou, depth = 0 ):
 @echo__ps_
 def ps_space( sou, depth = 0 ):
     """
-    SPACE ::= [ '\t', ' ' ];
+    SPACE ::= '\t' | ' ';
     """
 #   ---------------
     del depth
@@ -1970,7 +1982,7 @@ def ps_space( sou, depth = 0 ):
 @echo__ps_
 def ps_eol( sou, depth = 0 ):
     """
-    EOL ::= [ '\n', '\r' ];
+    EOL ::= '\n' | '\r';
     """
 #   ---------------
     del depth
@@ -2000,7 +2012,7 @@ def ps_quote( sou, depth = 0 ):
     quote ::=
           string
         | char
-        | ( '($quote' | '(`' ) plain ')' & ($eq depth_pth 0);
+        | ( '($quote' | '(`' ) plain ')' & [eq depth_pth 0];
     """
 #   ---------------
     if yushell.output_python:
@@ -2033,7 +2045,7 @@ def ps_quote( sou, depth = 0 ):
         while True:
 #   ---- plain
             ( sou, leg, _, depth_pth ) = plain.next()
-#   ---- ) & ($eq depth_pth 0)
+#   ---- ) & [eq depth_pth 0]
             if ( sou[ :1 ] == ')' ) and ( depth_pth == 0 ):
                 return ( sou[ 1: ], STR( leg ))
 
@@ -2110,7 +2122,7 @@ ps_string_python.initialized = False
 @echo__ps_
 def ps_comment( sou, depth = 0 ):
     """
-    comment ::= '($!' plain ')' & ($eq depth_pth 0);
+    comment ::= '($!' plain ')' & [eq depth_pth 0];
     """
 #   ---------------
 #   ---- ($!
@@ -2123,7 +2135,7 @@ def ps_comment( sou, depth = 0 ):
         while True:
 #   ---- plain
             ( sou, _leg, _, depth_pth ) = plain.next()
-#   ---- ) & ($eq depth_pth 0)
+#   ---- ) & [eq depth_pth 0]
             if ( sou[ :1 ] == ')' ) and ( depth_pth == 0 ):
                 return ( sou[ 1: ], COMMENT())
 
