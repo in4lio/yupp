@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 # coding: yupp
 
 ($__TITLE__ 0)
