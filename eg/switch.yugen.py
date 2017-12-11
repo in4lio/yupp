@@ -5,43 +5,47 @@
 
 from zlib import crc32
 
-# -- CRC-32 switch for strings
-for val in ( 'Zero', 'One', 'Two', 'Three', 'Four', 'Five' ):
-    print val,
+def main():
+    # -- CRC-32 switch for strings
+    for val in ( 'Zero', 'One', 'Two', 'Three', 'Four', 'Five' ):
+        print val,
 
-    _crc32 = crc32( str( val ) ) & 0xffffffff
-    if False:
-        pass
-    elif _crc32 == 0x4221c011L:
-        print 1
-    elif _crc32 == 0x2987cc86L:
-        print 2
-    elif _crc32 == 0x8704f7f1L:
-        print 3
-    elif _crc32 == 0x30f3c943L:
-        print 4
-    elif _crc32 == 0x9c8063f5L:
-        print 5
-    elif _crc32 == 0xbec5eacL:
-        print 0
-    else:
-        print '?'
+        _crc32 = crc32( val ) & 0xffffffff
+        if False:
+            pass
+        elif _crc32 == 0x4221c011L:
+            print 1
+        elif _crc32 == 0x2987cc86L:
+            print 2
+        elif _crc32 == 0x8704f7f1L:
+            print 3
+        elif _crc32 == 0x30f3c943L:
+            print 4
+        elif _crc32 == 0x9c8063f5L:
+            print 5
+        elif _crc32 == 0xbec5eacL:
+            print 0
+        else:
+            print '?'
 
-# -- pattern matching
-for val in range( -2, 4 ):
-    print val,
+    # -- pattern matching
+    for val in range( -2, 4 ):
+        print val,
 
-    while True:
-        _pattern_value = val
-        if _pattern_value < 0:
-            print '< 0'
-            # -- check the next condition
+        while True:
+            _pattern_value = val
+            if _pattern_value < 0:
+                print '< 0'
+                # -- check the next condition
 
-        if 0 <= _pattern_value <= 2:
-            print 'in [0..2]'
-            # -- do not check the next condition
+            if 0 <= _pattern_value <= 2:
+                print 'in [0..2]'
+                # -- do not check the next condition
+                break
+
+            if _pattern_value > 2:
+                print '> 2'
             break
 
-        if _pattern_value > 2:
-            print '> 2'
-        break
+if __name__ == '__main__':
+    main()
