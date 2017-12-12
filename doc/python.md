@@ -33,8 +33,9 @@ generated code will be executed directly.
 
 The following example demonstrates how to generate the source code in Python
 using a dictionary. Data collected in this dictionary is used to create a set
-of functions, which provide access to attributes of a motor.
+of functions...
 
+	#! /usr/bin/env python
     # coding: yupp
 
 To be continued...
