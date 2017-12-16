@@ -33,10 +33,36 @@ generated code will be executed directly.
 
 The following example demonstrates how to generate the source code in Python
 using a dictionary. Data collected in this dictionary is used to create a set
-of functions...
+of variables...
 
-	#! /usr/bin/env python
+    #! /usr/bin/env python
     # coding: yupp
+
+    ($__TITLE__ 0)
+
+    ($import stdlib)
+
+    ($dict VAR
+        (` NAME        DEFVAL      FORMAT  )
+        (`
+        (  var_string  "montreal"  "%s"    )
+        (  var_float   19.96       "%.2f"  )
+        (  var_int     6           "%d"    )
+        )
+    )
+
+    ($each-VAR \i.]
+        ($i NAME) = ($i DEFVAL)
+
+    [ )
+
+    if __name__ == '__main__':
+        ($each-VAR \i.]
+            print ($q,,($i NAME) = ($unq ($i FORMAT))) % ( ($i NAME) )
+
+        [ )
+
+        var_int += 2
 
 To be continued...
 
