@@ -32,8 +32,8 @@ changed, the macro-expansion phase will be skipped and the previously
 generated code will be executed directly.
 
 The following example demonstrates how to generate the source code in Python
-using a dictionary. Data collected in this dictionary is used to create a set
-of variables...
+using a dictionary. Data collected in this dictionary is used to create,
+initialize and print a set of variables.
 
     #! /usr/bin/env python
     # coding: yupp
