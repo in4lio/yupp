@@ -13,8 +13,8 @@ was installed.
 attention is paid to providing complete diagnostic information and
 navigational capabilities.
 
-Embedding of preprocessor expressions into the source code occurs
-by using **an application form**, e.g. `($e)`.
+Embedding of preprocessor expressions into source code occurs by using
+**an application form**, e.g. `($e)`.
 
 There is a small example with comments –
 ["A glance at the preprocessing"](glance.md).
@@ -41,7 +41,7 @@ of parameters and a function body:
     `\param1.\param2.($sub param1 param2)`
 
 Syntactic forms can be nested within each other but, as mentioned above,
-only **an application** can be embedded into the source code directly.
+only **an application** can be embedded into source code directly.
 
 The following examples show various syntactic constructs of the macro
 language. You can try them using [yupp Web Console][console].
@@ -87,7 +87,7 @@ An infix expression in Python – `{<python>}`:
 
     ($set four { 2 + 2 })
 
-An infix expression straight into the source code – `(${} <python>)`:
+An infix expression straight into source code – `(${} <python>)`:
 
     foo = (${} sqrt(four) * 5.0);
 
@@ -100,13 +100,13 @@ A conditional expression – `<consequent> ? <condition> | <alternative>`:
 
     3628800
 
-Enclosing of the source code into an application – `($code <text>)`:
+Enclosing of source code into an application – `($code <text>)`:
 
     ($abc \ch.($code putchar(($ch));))
 
     putchar('A'); putchar('B'); putchar('C'); putchar('D'); putchar('E');
 
-The source code enclosing with the square brackets – `[<text>]`:
+Source code enclosing with the square brackets – `[<text>]`:
 
     ($mark \i.[($i), ])
 
@@ -143,7 +143,7 @@ A quote – ``(`<quote>)``:
         )
     )
 
-Enclosing of the source code into a loop with the reverse square brackets
+Enclosing of source code into a loop with the reverse square brackets
 – `]<EOL> <text> <EOL>[`:
 
     ($each-GRADE \i.]
@@ -157,7 +157,7 @@ Enclosing of the source code into a loop with the reverse square brackets
     int D = 2;
     int E = 1;
 
-The source code enclosing with the double comma
+Source code enclosing with the double comma
 – `($<function>,,<text>,,<text>)`:
 
     ($import stdlib)
@@ -343,7 +343,7 @@ processor with Python 2:
 
 You may need to specify `--pre` key if you want to install a beta version.
 
-After that, you can use macro expressions in the source code in Python,
+After that, you can use macro expressions in source code in Python,
 starting your script with:
 
     # coding: yupp
