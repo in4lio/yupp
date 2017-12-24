@@ -21,8 +21,8 @@
     attention is paid to providing complete diagnostic information and
     navigational capabilities.
 
-    Embedding of preprocessor expressions into the source code occurs
-    by using an application form, e.g. ($e).
+    Embedding of preprocessor expressions into source code occurs by
+    using an application form, e.g. ($e).
 
     There is a small example with comments:
 
@@ -58,7 +58,7 @@
     e.g. \val.($sub val 1)
 
     Syntactic forms can be nested within each other but, as mentioned above,
-    only an application can be embedded into the source code directly.
+    only an application can be embedded into source code directly.
 
     The following examples show various syntactic constructs of the macro
     language. You can try them using yupp Web Console:
@@ -106,7 +106,7 @@
 
         ($set four { 2 + 2 })
 
-    ($! an infix expression straight into the source code – (${} <python>) )
+    ($! an infix expression straight into source code – (${} <python>) )
 
         foo = (${} sqrt(four) * 5.0);
 
@@ -119,13 +119,13 @@
 
     3628800
 
-    ($! enclosing of the source code into an application – ($code <text>) )
+    ($! enclosing of source code into an application – ($code <text>) )
 
         ($abc \ch.($code putchar(($ch));))
 
     putchar('A'); putchar('B'); putchar('C'); putchar('D'); putchar('E');
 
-    ($! the source code enclosing with the square brackets – [<text>] )
+    ($! source code enclosing with the square brackets – [<text>] )
 
         ($mark \i.[($i), ])
 
@@ -162,7 +162,7 @@
             )
         )
 
-    ($! enclosing of the source code into a loop with the reverse square brackets
+    ($! enclosing of source code into a loop with the reverse square brackets
         – ]<EOL> <text> <EOL>[ )
 
         ($each-GRADE \i.]
@@ -176,7 +176,7 @@
     int D = 2;
     int E = 1;
 
-    ($! the source code enclosing with the double comma
+    ($! source code enclosing with the double comma
         – ($<function>,,<text>,,<text>) )
 
         ($import stdlib)
@@ -365,7 +365,7 @@
     You may need to specify "--pre" key if you want to install a beta
     version.
 
-    After that, you can use macro expressions in the source code in Python,
+    After that, you can use macro expressions in source code in Python,
     starting your script with:
 
         # coding: yupp
