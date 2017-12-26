@@ -2,8 +2,8 @@
 
 [**yupp**][yupp] is a lexical macro processor designed primarily to make up
 for the poor metaprogramming facilities of the C language. The basic idea
-behind **yupp** is programming of a source code transformation in the
-functional style.
+behind **yupp** is programming of source code transformation in the functional
+style.
 
 If a given task fits in well with the metaprogramming paradigm, **yupp** not
 only able to replace the C preprocessor, offering us more options, but also
@@ -25,13 +25,13 @@ or with the `yupp` encoding followed by a character encoding:
 
     # coding: yupp.<encoding name>
 
-**yupp** performs a macro-expansion of a source code containing macros and
-generates a source code in pure Python. It happens at the initial stage of
+**yupp** performs a macro-expansion of source code containing macros and
+generates source code in pure Python. It happens at the initial stage of
 a source file run. Every next run if the original source code does not get
 changed, the macro-expansion phase will be skipped and the previously
 generated code will be executed directly.
 
-The following example demonstrates how to generate the source code in Python
+The following example demonstrates how to generate source code in Python
 using a dictionary. Data collected in this dictionary is used to create,
 initialize and print a set of variables.
 
