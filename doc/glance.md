@@ -2,13 +2,13 @@ A glance at the preprocessing
 -----------------------------
 
 Let's get acquainted with __yupp__ lexical preprocessor, which allows to generate snippets
-of a source code applying meta-constructs in the functional style. We will explore a small
+of source code applying meta-constructs in the functional style. We will explore a small
 example from [_"glance.yu-cpp"_](pic/glance.yu-cpp.md) file. The result of preprocessing is
 [_"glance.cpp"_](../eg/glance/glance.cpp) file. Our example reads data from an ini-file,
 calculates the value of _Pi_ by the Leibniz formula, increasing the value accuracy at each
 run; and then saves the intermediate results back into the ini-file.
 
-To begin with, embedding of preprocessor expressions into the source code occurs using
+To begin with, embedding of preprocessor expressions into source code occurs using
 __an application form__ – `($<function> <arguments>)`. The first element of an application
 is a function which can be called with arguments, for instance `($div 22 7)`.
 
