@@ -31,9 +31,11 @@ a source file run. Every next run if the original source code does not get
 changed, the macro-expansion phase will be skipped and the previously
 generated code will be executed directly.
 
-The following example demonstrates how to generate source code in Python
-using a dictionary. Data collected in this dictionary is used to create,
-initialize and print a set of variables.
+The following example demonstrates how to generate source code in Python using
+a dictionary. This script starts with reading data from an ini-file, then
+calculates the value of _Pi_ by the Leibniz formula, increasing the value
+accuracy at each run, and finally saves the intermediate results back into the
+ini-file.
 
     #! /usr/bin/env python
     # coding: yupp
