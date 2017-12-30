@@ -1,6 +1,6 @@
 ($!
-	($set corolib-use-c-macro 0) to generate a direct C source code for coroutines,
-	($set corolib-use-c-macro 1) to generate a source code based on macro definitions from "coroutine.h".
+	($set corolib-use-c-macro 0) to generate direct C source code for coroutines,
+	($set corolib-use-c-macro 1) to generate source code based on macro definitions from "coroutine.h".
 )
 
 ($import coroutine)
