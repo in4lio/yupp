@@ -232,8 +232,8 @@ Coroutine mechanics, implemented using the C language extensions "Labels as Valu
 "Statements and Declarations in Expressions" (only in [coroutine.h](./coroutine.h))
 and "Locally Declared Labels" (only in [coroutine.h](./coroutine.h)).
 
-`($set corolib-use-c-macro 0)` to generate a direct C source code for coroutines,<br>
-`($set corolib-use-c-macro 1)` to generate a source code based on macro definitions from [coroutine.h](./coroutine.h).
+`($set corolib-use-c-macro 0)` to generate direct C source code for coroutines,<br>
+`($set corolib-use-c-macro 1)` to generate source code based on macro definitions from [coroutine.h](./coroutine.h).
 
 Based on Simon Tatham ["Coroutines in C"](http://www.chiark.greenend.org.uk/~sgtatham/coroutines.html).
 
