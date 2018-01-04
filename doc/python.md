@@ -37,85 +37,85 @@ calculates the value of _Pi_ by the Leibniz formula, increasing the value
 accuracy at each run, and finally saves the intermediate results back into the
 ini-file.
 
-```py
-    #! /usr/bin/env python
-    # coding: yupp
+```
+#! /usr/bin/env python
+# coding: yupp
 
-    ($__TITLE__ 0)
+($__TITLE__ 0)
 
-    ($import stdlib)
+($import stdlib)
 
-    ($dict INI
-        (` TYPE     VAR       DEFAULT                   )
-        (`
-        (  int      step      0                         )
-        (  string   greeting  'Hello! Improving Pi...'  )
-        (  float    Pi        0.0                       )
-        (  boolean  flag      True                      )
-        (  string   date      (`time.strftime( '%c' ))  )
-        )
+($dict INI
+    (` TYPE     VAR       DEFAULT                   )
+    (`
+    (  int      step      0                         )
+    (  string   greeting  'Hello! Improving Pi...'  )
+    (  float    Pi        0.0                       )
+    (  boolean  flag      True                      )
+    (  string   date      (`time.strftime( '%c' ))  )
     )
+)
 
-    import time
-    from ConfigParser import ConfigParser
+import time
+from ConfigParser import ConfigParser
 
-    FILE = ($'($0).ini' ($lower ($__MODULE_NAME__)))
-    SEC = 'General'
+FILE = ($'($0).ini' ($lower ($__MODULE_NAME__)))
+SEC = 'General'
 
+($each-INI \i.]
+    ini_($i VAR) = ($i DEFAULT)
+
+[ )
+
+def ini_load( fn ):
     ($each-INI \i.]
-        ini_($i VAR) = ($i DEFAULT)
+        global ini_($i VAR)
+
+    [ )
+    ini = ConfigParser()
+
+    ini.read( fn )
+    if ini.has_section( SEC ):
+        ($each-INI \i.]
+            ($set OPT ($qs ($i VAR)))
+            ($set T (`) ? ($eq ($i TYPE),,string) | ($i TYPE))
+            if ini.has_option( SEC, ($OPT) ):
+                ini_($i VAR) = ini.get($T)( SEC, ($OPT) )
+
+        [ )
+
+def ini_save( fn ):
+    ($each-INI \i.]
+        global ini_($i VAR)
 
     [ )
 
-    def ini_load( fn ):
-        ($each-INI \i.]
-            global ini_($i VAR)
+    ini = ConfigParser()
 
-        [ )
-        ini = ConfigParser()
+    if not ini.has_section( SEC ):
+        ini.add_section( SEC )
 
-        ini.read( fn )
-        if ini.has_section( SEC ):
-            ($each-INI \i.]
-                ($set OPT ($qs ($i VAR)))
-                ($set T (`) ? ($eq ($i TYPE),,string) | ($i TYPE))
-                if ini.has_option( SEC, ($OPT) ):
-                    ini_($i VAR) = ini.get($T)( SEC, ($OPT) )
+    ($each-INI \i.]
+        ($set VR,,ini_($i VAR))
+        ($set VAL VR ? ($eq ($i TYPE),,string) | [str( ($VR) )])
+        ini.set( SEC, ($qs ($i VAR)), ($VAL) )
 
-            [ )
+    [ )
+    with open( fn, 'wb' ) as f:
+        ini.write( f )
 
-    def ini_save( fn ):
-        ($each-INI \i.]
-            global ini_($i VAR)
+if __name__ == '__main__':
+    ini_load( FILE )
 
-        [ )
+    # Calc Pi using Leibniz formula, add one term of the series
+    ini_Pi += pow( -1, ini_step ) * 4.0 / ( ini_step * 2 + 1 )
+    ini_step += 1
 
-        ini = ConfigParser()
+    ($each-INI \i.]
+        print ($'($0) =',,ini_($i VAR)), ini_($i VAR)
 
-        if not ini.has_section( SEC ):
-            ini.add_section( SEC )
-
-        ($each-INI \i.]
-            ($set VR,,ini_($i VAR))
-            ($set VAL VR ? ($eq ($i TYPE),,string) | [str( ($VR) )])
-            ini.set( SEC, ($qs ($i VAR)), ($VAL) )
-
-        [ )
-        with open( fn, 'wb' ) as f:
-            ini.write( f )
-
-    if __name__ == '__main__':
-        ini_load( FILE )
-
-        # Calc Pi using Leibniz formula, add one term of the series
-        ini_Pi += pow( -1, ini_step ) * 4.0 / ( ini_step * 2 + 1 )
-        ini_step += 1
-
-        ($each-INI \i.]
-            print ($'($0) =',,ini_($i VAR)), ini_($i VAR)
-
-        [ )
-        ini_save( FILE )
+    [ )
+    ini_save( FILE )
 ```
 
 The generated source code in Python:
