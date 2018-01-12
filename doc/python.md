@@ -118,6 +118,8 @@ if __name__ == '__main__':
     ini_save( FILE )
 ```
 
+Please find [here](glance.md) the description of the similar example but in C.
+
 To be continued...
 
 The macro processor gets various options from configuration files.
