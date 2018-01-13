@@ -118,7 +118,8 @@ if __name__ == '__main__':
     ini_save( FILE )
 ```
 
-Please find [here](glance.md) the description of the similar example but in C.
+Please find the description of the similar example but in C:
+["A glance at the preprocessing"](glance.md)
 
 To be continued...
 
