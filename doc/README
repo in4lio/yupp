@@ -24,7 +24,7 @@
     Embedding of preprocessor expressions into source code occurs by
     using an application form, e.g. ($e).
 
-    There is a small example with comments:
+    Please find a commented example of **yupp** using:
 
         https://github.com/in4lio/yupp/blob/master/doc/glance.md
 
