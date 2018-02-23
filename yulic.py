@@ -9,12 +9,12 @@ http://github.com/in4lio/yupp/
 
 yulic.py -- metadata of yupp preprocessor
 """
-COPYRIGHT   = 'Copyright (c) 2011-2017'
+COPYRIGHT   = 'Copyright (c) 2011-2018'
 HOLDER      = 'Vitaly Kravtsov'
 EMAIL       = 'in4lio@gmail.com'
 DESCRIPTION = 'yet another lexical preprocessor'
 APP         = 'yup.py (yupp)'
-VERSION     = '1.0c5'
+VERSION     = '1.0c6'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
