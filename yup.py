@@ -246,8 +246,8 @@ def _pp_configure( cfg ):
 #        print 'pp_reduce_emptiness', config.pp_reduce_emptiness
 #    if config.pp_browse != PP_BROWSE:
 #        print 'pp_browse', config.pp_browse
-    if config.pp_set != []:
-        print 'pp_set', config.pp_set
+#    if config.pp_set != []:
+#        print 'pp_set', config.pp_set
 #    if config.warn_unbound_application != WARN_UNBOUND_APPLICATION:
 #        print 'warn_unbound_application', config.warn_unbound_application
 #    if config.directory != []:

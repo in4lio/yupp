@@ -2715,7 +2715,7 @@ def _update_biultin_from_config():
             val = pair[ 1 ].strip() if len( pair ) == 2 else ''
             builtin[ atom ] = val if val else True
         else:
-            log.warn( 'atom expected in configuration argument "%s"' % ( x ))
+            log.warn( 'atom expected in configuration option "%s"' % ( x ))
 
 #   ---------------------------------------------------------------------------
 builtin_special = dict()
