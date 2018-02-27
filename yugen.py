@@ -2680,7 +2680,7 @@ builtin.update({
     'hex': hex,
     'inc': lambda val : ( val + 1 ),
     'index': lambda l, val : l.index( val ) if val in l else -1,
-    'int': int,
+    'int_': int,
     'isdigit': lambda val : str( val ).isdigit(),
     'islist': lambda l : isinstance( l, list ),
     'len': len,
