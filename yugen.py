@@ -40,7 +40,7 @@ def config():
     config.pp_trim_app_indent = PP_TRIM_APP_INDENT
     config.pp_reduce_emptiness = PP_REDUCE_EMPTINESS
     config.pp_browse = PP_BROWSE
-    config.pp_set = []
+    config.pp_define = []
     config.warn_unbound_application = WARN_UNBOUND_APPLICATION
     config.directory = []
 
@@ -2680,6 +2680,7 @@ builtin.update({
     'hex': hex,
     'inc': lambda val : ( val + 1 ),
     'index': lambda l, val : l.index( val ) if val in l else -1,
+    'int': int,
     'isdigit': lambda val : str( val ).isdigit(),
     'islist': lambda l : isinstance( l, list ),
     'len': len,
@@ -2708,7 +2709,7 @@ builtin.update({
 
 #   ---------------------------------------------------------------------------
 def _update_biultin_from_config():
-    for x in config.pp_set:
+    for x in config.pp_define:
         pair = x.split( ':', 1 )
         rest, atom = ps_atom( pair[ 0 ].strip())
         if not rest and atom:

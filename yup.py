@@ -111,8 +111,8 @@ def shell_parse_cli_arguments( argv ):
     argp.add_argument( '--pp-no-browse', action = 'store_false', dest = 'pp_browse' )
     argp.add_argument( '--pp-browse', action = 'store_true', dest = 'pp_browse'
     , help = PP_BROWSE_HELP )
-    argp.add_argument( '-s', '--pp-set', action = 'append', metavar = 'ATOM', dest = 'pp_set'
-    , help = "an atom binding" )
+    argp.add_argument( '-D', '--pp-define', action = 'append', metavar = 'CONST', dest = 'pp_define'
+    , help = "definition of a constant" )
     argp.add_argument( '-Wno-unbound', '--warn-no-unbound-application', action = 'store_false'
     , dest = 'warn_unbound_application' )
     argp.add_argument( '-Wunbound', '--warn-unbound-application', action = 'store_true'
@@ -140,7 +140,7 @@ def shell_parse_cli_arguments( argv ):
     , pp_trim_app_indent = PP_TRIM_APP_INDENT
     , pp_reduce_emptiness = PP_REDUCE_EMPTINESS
     , pp_browse = PP_BROWSE
-    , pp_set = []
+    , pp_define = []
     , warn_unbound_application = WARN_UNBOUND_APPLICATION
     )
     if ( len( argv ) == 2 ) and argv[ 1 ].startswith( '@' ):
@@ -172,7 +172,7 @@ def shell_parse_yuconfig( fn ):
     context = yuconfig_defaults()
     context[ 'directory' ] = []
     context[ 'dependency' ] = []
-    context[ 'pp_set' ] = []
+    context[ 'pp_define' ] = []
 #   -- global configuration
     _exec_yuconfig_script( '' + E_YUCFG, context )
 #   -- configuration for concrete source file
@@ -182,8 +182,8 @@ def shell_parse_yuconfig( fn ):
         cfg[ 'directory' ] = context[ 'directory' ]
     if isinstance( context[ 'dependency' ], list ):
         cfg[ 'dependency' ] = context[ 'dependency' ]
-    if isinstance( context[ 'pp_set' ], list ):
-        cfg[ 'pp_set' ] = context[ 'pp_set' ]
+    if isinstance( context[ 'pp_define' ], list ):
+        cfg[ 'pp_define' ] = context[ 'pp_define' ]
     return cfg
 
 #   ---------------------------------------------------------------------------
@@ -225,7 +225,7 @@ def _pp_configure( cfg ):
     config.pp_trim_app_indent = cfg.get( 'pp_trim_app_indent', PP_TRIM_APP_INDENT )
     config.pp_reduce_emptiness = cfg.get( 'pp_reduce_emptiness', PP_REDUCE_EMPTINESS )
     config.pp_browse = cfg.get( 'pp_browse', PP_BROWSE )
-    config.pp_set = cfg.get( 'pp_set', [])
+    config.pp_define = cfg.get( 'pp_define', [])
     config.warn_unbound_application = cfg.get( 'warn_unbound_application', WARN_UNBOUND_APPLICATION )
     config.directory = cfg.get( 'directory', [])
     shell.quiet = cfg.get( 'quiet', QUIET )
@@ -246,8 +246,8 @@ def _pp_configure( cfg ):
 #        print 'pp_reduce_emptiness', config.pp_reduce_emptiness
 #    if config.pp_browse != PP_BROWSE:
 #        print 'pp_browse', config.pp_browse
-#    if config.pp_set != []:
-#        print 'pp_set', config.pp_set
+#    if config.pp_define != []:
+#        print 'pp_define', config.pp_define
 #    if config.warn_unbound_application != WARN_UNBOUND_APPLICATION:
 #        print 'warn_unbound_application', config.warn_unbound_application
 #    if config.directory != []:
