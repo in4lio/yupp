@@ -17,6 +17,7 @@
 `($inc x)` | Increment `x + 1`.
 `($index list x)` | Return the lowest index in the list of the first item whose value is `x`. Return `-1` on failure.
 `($rindex list x)` | Like `index` but find the highest index.
+`($int_ x [base])` | Return an integer object constructed from a number or string `x`, or return `0` if no arguments are given.
 `($isatom x)` | Check the argument is an atom or late-bounded variable.
 `($isdigit s)` | Check that all characters in the string `s` are digits and there is at least one character.
 `($islist x)` | Check the argument is a list.
