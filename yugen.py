@@ -43,8 +43,16 @@ def config():
     config.pp_define = []
     config.warn_unbound_application = WARN_UNBOUND_APPLICATION
     config.directory = []
+    config.passage = 0
 
 config()
+
+#   ---------------------------------------------------------------------------
+def feedback():
+    feedback.output_file = None
+    feedback.repeat = False
+
+feedback()
 
 
 #   * * * * * * * * * * * * * * * * * *
@@ -2721,6 +2729,7 @@ def _update_biultin_from_config():
 #   ---------------------------------------------------------------------------
 builtin_special = dict()
 builtin_special.update({
+    '__PASSAGE__': None,
     'isatom': None,
     'lazy': lambda val : LIST( LAZY( x ) for x in val ) if isinstance( val, list ) else LAZY( val ),
     'skip': SKIP(),
@@ -3153,6 +3162,19 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
                             return 0
 
+                        if node.fn.atom == '__PASSAGE__':
+                            if len( node.args ) != 1:
+                                raise TypeError( '%s: only one argument expected' % ( _callee())
+                                + node.fn.atom.loc())
+
+                            if not isinstance( node.args[ 0 ], list ):
+                                raise TypeError( '%s: list expected' % ( _callee())
+                                + node.fn.atom.loc())
+
+                            passage_max = len( node.args[ 0 ]) - 1
+                            feedback.repeat = config.passage < passage_max
+                            return node.args[ 0 ][ config.passage ] if config.passage <= passage_max else None
+
 #   ---- APPLY -- BUILTIN -- function
                     if callable( node.fn.fn ):
                         if _is_term( node.args ):
@@ -3414,6 +3436,18 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
 #   ---- SET | LET
             elif isinstance( node, SET ) or isinstance( node, LET ):
+
+                if isinstance( node, SET ):
+                    if isinstance( node.lval, ATOM ):
+#                       -- set feedback
+                        if node.lval == '__OUTPUT_FILE__':
+                            val = yueval( node.ast, env, depth + 1 )
+                            if isinstance( val, str ):
+                                feedback.output_file = str( _unq( val ))
+                            else:
+                                log.warn( 'cannot assign a non-string value to __OUTPUT_FILE__' + node.loc())
+                            return None
+
                 env_l = ENV( env )
                 if isinstance( node.lval, ATOM ):
                     env_l[ node.lval ] = BOUND()
@@ -3647,6 +3681,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #   ---------------------------------------------------------------------------
 def yuinit():
     RESULT.clean()
+    feedback()
 
     if yushell.output_python and not ps_string_python.initialized:
 #       -- initialize regexes for ps_string_python()

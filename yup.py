@@ -20,7 +20,7 @@ from argparse import ArgumentParser
 import stat
 
 from yugen import log, trace
-from yugen import config, yushell, yuinit, yuparse, yueval, RESULT
+from yugen import config, feedback, yushell, yuinit, yuparse, yueval, RESULT
 from yugen import make_ast_readable, reduce_emptiness, replace_steady
 
 from yulic import *                                                                                                    #pylint: disable=wildcard-import
@@ -376,6 +376,9 @@ def _pp_stream( _stream, fn, fn_o ):
         yuinit()
         ok, plain = _pp()
         if ok:
+#           -- check if the name of output file is changed
+            if feedback.output_file:
+                fn_o = feedback.output_file
 #           -- output file backup
             shell_backup( fn_o )
 #           -- output file writing
@@ -401,7 +404,7 @@ def _pp_stream( _stream, fn, fn_o ):
 #       -- e.g. file operation failure
         log.critical( FAIL, type( e ).__name__, str( e ))
 
-    return ( ok, plain )
+    return ( ok, plain, fn_o )
 
 #   ---------------------------------------------------------------------------
 def _pp_file( fn ):
@@ -419,7 +422,7 @@ def _pp_file( fn ):
 #   -- figure out a name for output file
     fn_o = _output_fn( fn )
 
-    ok, plain = _pp_stream( f, fn, fn_o )
+    ok, plain, fn_o = _pp_stream( f, fn, fn_o )
     f.close()
 
     print
@@ -509,7 +512,7 @@ def proc_stream( _stream, fn ):
 #           -- process input file in the usual way
             pass
 
-    ok, data = _pp_stream( _stream, fn, fn_o )
+    ok, data, _ = _pp_stream( _stream, fn, fn_o )
     return ( ok, data, fn_o, yushell.shrink )
 
 #   ---------------------------------------------------------------------------
@@ -552,8 +555,15 @@ def main( argv ):
         f_failed = 0
 #       -- input files preprocessing
         for path in args.files:
-            if not _pp_file( path ):
-                f_failed += 1
+            config.passage = 0
+            while True:
+                if not _pp_file( path ):
+                    f_failed += 1
+                    break
+                if not feedback.repeat:
+                    break
+                config.passage += 1
+
 #       -- sys.exit() redefined in Web Console
         sys.exit( f_failed << 2 )
 
