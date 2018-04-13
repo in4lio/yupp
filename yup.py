@@ -71,12 +71,18 @@ show content of an output file
 """
 TYPE_OUTPUT = False
 
+READ_ONLY_HELP = """
+"do not make file read-only"
+"""
+READ_ONLY = True
+
 def shell():
     shell.quiet = QUIET
     shell.type_output = TYPE_OUTPUT
     shell.output_dir = ''
 #   -- traceback exceptions
     shell.traceback = TRACEBACK
+    shell.read_only = READ_ONLY
 
 shell()
 
@@ -99,6 +105,8 @@ def shell_parse_cli_arguments( argv ):
     , help = "an import directory" )
     argp.add_argument( '-o', '--output', metavar = 'DIR', dest = 'output_dir', default = ''
     , help = "an output directory" )
+    argp.add_argument( '--no-read-only', action = 'store_false', dest = 'read_only', default = shell.read_only
+    , help = READ_ONLY_HELP )
 #   -- preprocessor options
     argp.add_argument( '--pp-skip-comments', metavar = 'TYPE', type = int, dest = 'pp_skip_comments'
     , choices = range( 0, 4 ), help = PP_SKIP_COMMENTS_HELP )
@@ -232,6 +240,7 @@ def _pp_configure( cfg ):
     shell.type_output = cfg.get( 'type_output', TYPE_OUTPUT )
     shell.output_dir = cfg.get( 'output_dir', '' )
     shell.traceback = cfg.get( 'traceback', TRACEBACK )
+    shell.read_only = cfg.get( 'read_only', READ_ONLY )
 
 #  DEBUG OUTPUT
 #    if log.level != LOG_LEVEL * LOG_LEVEL__SCALE_:
@@ -260,6 +269,8 @@ def _pp_configure( cfg ):
 #        print 'output_dir', shell.output_dir
 #    if shell.traceback != TRACEBACK:
 #        print 'traceback', shell.traceback
+#    if shell.read_only != READ_ONLY:
+#        print 'read_only', shell.read_only
 
 #   ---------------------------------------------------------------------------
 def _pp():                                                                                                             #pylint: disable=too-many-statements
@@ -383,7 +394,8 @@ def _pp_stream( _stream, fn, fn_o ):
             shell_backup( fn_o )
 #           -- output file writing
             shell_savetofile( fn_o, plain )
-            os.chmod( fn_o, stat.S_IREAD )
+            if shell.read_only:
+                os.chmod( fn_o, stat.S_IREAD )
             if isinstance( plain, RESULT ):
 #               -- browse writing
                 with open( fn_o + '.json', 'w' ) as f:
