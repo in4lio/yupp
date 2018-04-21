@@ -3443,7 +3443,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         if node.lval == '__OUTPUT_FILE__':
                             val = yueval( node.ast, env, depth + 1 )
                             if isinstance( val, str ):
-                                feedback.output_file = str( _unq( val ))
+                                yushell.output_file = feedback.output_file = str( _unq( val ))
                             else:
                                 log.warn( 'cannot assign a non-string value to __OUTPUT_FILE__' + node.loc())
                             return None
