@@ -3,6 +3,7 @@ import codecs
 import encodings
 from encodings import utf_8
 from . import yulic
+from . yup import cli
 
 __pp_name__      = 'yupp'
 __version__      = yulic.VERSION

@@ -92,7 +92,7 @@ SYSTEM_EXIT_HELP = 'Moreover, you can pass the arguments through a response file
 ' or zero in case of successful execution.'
 
 #   ---------------------------------------------------------------------------
-def shell_parse_cli_arguments( argv ):
+def shell_parse_cli_arguments( arglist ):
     argp = ArgumentParser(
       description = 'yupp, %(description)s' % { 'description': DESCRIPTION }
     , version = '%(app)s %(version)s' % { 'app': APP, 'version': VERSION }
@@ -151,10 +151,10 @@ def shell_parse_cli_arguments( argv ):
     , pp_define = []
     , warn_unbound_application = WARN_UNBOUND_APPLICATION
     )
-    if ( len( argv ) == 2 ) and argv[ 1 ].startswith( '@' ):
+    if ( len( arglist ) == 1 ) and arglist[ 0 ].startswith( '@' ):
 #       -- get arguments from response file
         try:
-            with open( argv[ 1 ][ 1: ], 'r' ) as f:
+            with open( arglist[ 0 ][ 1: ], 'r' ) as f:
                 return argp.parse_args( f.read().split())
 
         except IOError as e:
@@ -162,7 +162,7 @@ def shell_parse_cli_arguments( argv ):
             log.critical( FAIL, type( e ).__name__, str( e ))
             sys.exit( 2 )
 
-    return argp.parse_args()
+    return argp.parse_args( arglist )
 #    return argp.parse_args([ '-h' ])
 
 #   ---------------------------------------------------------------------------
@@ -544,8 +544,8 @@ def proc_file( fn ):
     return ( ok, fn_o )
 
 #   ---------------------------------------------------------------------------
-def main( argv ):
-    args = shell_parse_cli_arguments( argv )
+def cli( arglist ):
+    args = shell_parse_cli_arguments( arglist )
     if not args.files:
         args.pp_browse = False
     _pp_configure( args.__dict__ )
@@ -576,8 +576,7 @@ def main( argv ):
                     break
                 config.passage += 1
 
-#       -- sys.exit() redefined in Web Console
-        sys.exit( f_failed << 2 )
+        return f_failed << 2
 
     else:
 #       -- Read-Eval-Print Loop
@@ -595,8 +594,10 @@ def main( argv ):
                 test = ''
             else:
                 test += line + '\n'
-        sys.exit( 0 )
+
+        return 0
 
 #   ---------------------------------------------------------------------------
 if __name__ == '__main__':
-    main( sys.argv )
+#   -- sys.exit() redefined in Web Console
+    sys.exit( cli( sys.argv[ 1: ]))
