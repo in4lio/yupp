@@ -1,0 +1,23 @@
+($import stdlib)
+
+($dict file
+    (` file_path      )
+    (`
+    (  "passage-a.c"  )
+    (  "passage-b.c"  )
+    (  "passage-c.c"  )
+    )
+)
+
+($set inx ($__PASSAGE__ each-file))
+($set __OUTPUT_FILE__ ($inx file_path))
+
+($__TITLE__)
+
+#include <stdio.h>
+
+int main( void )
+{
+    printf( ($"($0)\n" ($unq ($inx file_path))) );
+    return 0;
+}
