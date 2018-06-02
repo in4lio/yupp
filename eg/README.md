@@ -15,6 +15,9 @@ Source code                           | Generated code                     | Lan
 [glance.yu-py](glance/glance.yu-py)   | [glance.py](glance/glance.py)      | Python   | Using a dictionary to generate code
 [gpio.yu-c](gpio.yu-c)                | [gpio.c](gpio.c)                   | C        | Using a dictionary to generate code
 [hello.yu-c](hello.yu-c)              | [hello.c](hello.c)                 | C        | Create code using loops and lists
+[passage.yu-c](passage.yu-c)          | [passage-a.c](passage-a.c)         | C        | Create multiple files from one source
+&nbsp;                                | [passage-b.c](passage-b.c)         | &nbsp;   | &nbsp;
+&nbsp;                                | [passage-c.c](passage-c.c)         | &nbsp;   | &nbsp;
 [switch.py](switch.py)                | [switch.yugen.py](switch.yugen.py) | Python   | Using late bound parameters
 [ulam.yu-c](ulam.yu-c)                | [ulam.c](ulam.c)                   | C        | Using the coroutines library
 [unfold.yu-c](unfold.yu-c)            | [unfold.c](unfold.c)               | C        | Using the `unfold` function
