@@ -236,6 +236,11 @@ or `($let (<atoms>) <expr>)`:
 
     256
 
+Creating multiple files from the single source – `($__PASSAGE__ <list>)`:
+
+    ($set __OUTPUT_FILE__ ($__PASSAGE__ ("a.txt" "b.txt" "c.txt")))
+    File: ($__OUTPUT_FILE__)
+
 Any functions from _"string"_, _"operator"_ and _"math"_ modules of Python
 Standard Library can be used in preprocessor expressions –
 [Built-in Functions](builtin.md).
