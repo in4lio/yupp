@@ -255,6 +255,11 @@
 
     256
 
+    Creating multiple files from the single source – `($__PASSAGE__ <list>)`:
+
+        ($set __OUTPUT_FILE__ ($__PASSAGE__ ("a.txt" "b.txt" "c.txt")))
+        File: ($__OUTPUT_FILE__)
+
     Any functions from "string", "operator" and "math" modules of Python
     Standard Library can be used in preprocessor expressions
     (https://github.com/in4lio/yupp/blob/master/doc/builtin.md).
