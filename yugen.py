@@ -109,7 +109,7 @@ def _create_trace( default_stage ):
     _trace = _create_logger( 'trace', hl, TRACE_FORMAT )
     _trace.file = fn if _to_file else None
 #   -- default trace
-    _trace.stage = default_stage
+    _trace.stages = default_stage
     _trace.enabled = False
     _trace.TEMPL_DEEPEST = 'deepest call - %d'
     _trace.set_current = _trace_set_current.__get__( _trace, _trace.__class__ )                                        #pylint: disable=no-member
@@ -118,7 +118,7 @@ def _create_trace( default_stage ):
 
 #   ---------------------------------------------------------------------------
 def _trace_set_current( self, _stage ):
-    if self.stage & _stage:
+    if self.stages & _stage:
         self.enabled = True
         self.setLevel( logging.INFO )
     else:
