@@ -43,7 +43,7 @@
 `($TAB)` | Steady TAB character.
 `($unique list)` | Return a list of unique elements, preserving order.
 `($unq s)` | Unquote a string.
- | **Functions imported from Python `operator` module**
+&nbsp;&nbsp; | **Functions imported from Python `operator` module**
 `($add a b)` | Addition `a + b`.
 `($concat seq1 seq2)` | Concatenation `seq1 + seq2`.
 `($contains seq obj)` | Containment Test `obj in seq`.
@@ -74,7 +74,7 @@
 `($ne a b)` | Difference `a != b`.
 `($ge a b)` | Ordering `a >= b`.
 `($gt a b)` | Ordering `a > b`.
- | **Functions and constants imported from Python `math` module**
+&nbsp;&nbsp; | **Functions and constants imported from Python `math` module**
 `($acos x)` | Return the arc cosine (measured in radians) of `x`.
 `($acosh x)` | Return the hyperbolic arc cosine (measured in radians) of `x`.
 `($asin x)` | Return the arc sine (measured in radians) of `x`.
@@ -116,7 +116,7 @@
 `($trunc x)` | Truncates `x` to the nearest integral toward `0`.
 `($pi)` | The mathematical constant `π = 3.141592...`, to available precision.
 `($e)` | The mathematical constant `e = 2.718281...`, to available precision.
- | **Functions and constants imported from Python `string` module**
+&nbsp;&nbsp; | **Functions and constants imported from Python `string` module**
 `($digits)` | The string `'0123456789'`.
 `($hexdigits)` | The string `'0123456789abcdefABCDEF'`.
 `($letters)` | The concatenation of the strings `lowercase` and `uppercase` described below.
