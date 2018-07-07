@@ -14,7 +14,8 @@ from __future__ import division
 import traceback
 from yugen import *                                                                                                    #pylint: disable=wildcard-import,unused-wildcard-import
 
-_traceback = True
+_TRACEBACK = True
+_TRACE = TRACE_STAGE_NONE
 
 
 #   * * * * * * * * * * * * * * * * * *
@@ -740,7 +741,7 @@ def test( kit, t ):                                                             
     i = 0
     for ( TR, text, parsed, evaluated ) in kit:
         i += 1
-        trace.stages = TR
+        trace.stages = TR | _TRACE
         trace.set_current( TRACE_STAGE_PARSE )
         TR2F = trace.enabled and trace.file
         LOG = not trace.enabled or trace.file
@@ -770,7 +771,7 @@ def test( kit, t ):                                                             
             e_type, e, tb = sys.exc_info()
             msg = '\n'
             arg = e.args[ 0 ]
-            if _traceback or isinstance( arg, str ) and arg.startswith( 'python' ):
+            if _TRACEBACK or isinstance( arg, str ) and arg.startswith( 'python' ):
 #               -- enabled traceback or not raised exception
                 msg += ''.join( traceback.format_tb( tb ))
             msg += ''.join( traceback.format_exception_only( e_type, e ))
@@ -813,7 +814,7 @@ def test( kit, t ):                                                             
                 e_type, e, tb = sys.exc_info()
                 msg = '\n'
                 arg = e.args[ 0 ]
-                if _traceback or isinstance( arg, str ) and arg.startswith( 'python' ):
+                if _TRACEBACK or isinstance( arg, str ) and arg.startswith( 'python' ):
 #                   -- enabled traceback or not raised exception
                     msg += ''.join( traceback.format_tb( tb ))
                 msg += ''.join( traceback.format_exception_only( e_type, e ))
