@@ -1,4 +1,4 @@
-## Macros in Python _(still in the writing process)_
+## Macros in Python
 
 [**yupp**][yupp] is a lexical macro processor designed primarily to make up
 for the poor metaprogramming facilities of the C language. The basic idea
