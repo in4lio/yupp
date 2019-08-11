@@ -30,6 +30,10 @@ for example:
 
     # coding: yupp.cp1252
 
+### How to use **yupp**
+
+[Macros in Python](../doc/python.md)
+
 ### Examples
 
 Source code                          | Generated code                       | Description
