@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 r"""
 http://github.com/in4lio/yupp/
  __    __    _____ _____
