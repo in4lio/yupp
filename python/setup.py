@@ -124,7 +124,7 @@ setup(
         PACKAGE,
         only_in_packages=False
     ),
-    data_files=["lib/python/site-packages", ["yupp.pth"])],
+    data_files=[("lib/python/site-packages", ["yupp.pth"])],
     entry_points={
         'console_scripts': [
             'yupp = yupp.__main__:main'
