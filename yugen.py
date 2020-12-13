@@ -11,6 +11,7 @@ yugen.py -- an implementation of yupp preprocessor in Python
 """
 
 from __future__ import division
+from future.utils import raise_
 import sys
 import os
 import tempfile
@@ -31,6 +32,7 @@ from ast import literal_eval
 
 from yulic import *                                                                                                    #pylint: disable=wildcard-import,unused-wildcard-import
 from yuconfig import *                                                                                                 #pylint: disable=wildcard-import,unused-wildcard-import
+from functools import reduce
 
 sys.setrecursionlimit( 2 ** 20 )
 
@@ -853,7 +855,7 @@ def _import_source( lib, once ):
             sou = _unify_eol( f.read())
     except:
         e_type, e, tb = sys.exc_info()
-        raise e_type, 'ps_import: %s' % ( e ) + lib.loc(), tb
+        raise_( e_type, 'ps_import: %s' % ( e ) + lib.loc(), tb )
 
     yushell.source[ lib ] = ( lpath, sou )
     return lib
@@ -876,7 +878,7 @@ def _import_python( name, script ):
         builtin.update( vars( mod ))
     except:
         e_type, e, tb = sys.exc_info()
-        raise e_type, 'ps_import_python: %s' % ( e ) + script.loc(), tb
+        raise_( e_type, 'ps_import_python: %s' % ( e ) + script.loc(), tb )
 
     yushell.script.append( script )
 
@@ -887,7 +889,7 @@ def _import_eval( infix ):
         sou = eval( code, dict( globals(), **builtin ))                                                                #pylint: disable=eval-used
     except:
         e_type, e, tb = sys.exc_info()
-        raise e_type, 'ps_import_eval: %s' % ( e ) + infix.loc(), tb
+        raise_( e_type, 'ps_import_eval: %s' % ( e ) + infix.loc(), tb )
 
     yushell.inclusion.append( None )
     _import = str( len( yushell.inclusion ) - 1 )
@@ -929,7 +931,7 @@ def yuparse( input_file ):
 #   ---- text
         text = ps_text( sou, 0 )
         while sou:
-            ( sou, ast ) = text.next()
+            ( sou, ast ) = next( text )
 
         if header:
             ast.extend_text( 0, header )
@@ -941,11 +943,11 @@ def yuparse( input_file ):
 #   ---- Python exception
         arg = e.args[ 0 ] if e.args else None
         if not isinstance( arg, str ) or not arg.startswith( 'ps_' ) and not arg.startswith( 'python' ):
-            raise e_type, 'python: %s' % ( e ) + sou.loc(), tb
+            raise_( e_type, 'python: %s' % ( e ) + sou.loc(), tb )
 
 #   ---- raised exception
         else:
-            raise e_type, e, tb
+            raise_( e_type, e, tb )
 
 #   ---------------------------------------------------------------------------
 def ps_text( sou, depth = 0 ):
@@ -1030,7 +1032,7 @@ def ps_text( sou, depth = 0 ):
         else:
             plain = ps_plain( sou, depth_pth_sq, depth_pth, None if ast else '', depth + 1 )
 
-        ( sou, leg, depth_pth_sq, depth_pth ) = plain.next()
+        ( sou, leg, depth_pth_sq, depth_pth ) = next( plain )
         ast.append( leg )
         _plain_ret = sou
 
@@ -1230,7 +1232,7 @@ def ps_macro( sou, depth = 0 ):
     plain = ps_plain( sou, 0, 0, None, depth + 1 )
     while True:
 #   ---- plain
-        ( sou, leg, _, depth_pth ) = plain.next()
+        ( sou, leg, _, depth_pth ) = next( plain )
 #   ---- ) & [eq depth_pth 0]
         if ( sou[ :1 ] == ')' ) and ( depth_pth == 0 ):
             return ( sou[ 1: ], MACRO( name, pars, str( leg )))
@@ -1804,7 +1806,7 @@ def ps_code( sou, depth = 0 ):                                                  
             text = ps_text( rest, depth + 1 )
             while True:
 #   ---- text
-                ( rest, leg ) = text.next()
+                ( rest, leg ) = next( text )
 #   ---- EOL
                 ( rest, eol ) = ps_eol( rest, depth + 1 )
                 if eol:
@@ -1825,7 +1827,7 @@ def ps_code( sou, depth = 0 ):                                                  
             text = ps_text( sou[ 1: ], depth + 1 )
             while True:
 #   ---- text
-                ( rest, leg ) = text.next()
+                ( rest, leg ) = next( text )
 #   ---- '[' >>
                 pos = _open_sq_bracket( rest )
                 if pos:
@@ -1848,7 +1850,7 @@ def ps_code( sou, depth = 0 ):                                                  
         text = ps_text( sou[ 1: ], depth + 1 )
         while True:
 #   ---- text
-            ( rest, leg ) = text.next()
+            ( rest, leg ) = next( text )
 #   ---- ']' & [eq depth_pth_sq 0]
             if ( rest[ :1 ] == ']' ) and ( leg.depth_pth_sq == 0 ):
                 return ( rest[ 1: ], leg )
@@ -1858,7 +1860,7 @@ def ps_code( sou, depth = 0 ):                                                  
         text = ps_text( sou[ l_CODE: ], depth + 1 )
         while True:
 #   ---- text
-            ( rest, leg ) = text.next()
+            ( rest, leg ) = next( text )
 #   ---- ) & [eq depth_pth 0]
             if ( rest[ :1 ] == ')' ) and ( leg.depth_pth == 0 ):
                 return ( rest[ 1: ], leg )
@@ -1869,7 +1871,7 @@ def ps_code( sou, depth = 0 ):                                                  
         text = ps_text( sou[ l_DUALCOMMA: ], depth + 1 )
         while True:
 #   ---- text
-            ( rest, leg ) = text.next()
+            ( rest, leg ) = next( text )
 #   ---- ;;
             if rest[ :l_DUALSEMI ] == ps_DUALSEMI:
                 return ( rest[ l_DUALSEMI: ], leg )
@@ -1940,7 +1942,7 @@ def ps_infix( sou, depth = 0 ):
         text = ps_text( sou[ 1: ], depth + 1 )
         while True:
 #   ---- text
-            ( rest, leg ) = text.next()
+            ( rest, leg ) = next( text )
 #   ---- }
             if rest[ :1 ] == '}':
                 return ( rest[ 1: ], INFIX( leg, sou.input_file, sou.pos ))
@@ -1950,7 +1952,7 @@ def ps_infix( sou, depth = 0 ):
         text = ps_text( sou[ l_INFIX: ], depth + 1 )
         while True:
 #   ---- text
-            ( rest, leg ) = text.next()
+            ( rest, leg ) = next( text )
 #   ---- ) & [eq depth_pth 0]
             if ( rest[ :1 ] == ')' ) and ( leg.depth_pth == 0 ):
                 return ( rest[ 1: ], INFIX( leg, sou.input_file, sou.pos + 1 ))
@@ -2053,7 +2055,7 @@ def ps_quote( sou, depth = 0 ):
         plain = ps_plain( sou, 0, 0, None, depth + 1 )
         while True:
 #   ---- plain
-            ( sou, leg, _, depth_pth ) = plain.next()
+            ( sou, leg, _, depth_pth ) = next( plain )
 #   ---- ) & [eq depth_pth 0]
             if ( sou[ :1 ] == ')' ) and ( depth_pth == 0 ):
                 return ( sou[ 1: ], STR( leg ))
@@ -2143,7 +2145,7 @@ def ps_comment( sou, depth = 0 ):
         plain = ps_plain( sou, 0, 0, None, depth + 1 )
         while True:
 #   ---- plain
-            ( sou, _leg, _, depth_pth ) = plain.next()
+            ( sou, _leg, _, depth_pth ) = next( plain )
 #   ---- ) & [eq depth_pth 0]
             if ( sou[ :1 ] == ')' ) and ( depth_pth == 0 ):
                 return ( sou[ 1: ], COMMENT())
@@ -3182,7 +3184,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                                 val = node.fn.fn( *node.args )
                             except:
                                 e_type, e, tb = sys.exc_info()
-                                raise e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb
+                                raise_( e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb )
 
                             return int( val ) if isinstance( val, bool ) else val
 
@@ -3566,7 +3568,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     tree = parse( node.ast.lstrip(), mode = 'eval' )
                 except:
                     e_type, e, tb = sys.exc_info()
-                    raise e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb
+                    raise_( e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb )
 
                 infix_visitor = INFIX_VISITOR()
                 infix_visitor.visit( tree )
@@ -3595,7 +3597,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
                 except:
                     e_type, e, tb = sys.exc_info()
-                    raise e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb
+                    raise_( e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb )
 
 #   ---- EMIT
             elif isinstance( node, EMIT ):
@@ -3669,14 +3671,14 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
         if ( not isinstance( arg, str )
         or not arg.startswith( 'yueval' ) and not arg.startswith( 'python' ) and not arg.startswith( 'ps_' )):
             if isinstance( arg, str ) and arg.startswith( 'maximum recursion depth' ):
-                raise e_type, 'yueval: %s' % ( e ), tb
+                raise_( e_type, 'yueval: %s' % ( e ), tb )
             else:
 #               -- this 'raise' expr. could be cause of new exception when maximum recursion depth is exceeded
-                raise e_type, 'python: %s' % ( e ) + node.loc(), tb
+                raise_( e_type, 'python: %s' % ( e ) + node.loc(), tb )
 
 #   ---- raised exception
         else:
-            raise e_type, e, tb
+            raise_( e_type, e, tb )
 
 #   ---------------------------------------------------------------------------
 def yuinit():

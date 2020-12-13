@@ -13,6 +13,7 @@ yup.py -- shell of yupp preprocessor
 """
 
 from __future__ import division
+from __future__ import print_function
 import os
 import sys
 import re
@@ -203,7 +204,7 @@ def shell_input():
 
     except ( EOFError, ValueError ):
 #       -- e.g. run into environment without terminal input
-        print
+        print()
         return REPL_EXIT
 
 #   ---------------------------------------------------------------------------
@@ -246,33 +247,33 @@ def _pp_configure( cfg ):
 
 #  DEBUG OUTPUT
 #    if log.level != LOG_LEVEL * LOG_LEVEL__SCALE_:
-#        print 'log_level', log.level
+#        print( 'log_level', log.level )
 #    if trace.stage != TRACE_STAGE:
-#        print 'stage', trace.stage
+#        print( 'stage', trace.stage )
 #    if config.pp_skip_comments != PP_SKIP_COMMENTS:
-#        print 'pp_skip_comments', config.pp_skip_comments
+#        print( 'pp_skip_comments', config.pp_skip_comments )
 #    if config.pp_trim_app_indent != PP_TRIM_APP_INDENT:
-#        print 'pp_trim_app_indent', config.pp_trim_app_indent
+#        print( 'pp_trim_app_indent', config.pp_trim_app_indent )
 #    if config.pp_reduce_emptiness != PP_REDUCE_EMPTINESS:
-#        print 'pp_reduce_emptiness', config.pp_reduce_emptiness
+#        print( 'pp_reduce_emptiness', config.pp_reduce_emptiness )
 #    if config.pp_browse != PP_BROWSE:
-#        print 'pp_browse', config.pp_browse
+#        print( 'pp_browse', config.pp_browse )
 #    if config.pp_define != []:
-#        print 'pp_define', config.pp_define
+#        print( 'pp_define', config.pp_define )
 #    if config.warn_unbound_application != WARN_UNBOUND_APPLICATION:
-#        print 'warn_unbound_application', config.warn_unbound_application
+#        print( 'warn_unbound_application', config.warn_unbound_application )
 #    if config.directory != []:
-#        print 'directory', config.directory
+#        print( 'directory', config.directory )
 #    if shell.quiet != QUIET:
-#        print 'quiet', shell.quiet
+#        print( 'quiet', shell.quiet )
 #    if shell.type_output != TYPE_OUTPUT:
-#        print 'type_output', shell.type_output
+#        print( 'type_output', shell.type_output )
 #    if shell.output_dir != '':
-#        print 'output_dir', shell.output_dir
+#        print( 'output_dir', shell.output_dir )
 #    if shell.traceback != TRACEBACK:
-#        print 'traceback', shell.traceback
+#        print( 'traceback', shell.traceback )
 #    if shell.read_only != READ_ONLY:
-#        print 'read_only', shell.read_only
+#        print( 'read_only', shell.read_only )
 
 #   ---------------------------------------------------------------------------
 def _pp():                                                                                                             #pylint: disable=too-many-statements
@@ -431,7 +432,7 @@ def _pp_file( fn ):
         return False
 
     if not shell.quiet:
-        print PP_I, PP_FILE % fn
+        print( PP_I, PP_FILE % fn )
 
 #   -- figure out a name for output file
     fn_o = _output_fn( fn )
@@ -439,20 +440,20 @@ def _pp_file( fn ):
     ok, plain, fn_o = _pp_stream( f, fn, fn_o )
     f.close()
 
-    print
+    print()
     if ok:
         if shell.type_output:
-            print plain
+            print( plain )
         if not shell.quiet:
-            print PP_O, PP_FILE % fn_o
-            print OK
+            print( PP_O, PP_FILE % fn_o )
+            print( OK )
     else:
         if plain:
 #           -- plain contains AST
             if shell.type_output:
-                print plain
+                print( plain )
             if not shell.quiet:
-                print PP_O, PP_FILE % fn_o
+                print( PP_O, PP_FILE % fn_o )
     return ok
 
 #   ---------------------------------------------------------------------------
@@ -462,16 +463,16 @@ def _pp_test( text, echo = True ):
         return True
 
     if echo:
-        print PP_I, text
+        print( PP_I, text )
     yushell( text )
     yuinit()
     ok, plain = _pp()
 
-    print
+    print()
     if plain:
-        print PP_O, plain
+        print( PP_O, plain )
     if ok:
-        print OK
+        print( OK )
     return ok
 
 #   ---------------------------------------------------------------------------
@@ -480,11 +481,11 @@ def _pp_text( text, text_source = None ):
     yuinit()
     ok, plain = _pp()
 
-    print
+    print()
     if plain:
-        print plain
+        print( plain )
     if ok:
-        print OK
+        print( OK )
     return ok
 
 #   ---------------------------------------------------------------------------
@@ -553,9 +554,9 @@ def cli( arglist ):
     _pp_configure( args.__dict__ )
 
     if not shell.quiet:
-        print TITLE
+        print( TITLE )
         if trace.stage > 0:
-            print TR_FILE % trace.file
+            print( TR_FILE % trace.file )
 #       -- startup testing
         _pp_test( r"""($($\y:u.\m.\...(m y($\C.\p.(r)e p)($\ro.(ce)s)))so r)""" )
         _pp_test( r"""
@@ -582,7 +583,7 @@ def cli( arglist ):
 
     else:
 #       -- Read-Eval-Print Loop
-        print PROMPT + 'Type "%s" or source code + "%s".' % ( REPL_EXIT, REPL_TEST )
+        print( PROMPT + 'Type "%s" or source code + "%s".' % ( REPL_EXIT, REPL_TEST ))
         test = ''
         while True:
             line = shell_input()
