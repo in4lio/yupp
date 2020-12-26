@@ -363,7 +363,7 @@
     ___ MACROS IN PYTHON  ________________________
 
     You need to install "yupp" package in order to use the macro processor
-    with Python 2:
+    with Python:
 
         pip install yupp
 

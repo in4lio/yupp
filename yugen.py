@@ -11,7 +11,17 @@ yugen.py -- an implementation of yupp preprocessor in Python
 """
 
 from __future__ import division
+from __future__ import unicode_literals
+from builtins import next
+from builtins import map
+from builtins import str
+from builtins import bytes
+from builtins import zip
+from builtins import range
+from builtins import object
+from builtins import int
 from future.utils import raise_
+from future.utils import native_str
 import sys
 import os
 import tempfile
@@ -25,14 +35,15 @@ import operator
 import math
 import datetime
 import zlib
+import codecs
 from textwrap import dedent
 from ast import NodeVisitor
 from ast import parse
 from ast import literal_eval
+from functools import reduce
 
 from yulic import *                                                                                                    #pylint: disable=wildcard-import,unused-wildcard-import
 from yuconfig import *                                                                                                 #pylint: disable=wildcard-import,unused-wildcard-import
-from functools import reduce
 
 sys.setrecursionlimit( 2 ** 20 )
 
@@ -106,7 +117,7 @@ def _create_trace( default_stage ):
 #           -- e.g. permission denied
             _to_file = False
     if not _to_file:
-        hl = logging.StreamHandler( sys.stdout )                                                                       #pylint: disable=redefined-variable-type
+        hl = logging.StreamHandler( sys.stdout )
 
     _trace = _create_logger( 'trace', hl, TRACE_FORMAT )
     _trace.file = fn if _to_file else None
@@ -114,7 +125,7 @@ def _create_trace( default_stage ):
     _trace.stages = default_stage
     _trace.enabled = False
     _trace.TEMPL_DEEPEST = 'deepest call - %d'
-    _trace.set_current = _trace_set_current.__get__( _trace, _trace.__class__ )                                        #pylint: disable=no-member
+    _trace.set_current = _trace_set_current.__get__( _trace, _trace.__class__ )                                        #pylint: disable=no-member,too-many-function-args
     _trace.set_current( TRACE_STAGE_NONE )
     return _trace
 
@@ -269,7 +280,11 @@ class BASE_STR( SOURCE ):
 
 #   -----------------------------------
     def __eq__( self, other ):
-        return isinstance( other, str ) and str.__eq__( self, other )
+        return (isinstance( other, str ) or isinstance( other, native_str )) and str.__eq__( self, other )
+
+#   -----------------------------------
+    def __hash__( self ):
+        return str.__hash__( self )
 
 #   ---------------------------------------------------------------------------
 class ATOM( BASE_STR ):
@@ -378,17 +393,25 @@ class FLOAT( float ):
         return '%s(%s)' % ( self.__class__.__name__, float.__repr__( self ))
 
 #   -----------------------------------
+    def __str__(self):
+        return float.__str__( float( self ))
+
+#   -----------------------------------
     def loc( self ):
         return _loc_repr( self )
 
 #   ---------------------------------------------------------------------------
-class INT( long ):
+class INT( int ):
     """
     AST: INT( number )
     """
 #   -----------------------------------
     def __repr__( self ):
-        return '%s(%s)' % ( self.__class__.__name__, long.__repr__( self ))
+        return '%s(%s)' % ( self.__class__.__name__, int.__repr__( self ))
+
+#   -----------------------------------
+    def __str__(self):
+        return int.__str__( int( self ))
 
 #   -----------------------------------
     def loc( self ):
@@ -726,11 +749,11 @@ ps_EOL = frozenset([ ord( EOL ), ord( '\r' )])
 #   ---- SPACE | TAB
 ps_SPACE = frozenset([ ord( ' ' ), ord( '\t' )])
 #   ---- any Roman letter | _
-ps_LETTER = frozenset( range( ord( 'a' ), ord( 'z' ) + 1 ) + range( ord( 'A' ), ord( 'Z' ) + 1 ) + [ ord( '_' )])
+ps_LETTER = frozenset( list( range( ord( 'a' ), ord( 'z' ) + 1 )) + list( range( ord( 'A' ), ord( 'Z' ) + 1 )) + [ ord( '_' )])
 #   ---- any figure
-ps_FIGURE = frozenset( range( ord( '0' ), ord( '9' ) + 1 ) + [ ord( '-' )])
+ps_FIGURE = frozenset( list( range( ord( '0' ), ord( '9' ) + 1 )) + [ ord( '-' )])
 #   ---- any printable character
-ps_ANY = frozenset([ ord( EOL ), ord( '\r' ), ord( '\t' )] + range( ord( ' ' ), 256 ))
+ps_ANY = frozenset([ ord( EOL ), ord( '\r' ), ord( '\t' )] + list( range( ord( ' ' ), 256 )))
 #   ---- code mark
 ps_CODE = '($code'
 l_CODE = len( ps_CODE )
@@ -822,7 +845,7 @@ def _unq( st ):
 
                 return result
 
-            result = st.decode( 'string-escape' )
+            result = codecs.unicode_escape_decode( st )[ 0 ]
             if isinstance( st, STR ):
                 return STR( result, st.input_file, st.pos )
 
@@ -886,7 +909,7 @@ def _import_python( name, script ):
 def _import_eval( infix ):
     try:
         code = STR( ''.join( str( x ) for x in infix.ast.ast ), infix.input_file, infix.pos )
-        sou = eval( code, dict( globals(), **builtin ))                                                                #pylint: disable=eval-used
+        sou = str( eval( code, dict( globals(), **builtin )))                                                                #pylint: disable=eval-used
     except:
         e_type, e, tb = sys.exc_info()
         raise_( e_type, 'ps_import_eval: %s' % ( e ) + infix.loc(), tb )
@@ -1525,7 +1548,7 @@ def ps_plain( sou, pth_sq, pth, indent, depth = 0 ):
             if isinstance( indent, str ):
                 indent += sou[ i ]
         else:
-            indent = False                                                                                             #pylint: disable=redefined-variable-type
+            indent = False
         i += 1
 #   ---- YIELD
         yield ( sou[ i: ], PLAIN( sou[ :i ], indent ), depth_pth_sq, depth_pth )
@@ -2174,6 +2197,8 @@ def ps_number( sou, depth = 0 ):
     mch = re_INT.match( sou )
     if mch:
         leg = mch.group( 0 )
+        if leg[ -1 ] in [ 'l', 'L' ]:
+            leg = leg[ :-1 ]
         return ( sou[ mch.end(): ], INT( leg, 0 ))
 
     return ( sou, None )
@@ -2448,7 +2473,7 @@ class TRIM( BASE_OBJECT, CAPTION ):
                     pos -= delta
                 elif delta < 0:
 #                   -- added indent
-                    for _ in xrange( -delta ):
+                    for _ in range( -delta ):
                         total -= 1
                         offset.append(( pos, total ))
                         pos += 1
@@ -2579,7 +2604,7 @@ class ENV( dict ):
         result = []
         env = self
         while env is not None:
-            for key, value in env.items():
+            for key, value in list( env.items()):
                 result.append( str( key ) if isinstance( value, BOUND ) else key.upper())
             env = env.parent
         return '%s(%s)' % ( self.__class__.__name__, ' '.join( result ))
@@ -2665,8 +2690,44 @@ _title_template_python = """#  %(output)s was generated by %(app)s %(version)s
 #  out of %(input)s %(datetime)s"""
 
 #   ---------------------------------------------------------------------------
+def _print( s ):
+    sys.stdout.write( s )
+    sys.stdout.flush()
+
+#   ---------------------------------------------------------------------------
 builtin = dict()
 builtin.update( vars( string ))
+
+if 'lower' not in builtin:
+#   -- add deprecated string functions
+    builtin.update({
+        'lower': lambda s : s.lower(),
+        'upper': lambda s : s.upper(),
+        'swapcase': lambda s : s.swapcase(),
+        'strip': lambda s, chars=None : s.strip( chars ),
+        'lstrip': lambda s, chars=None : s.lstrip( chars ),
+        'rstrip': lambda s, chars=None : s.rstrip( chars ),
+        'split': lambda s, sep=None, maxsplit=-1 : s.split( sep, maxsplit ),
+        'rsplit': lambda s, sep=None, maxsplit=-1 : s.rsplit( sep, maxsplit ),
+        'join': lambda words, sep = ' ' : sep.join( words ),
+        'index': lambda s, *args : s.index( *args ),
+        'rindex': lambda s, *args : s.rindex( *args ),
+        'count': lambda s, *args : s.count( *args ),
+        'find': lambda s, *args : s.find( *args ),
+        'rfind': lambda s, *args : s.rfind( *args ),
+        'atof': lambda s : float( s ),
+        'atoi': lambda s , base=10 : int( s, base ),
+        'atol': lambda s, base=10 : long( s, base ),
+        'ljust': lambda s, width, *args : s.ljust( width, *args ),
+        'rjust': lambda s, width, *args : s.rjust( width, *args ),
+        'center': lambda s, width, *args : s.center( width, *args ),
+        'zfill': lambda x, width : x.zfill( width ) if isinstance( x, str ) else repr( x ).zfill( width ),
+        'expandtabs': lambda s, tabsize=8 : s.expandtabs( tabsize ),
+        'translate': lambda s, table, deletions="" : s.translate( table, deletions ) if deletions or table is None else s.translate( table + s[ :0 ]),
+        'capitalize': lambda s : s.capitalize(),
+        'replace': lambda s, old, new, maxreplace=-1 : s.replace( old, new, maxreplace )
+    })
+
 builtin.update( vars( operator ))
 builtin.update( vars( math ))
 builtin.update({
@@ -2683,12 +2744,14 @@ builtin.update({
     'car': lambda l : l[ :1 ],
     'cdr': lambda l : l[ 1: ],
     'chr': chr,
-    'cmp': cmp,
-    'crc32': lambda val : ( zlib.crc32( str( val )) & 0xffffffff ),
+    'cmp': lambda x, y : ( x > y ) - ( x < y ),
+    'crc32': lambda val : ( zlib.crc32( bytes( val, 'utf8' )) & 0xffffffff ),
     'dec': lambda val : ( val - 1 ),
+    'div': operator.truediv,
     'getslice': lambda l, *sl : l[ slice( *( None if x == '' else x for x in sl ))],
     'hex': hex,
     'inc': lambda val : ( val + 1 ),
+# -- redefine
     'index': lambda l, val : l.index( val ) if val in l else -1,
     'int_': int,
     'isdigit': lambda val : str( val ).isdigit(),
@@ -2699,12 +2762,13 @@ builtin.update({
     'oct': oct,
     'or': operator.or_,
     'ord': lambda val : ord( val ) if isinstance( val, STR ) else ord( str( val )),
-    'print': lambda *l : sys.stdout.write( ' '.join(( _unq( x ) if isinstance( x, STR ) else str( x )) for x in l )),
-    'q': lambda val : STR( '"%s"' % str( val ).encode( 'string-escape' )),
-    'qs': lambda val : STR( "'%s'" % str( val ).encode( 'string-escape' )),
-    'range': lambda *l : LIST( range( *l )),
-    'reversed': lambda l : l[ ::-1 ],
-    're-split': lambda regex, val : LIST( filter( None, re.split( regex, val ))),
+    'print': lambda *l : _print( ' '.join(( _unq( x ) if isinstance( x, STR ) else str( x )) for x in l )),
+    'q': lambda val : STR( '"%s"' % codecs.unicode_escape_encode( str( val ))[ 0 ].decode()),
+    'qs': lambda val : STR( "'%s'" % codecs.unicode_escape_encode( str( val ))[ 0 ].decode()),
+    'range': lambda *l : LIST( list( range( *l ))),
+    'reversed': lambda val : val[ ::-1 ],
+    're-split': lambda regex, val : LIST([ x for x in re.split( regex, val ) if x is not None ]),
+# -- redefine
     'rindex': lambda l, val : ( len( l ) - 1 ) - l[ ::-1 ].index( val ) if val in l else -1,
     'round': round,
     'SPACE': lambda : STEADY_SPACE,
@@ -2768,8 +2832,8 @@ def _is_term( node ):                                                           
     if isinstance( node, LAZY ):
         return True
 
-#   ---- str based | int | float | long
-    if isinstance( node, str ) or isinstance( node, int ) or isinstance( node, long ) or isinstance( node, float ):
+#   ---- str based | int | float
+    if isinstance( node, str ) or isinstance( node, int ) or isinstance( node, float ):
         return True
 
     return False
@@ -2827,7 +2891,7 @@ def _plain( node ):                                                             
     if isinstance( node, PLAIN ):
         return node.get_trimmed()
 
-#   ---- str based | int | float | long
+#   ---- str based | int | float
     return str( node )
 
 #   ---------------------------------------------------------------------------
@@ -2912,7 +2976,7 @@ def _plain_with_browse( node ):                                                 
 
 #   ---- list
     if isinstance( node, list ):
-        return reduce( RESULT.add_text, map( _plain_with_browse, node )) if node else RESULT( '' )
+        return reduce( RESULT.add_text, list( map( _plain_with_browse, node ))) if node else RESULT( '' )
 
 #   ---- LAZY
     if isinstance( node, LAZY ):
@@ -2926,7 +2990,7 @@ def _plain_with_browse( node ):                                                 
     if isinstance( node, SOURCE ):
         return RESULT( str( node ), RESULT.loc( node.input_file, node.pos ) if node and node.input_file else [])
 
-#   ---- str based | int | float | long
+#   ---- str based | int | float
     return RESULT( str( node ))
 
 #   ---------------------------------------------------------------------------
@@ -3010,7 +3074,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #   ---------------
 #   TODO: This is an experimental release of the eval-apply cycle, it's slightly theoretically incorrect and unstable,
 #   you may run into problems using a recursion or to face with a wrong scope of a name binding.
-                                                                                                                       #pylint: disable=too-many-nested-blocks,redefined-variable-type
+                                                                                                                       #pylint: disable=too-many-nested-blocks
     try:
         tr = False
         while True:
@@ -3186,7 +3250,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                                 e_type, e, tb = sys.exc_info()
                                 raise_( e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb )
 
-                            return int( val ) if isinstance( val, bool ) else val
+                            return int( val ) if isinstance( val, bool ) else str( val ) if isinstance( val, native_str ) else val
 
                         if _detect_deadlock( node.args ):
                             raise TypeError( '%s: unreducible expression' % ( _callee()) + node.loc())
@@ -3199,10 +3263,11 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         raise TypeError( '%s: no arguments of constant expected' % ( _callee())
                         + node.fn.atom.loc())
 
-                    return node.fn.fn
+                    val = node.fn.fn
+                    return str( val ) if isinstance( val, native_str ) else val
 
-#   ---- APPLY -- int | float | long (subscripting)
-                elif isinstance( node.fn, int ) or isinstance( node.fn, long ) or isinstance( node.fn, float ):
+#   ---- APPLY -- int | float (subscripting)
+                elif isinstance( node.fn, int ) or isinstance( node.fn, float ):
                     if node.named:
                         raise TypeError( '%s: unexpected named argument of index function' % ( _callee())
                         + node.named[ 0 ][ 0 ].loc())
@@ -3421,7 +3486,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         var = __va_args__
                     env_l[ var ] = BOUND()
 #               -- eval L_CLOSURE
-                node = L_CLOSURE( node.l_form, env_l, d_late, d_default )                                              #pylint: disable=redefined-variable-type
+                node = L_CLOSURE( node.l_form, env_l, d_late, d_default )
                 # fall through -- yueval( node )
 
 #   ---- L_CLOSURE
@@ -3493,7 +3558,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #   ---- MACRO --> ENV( None, ( name, M_CLOSURE( text, ENV( None, [( par, BOUND )]))))
             elif isinstance( node, MACRO ):
                 return ENV( None, [( node.name, M_CLOSURE( node.text, ENV( None
-                , zip( node.pars, [ BOUND()] * len( node.pars ))), node.name ))])
+                , list( zip( node.pars, [ BOUND()] * len( node.pars )))), node.name ))])
 
 #   ---- M_CLOSURE --> EVAL
             elif isinstance( node, M_CLOSURE ):
@@ -3593,7 +3658,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
                 try:
                     code = compile( node.tree, '', 'eval' )
-                    return eval( code, dict( globals(), **builtin ), node.env )                                        #pylint: disable=eval-used
+                    val = eval( code, dict( globals(), **builtin ), node.env )                                        #pylint: disable=eval-used
+                    return str( val ) if isinstance( val, native_str ) else val
 
                 except:
                     e_type, e, tb = sys.exc_info()
@@ -3743,8 +3809,8 @@ def make_ast_readable( node ):                                                  
     if isinstance( node, PLAIN ):
         return node.get_trimmed()
 
-#   ---- str based | int | float | long
-    if isinstance( node, str ) or isinstance( node, int ) or isinstance( node, long ) or isinstance( node, float ):
+#   ---- str based | int | float
+    if isinstance( node, str ) or isinstance( node, int ) or isinstance( node, float ):
         return str( node )
 
     return _ast_pretty( repr( node ))

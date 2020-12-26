@@ -14,6 +14,12 @@ yup.py -- shell of yupp preprocessor
 
 from __future__ import division
 from __future__ import print_function
+from __future__ import unicode_literals
+from past.builtins import execfile
+from builtins import input
+from builtins import str
+from builtins import range
+from builtins import open
 import os
 import sys
 import re
@@ -21,6 +27,7 @@ import json
 import traceback
 from argparse import ArgumentParser
 import stat
+import readline
 
 from yugen import log, trace
 from yugen import config, feedback, yushell, yuinit, yuparse, yueval, RESULT
@@ -98,9 +105,9 @@ SYSTEM_EXIT_HELP = 'Moreover, you can pass the arguments through a response file
 def shell_parse_cli_arguments( arglist ):
     argp = ArgumentParser(
       description = 'yupp, %(description)s' % { 'description': DESCRIPTION }
-    , version = '%(app)s %(version)s' % { 'app': APP, 'version': VERSION }
     , epilog = SYSTEM_EXIT_HELP
     )
+    argp.add_argument( '--version', action = 'version', version = '%(app)s %(version)s' % { 'app': APP, 'version': VERSION })
     argp.add_argument( 'files', metavar = 'FILE', type = str, nargs = '*', help = "an input file" )
     argp.add_argument( '-q', '--quiet', action = 'store_true', dest = 'quiet', default = shell.quiet
     , help = QUIET_HELP )
@@ -112,7 +119,7 @@ def shell_parse_cli_arguments( arglist ):
     , help = READ_ONLY_HELP )
 #   -- preprocessor options
     argp.add_argument( '--pp-skip-comments', metavar = 'TYPE', type = int, dest = 'pp_skip_comments'
-    , choices = range( 0, 4 ), help = PP_SKIP_COMMENTS_HELP )
+    , choices = list( range( 0, 4 )), help = PP_SKIP_COMMENTS_HELP )
     argp.add_argument( '--pp-no-trim-app-indent', action = 'store_false', dest = 'pp_trim_app_indent' )
     argp.add_argument( '--pp-trim-app-indent', action = 'store_true', dest = 'pp_trim_app_indent'
     , help = PP_TRIM_APP_INDENT_HELP )
@@ -130,13 +137,13 @@ def shell_parse_cli_arguments( arglist ):
     , dest = 'warn_unbound_application', help = WARN_UNBOUND_APPLICATION_HELP )
 #   -- debug options
     argp.add_argument( '-l', '--log', metavar = 'LEVEL', type = int, dest = 'log_level'
-    , default = ( LOG_LEVEL ), choices = range( 1, 6 )
+    , default = ( LOG_LEVEL ), choices = list( range( 1, 6 ))
     , help = LOG_LEVEL_HELP )
     argp.add_argument( '-t', '--trace', metavar = 'STAGE', type = int, dest = 'trace_stage'
-    , default = TRACE_STAGE, choices = range( 0, 4 )
+    , default = TRACE_STAGE, choices = list( range( 0, 4 ))
     , help = TRACE_STAGE_HELP )
     argp.add_argument( '-b', '--traceback', metavar = 'TYPE', type = int, dest = 'traceback'
-    , default = TRACEBACK, choices = range( 0, 3 )
+    , default = TRACEBACK, choices = list( range( 0, 3 ))
     , help = TRACEBACK_HELP )
     argp.add_argument( '--type-file', action = 'store_true', dest = 'type_output', default = shell.type_output
     , help = TYPE_OUTPUT_HELP )
@@ -188,7 +195,7 @@ def shell_parse_yuconfig( fn ):
     _exec_yuconfig_script( '' + E_YUCFG, context )
 #   -- configuration for concrete source file
     _exec_yuconfig_script( os.path.splitext( fn )[ 0 ] + E_YUCFG, context )
-    cfg = { k: val for k, val in context.items() if isinstance( val, yuconfig_types )}
+    cfg = { k: val for k, val in list( context.items()) if isinstance( val, yuconfig_types )}
     if isinstance( context[ 'directory' ], list ):
         cfg[ 'directory' ] = context[ 'directory' ]
     if isinstance( context[ 'dependency' ], list ):
@@ -200,7 +207,8 @@ def shell_parse_yuconfig( fn ):
 #   ---------------------------------------------------------------------------
 def shell_input():
     try:
-        return raw_input( PROMPT )
+        val = input( PROMPT )
+        return val if isinstance( val, str ) else val.decode( 'utf8' )
 
     except ( EOFError, ValueError ):
 #       -- e.g. run into environment without terminal input
@@ -218,7 +226,7 @@ def shell_backup( fn ):
 
 #   ---------------------------------------------------------------------------
 def shell_savetofile( fn, text ):
-    with open( fn, 'wb' ) as f:
+    with open( fn, mode='w', encoding='utf8' ) as f:
         f.write( text )
 
 
@@ -520,7 +528,7 @@ def proc_stream( _stream, fn ):
                 with open( fn_o, 'r' ) as f:
                     data = f.read()
 
-                # print 'skipped yupp running'
+                # print( 'skipped yupp running' )
                 return ( True, data, fn_o, 1 if 'coding:' in _stream.readline() else 2 )
 
         except:                                                                                                        #pylint: disable=bare-except

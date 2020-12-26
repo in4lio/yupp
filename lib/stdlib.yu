@@ -114,6 +114,6 @@
 }
 [ )
 
-($set INT_MAX { sys.maxint })
+($set INT_MAX { sys.maxsize })
 
-($set INT_MIN { -sys.maxint - 1 })
+($set INT_MIN { -sys.maxsize - 1 })

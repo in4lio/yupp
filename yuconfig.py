@@ -10,6 +10,8 @@ http://github.com/in4lio/yupp/
 yuconfig.py -- configuration of yupp preprocessor
 """
 
+from __future__ import unicode_literals
+
 #   -----------------------------------
 #   PP_SKIP_COMMENTS
 #   -----------------------------------
@@ -103,6 +105,6 @@ yuconfig_types = ( int, bool )
 #   ---------------------------------------------------------------------------
 def yuconfig_defaults():
     return {
-        k: val for k, val in globals().items()
+        k: val for k, val in list( globals().items())
                if not k.startswith( '__' ) and isinstance( val, yuconfig_types )
     }

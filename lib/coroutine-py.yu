@@ -24,6 +24,7 @@
 )
 
 ($import stdlib)
+from future.builtins import next
 
 CO_READY = 0
 CO_WAIT  = 1
@@ -45,6 +46,6 @@ CO_SKIP  = 4
 
 ($macro coro-quit () while True: yield CO_END)
 
-($macro coro-call (name) ($name).next())
+($macro coro-call (name) next( ($name) ))
 
 ($macro coro-alive (status) (( ($status) ) < CO_END ))

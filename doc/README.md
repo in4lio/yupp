@@ -342,7 +342,7 @@ int main( void )
 ### MACROS IN PYTHON
 
 You need to install [yupp package][package] in order to use the macro
-processor with Python 2:
+processor with Python:
 
     pip install yupp
 
