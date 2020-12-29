@@ -4,6 +4,6 @@
 
 from __future__ import print_function
 
-print ($'«($0)¸·($1)¸·($2)»¶' ($unq 'Liberté') [égalité],,fraternité)
+print( ($'«($0)¸·($1)¸·($2)»¶' ($unq 'Liberté') [égalité],,fraternité) )
 
 # ¡No pasarán! ¢ £ ¥ ± µ

@@ -3,20 +3,22 @@
 
 ($__TITLE__ 0)
 
+from __future__ import print_function
+
 ($import coroutine-py)
 
 c = False
 
 def ($coro A):
     while True:
-        print 'A'
+        print( 'A' )
         ($coro-yield)
 
 def ($coro B):
     global c
 
-    for i in xrange( 5 ):
-        print 'B'
+    for i in range( 5 ):
+        print( 'B' )
         if i & 1:
             c = True
         ($coro-yield)
@@ -28,7 +30,7 @@ def ($coro C):
 
     while True:
         ($coro-wait,,c)
-        print 'C'
+        print( 'C' )
         c = False
 
 if __name__ == '__main__':
@@ -41,4 +43,4 @@ if __name__ == '__main__':
         if not ($coro-alive ($coro-call B)):
             break
         ($coro-call C)
-        print
+        print()

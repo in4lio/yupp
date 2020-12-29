@@ -3,9 +3,9 @@
 
 int main( void )
 {
-	float Co = 3.14159265359;
+	float Co = 3.141592653589793;
 	double F = acos( -1 );
-	float Zu = 3.14159292035;
+	float Zu = 3.1415929203539825;
 
 	printf( "Hello world!\n" );
 
