@@ -1,4 +1,6 @@
 from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
 import codecs
 import encodings
 from encodings import utf_8
@@ -16,7 +18,7 @@ def yuppReaderFactory( BaseReader ):
 
     class yuppReader( BaseReader ):
         def __init__( self, *args, **kwargs ):
-            import cStringIO
+            import io
             import ast
             from . import yup
             from . import yutraceback
@@ -36,7 +38,7 @@ def yuppReaderFactory( BaseReader ):
 #               -- or just use dirty hack: execfile( fn_o ); code = ''
             else:
                 code = ''
-            self.stream = cStringIO.StringIO( code )
+            self.stream = io.StringIO( code )
 
     return yuppReader
 
