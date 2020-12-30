@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 r"""
 http://github.com/in4lio/yupp/
  __    __    _____ _____
@@ -15,7 +17,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from builtins import str
 import traceback
-from yugen import *                                                                                                    #pylint: disable=wildcard-import,unused-wildcard-import
+from pp.yugen import *                                                                                                    #pylint: disable=wildcard-import,unused-wildcard-import
 
 _TRACEBACK = True
 _TRACE = TRACE_STAGE_NONE

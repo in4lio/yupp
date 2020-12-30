@@ -4,7 +4,7 @@
 
 `1.` Install Python package:
 
-    pip install yupp
+    python -m pip install yupp
 
 `2.` Start your code in Python with:
 

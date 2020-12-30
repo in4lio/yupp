@@ -120,7 +120,8 @@ setup(
     author_email=AUTHOR_EMAIL,
     license="MIT",
     url=URL,
-    packages=find_packages(exclude=["eg.*", "eg"]),
+    packages=find_packages(exclude=["eg.*"]),
+    install_requires=[ 'future' ],
     package_data=find_package_data(
         PACKAGE,
         only_in_packages=False
@@ -132,12 +133,11 @@ setup(
         ]
     },
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Environment :: Console",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: Microsoft :: Windows",
-        "Operating System :: POSIX :: Linux",
+        "Operating System :: OS Independent",
         "Programming Language :: Python",
     ],
     platforms='any',

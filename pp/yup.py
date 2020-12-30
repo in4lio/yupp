@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 r"""
 http://github.com/in4lio/yupp/
  __    __    _____ _____
@@ -29,12 +27,12 @@ from argparse import ArgumentParser
 import stat
 import readline
 
-from yugen import log, trace
-from yugen import config, feedback, yushell, yuinit, yuparse, yueval, RESULT
-from yugen import make_ast_readable, reduce_emptiness, replace_steady
+from .yugen import log, trace
+from .yugen import config, feedback, yushell, yuinit, yuparse, yueval, RESULT
+from .yugen import make_ast_readable, reduce_emptiness, replace_steady
 
-from yulic import *                                                                                                    #pylint: disable=wildcard-import
-from yuconfig import *                                                                                                 #pylint: disable=wildcard-import,unused-wildcard-import
+from .yulic import *                                                                                                    #pylint: disable=wildcard-import
+from .yuconfig import *                                                                                                 #pylint: disable=wildcard-import,unused-wildcard-import
 
 __version__ = VERSION
 

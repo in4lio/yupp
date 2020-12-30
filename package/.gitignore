@@ -1,0 +1,11 @@
+*.egg-info/
+*.bat
+*.egg
+*.json
+
+.pypirc
+README
+LICENSE
+__main__.py
+yupp/lib/
+yupp/pp/

@@ -3,7 +3,9 @@
 
 ($__TITLE__ 0)
 
+from __future__ import unicode_literals
 from __future__ import print_function
+from builtins import bytes
 from zlib import crc32
 
 ($! switch construction for strings based on CRC-32 )

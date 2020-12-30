@@ -11,11 +11,12 @@ __main__.py -- console script of yupp preprocessor
 """
 
 import sys
-import yup
+
+from .pp.yup import cli
 
 #   ---------------------------------------------------------------------------
 def main():
-    yup.cli( sys.argv[ 1: ])
+    cli( sys.argv[ 1: ])
 
 #   ---------------------------------------------------------------------------
 if __name__ == '__main__':

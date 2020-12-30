@@ -14,7 +14,7 @@ to modify any source file before calling Python’s internal parser.
 You have to install [yupp package][package] to use the macro processor with
 Python:
 
-    pip install yupp
+    python -m pip install yupp
 
 Then, in order to Python have called **yupp** before running your source code,
 you must start your source file with the declaration of `yupp` encoding:

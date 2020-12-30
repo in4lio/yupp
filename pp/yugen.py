@@ -42,8 +42,8 @@ from ast import parse
 from ast import literal_eval
 from functools import reduce
 
-from yulic import *                                                                                                    #pylint: disable=wildcard-import,unused-wildcard-import
-from yuconfig import *                                                                                                 #pylint: disable=wildcard-import,unused-wildcard-import
+from .yulic import *                                                                                                    #pylint: disable=wildcard-import,unused-wildcard-import
+from .yuconfig import *                                                                                                 #pylint: disable=wildcard-import,unused-wildcard-import
 
 sys.setrecursionlimit( 2 ** 20 )
 
@@ -2670,7 +2670,7 @@ def yushell( text, _input = None, _output = None ):
     yushell.directory.extend( config.directory )
 #   -- yupp lib directory
     if '__file__' in globals():
-        yushell.directory.append( os.path.join( os.path.dirname( os.path.realpath( __file__ )), 'lib' ))
+        yushell.directory.append( os.path.join( os.path.dirname( os.path.dirname( os.path.realpath( __file__ ))), 'lib' ))
     else:
         yushell.directory.append( './lib' )
 #   -- to skip comments we have to parse them

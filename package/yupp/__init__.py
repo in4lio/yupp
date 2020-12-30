@@ -4,8 +4,8 @@ standard_library.install_aliases()
 import codecs
 import encodings
 from encodings import utf_8
-from . import yulic
-from . yup import cli
+from .pp import yulic
+from .pp.yup import cli
 
 __pp_name__      = 'yupp'
 __version__      = yulic.VERSION
@@ -20,7 +20,7 @@ def yuppReaderFactory( BaseReader ):
         def __init__( self, *args, **kwargs ):
             import io
             import ast
-            from . import yup
+            from .pp import yup
             from . import yutraceback
 
             BaseReader.__init__( self, *args, **kwargs )
