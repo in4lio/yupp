@@ -340,15 +340,8 @@ int main( void )
 
 ### MACROS IN PYTHON
 
-You need to install [yupp package][package] in order to use the macro
-processor with Python:
-
-    python -m pip install yupp
-
-You may need to specify `--pre` key if you want to install a beta version.
-
-After that, you can use macro expressions in source code in Python,
-starting your script with:
+After [yupp package][package] is installed, you can use macro expressions
+in source code on Python, starting your script with:
 
     # coding: yupp
 

@@ -10,14 +10,17 @@ http://github.com/in4lio/yupp/
 yup.py -- shell of yupp preprocessor
 """
 
+from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
+
 from past.builtins import execfile
 from builtins import input
 from builtins import str
 from builtins import range
 from builtins import open
+
 import os
 import sys
 import re
@@ -407,12 +410,12 @@ def _pp_stream( _stream, fn, fn_o ):
                 os.chmod( fn_o, stat.S_IREAD )
             if isinstance( plain, RESULT ):
 #               -- browse writing
-                with open( fn_o + '.json', 'w' ) as f:
-                    json.dump({
+                with open( fn_o + '.json', mode='w', encoding='utf8' ) as f:
+                    f.write( str( json.dumps({
                       'files': sorted( RESULT.files, key=RESULT.files.get )
                     , 'browse': plain.browse
                     , 'offset': plain.offset
-                    }, f )
+                    })))
         else:
             if plain:
 #               -- plain contains AST

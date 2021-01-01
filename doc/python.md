@@ -16,6 +16,8 @@ Python:
 
     python -m pip install yupp
 
+You may need to specify `--pre` key if you want to install a beta version.
+
 Then, in order to Python have called **yupp** before running your source code,
 you must start your source file with the declaration of `yupp` encoding:
 

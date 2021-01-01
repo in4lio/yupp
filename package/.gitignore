@@ -1,11 +1,6 @@
-*.egg-info/
-*.bat
-*.egg
-*.json
-
-.pypirc
-README
-LICENSE
-__main__.py
-yupp/lib/
-yupp/pp/
+*
+!dist
+!MANIFEST.in
+!README.md
+!setup.py
+!yupp.pth

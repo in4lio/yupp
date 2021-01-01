@@ -7,13 +7,20 @@ cd "$(dirname $0)/.."
 cp -fv ./README ./package/
 cp -fv ./LICENSE ./package/
 
-mkdir -p ./package/yupp/pp/
+mkdir -p ./package/yupp/
 cp -fv ./__main__.py ./package/yupp/
+cp -fv ./__init__.py ./package/yupp/
+
+mkdir -p ./package/yupp/pp/
 cp -fv ./pp/__init__.py ./package/yupp/pp/
 cp -fv ./pp/yup.py ./package/yupp/pp/
 cp -fv ./pp/yugen.py ./package/yupp/pp/
 cp -fv ./pp/yuconfig.py ./package/yupp/pp/
 cp -fv ./pp/yulic.py ./package/yupp/pp/
+
+mkdir -p ./package/yupp/pylib
+cp -fv ./pylib/__init__.py ./package/yupp/pylib/
+cp -fv ./pylib/yutraceback.py ./package/yupp/pylib/
 
 # ---- lib ----
 

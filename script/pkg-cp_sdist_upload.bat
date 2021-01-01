@@ -8,10 +8,14 @@ xcopy /Y %home%\README %home%\package\
 xcopy /Y %home%\LICENSE %home%\package\
 
 xcopy /Y %home%\__main__.py %home%\package\yupp\
+xcopy /Y %home%\__init__.py %home%\package\yupp\
 xcopy /Y %home%\pp\yup.py %home%\package\yupp\pp\
 xcopy /Y %home%\pp\yugen.py %home%\package\yupp\pp\
 xcopy /Y %home%\pp\yuconfig.py %home%\package\yupp\pp\
 xcopy /Y %home%\pp\yulic.py %home%\package\yupp\pp\
+
+xcopy /Y %home%\pylib\__init__.py %home%\package\yupp\pylib\
+xcopy /Y %home%\pylib\yutraceback.py %home%\package\yupp\pylib\
 
 rem ---- lib ----
 
