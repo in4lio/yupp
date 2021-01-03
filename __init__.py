@@ -41,12 +41,16 @@ def decode_stream( fn, _stream ):
     from .pp.yup import proc_stream
     from .pylib import yutraceback
 
-    ok, code, fn_o, shrink = proc_stream( _stream, fn )
+    try:
+        ok, code, fn_o, shrink = proc_stream( _stream, fn )
+    except Exception:
+        yutraceback.print_exc( None )
+        ok = False
     if not ok:
         return ''
 
 #   -- replace the filename of source file in traceback
-    yutraceback.fn_subst[ fn ] = ( fn_o, shrink )
+    yutraceback.substitution( fn, fn_o, shrink )
 #   -- check syntax of the preprocessed code
     try:
         parse( code, fn_o )
@@ -79,7 +83,7 @@ def incremental_decoder_factory( basecodec ):
     class IncrementalDecoder( codecs.BufferedIncrementalDecoder ):
 
         def _buffer_decode( self, input, errors, final ):
-            if final:
+            if input and final:
                 return decoder_factory( basecodec )( input, errors )
 
 #           -- we don't support incremental decoding

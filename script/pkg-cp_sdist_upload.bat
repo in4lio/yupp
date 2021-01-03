@@ -16,6 +16,8 @@ xcopy /Y %home%\pp\yulic.py %home%\package\yupp\pp\
 
 xcopy /Y %home%\pylib\__init__.py %home%\package\yupp\pylib\
 xcopy /Y %home%\pylib\yutraceback.py %home%\package\yupp\pylib\
+xcopy /Y %home%\pylib\yutraceback2.py %home%\package\yupp\pylib\
+xcopy /Y %home%\pylib\yutraceback3.py %home%\package\yupp\pylib\
 
 rem ---- lib ----
 

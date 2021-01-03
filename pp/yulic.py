@@ -12,12 +12,12 @@ yulic.py -- metadata of yupp preprocessor
 
 from __future__ import unicode_literals
 
-COPYRIGHT   = 'Copyright (c) 2011-2020'
+COPYRIGHT   = 'Copyright (c) 2011-2021'
 HOLDER      = 'Vitaly Kravtsov'
 EMAIL       = 'in4lio@gmail.com'
 DESCRIPTION = 'yet another lexical preprocessor'
 APP         = 'yupp'
-VERSION     = '1.2b3'
+VERSION     = '1.2b4'
 """
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

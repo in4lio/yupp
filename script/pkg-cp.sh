@@ -21,6 +21,8 @@ cp -fv ./pp/yulic.py ./package/yupp/pp/
 mkdir -p ./package/yupp/pylib
 cp -fv ./pylib/__init__.py ./package/yupp/pylib/
 cp -fv ./pylib/yutraceback.py ./package/yupp/pylib/
+cp -fv ./pylib/yutraceback2.py ./package/yupp/pylib/
+cp -fv ./pylib/yutraceback3.py ./package/yupp/pylib/
 
 # ---- lib ----
 
