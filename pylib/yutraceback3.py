@@ -63,7 +63,7 @@ class StackSummary(list):
             else:
                 filename = co.co_filename
                 shrink = 0
-            lineno -= shrink
+            lineno -= shrink - 1
             if lineno < 1: lineno = 1
 #           --
             name = co.co_name

@@ -36,6 +36,22 @@ __author_email__ = EMAIL
 __url__          = 'http://github.com/in4lio/yupp/'
 
 #   ---------------------------------------------------------------------------
+def read_header( fn ):
+    '''
+    Read shebang and magic comment from the source file.
+    '''
+    header = ''
+    try:
+        with open( fn, 'r' ) as f:
+            header = f.readline()
+            ln = header.strip()
+            if not ln or ln.startswith( '#' ) and 'coding' not in ln:
+                header += f.readline().strip()
+    except:
+        pass
+    return header
+
+#   ---------------------------------------------------------------------------
 def decode_stream( fn, _stream ):
     from ast import parse
     from .pp.yup import proc_stream
@@ -72,7 +88,8 @@ def decoder_factory( basecodec ):
         from sys import argv
 
         data, bytesencoded = basecodec.decode( input, errors )
-        return decode_stream( argv[ 0 ], StringIO( data )), bytesencoded
+        fn = argv[ 0 ]
+        return decode_stream( fn, StringIO( read_header( fn ) + data )), bytesencoded
 
     return decode
 

@@ -511,6 +511,7 @@ def proc_stream( _stream, fn ):
     """
     Stream preprocessing (for Python package).
     """
+#   -- read shebang and magic comment again
     _stream.seek( 0 )
 #   -- figure out a name for output file
     fn_o = _output_fn( fn )

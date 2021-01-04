@@ -900,7 +900,7 @@ def _import_python( name, script ):
             if os.path.isfile( lpath ):
                 break
     try:
-        mod = imp.load_source( name, lpath )
+        mod = imp.load_source( name, str( lpath ))
         builtin.update( vars( mod ))
     except:
         e_type, e, tb = sys.exc_info()
