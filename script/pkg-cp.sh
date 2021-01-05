@@ -27,12 +27,12 @@ cp -fv ./pylib/yutraceback3.py ./package/yupp/pylib/
 # ---- lib ----
 
 mkdir -p ./package/yupp/lib/
-cp -fv ./lib/corolib.yu ./package/yupp/lib/corolib.yu
-cp -fv ./lib/coroutine-h.yu ./package/yupp/lib/coroutine-h.yu
-cp -fv ./lib/coroutine-py.yu ./package/yupp/lib/coroutine-py.yu
-cp -fv ./lib/coroutine.h ./package/yupp/lib/coroutine.h
-cp -fv ./lib/coroutine.yu ./package/yupp/lib/coroutine.yu
-cp -fv ./lib/h-light.yu ./package/yupp/lib/h-light.yu
-cp -fv ./lib/h.yu ./package/yupp/lib/h.yu
-cp -fv ./lib/hlib.yu ./package/yupp/lib/hlib.yu
-cp -fv ./lib/stdlib.yu ./package/yupp/lib/stdlib.yu
+cp -fv ./lib/corolib.yu ./package/yupp/lib/
+cp -fv ./lib/coroutine-h.yu ./package/yupp/lib/
+cp -fv ./lib/coroutine-py.yu ./package/yupp/lib/
+cp -fv ./lib/coroutine.h ./package/yupp/lib/
+cp -fv ./lib/coroutine.yu ./package/yupp/lib/
+cp -fv ./lib/h-light.yu ./package/yupp/lib/
+cp -fv ./lib/h.yu ./package/yupp/lib/
+cp -fv ./lib/hlib.yu ./package/yupp/lib/
+cp -fv ./lib/stdlib.yu ./package/yupp/lib/

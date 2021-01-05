@@ -28,7 +28,10 @@ import json
 import traceback
 from argparse import ArgumentParser
 import stat
-import readline
+try:
+    import readline
+except:
+    pass
 
 from .yugen import log, trace
 from .yugen import config, feedback, yushell, yuinit, yuparse, yueval, RESULT
