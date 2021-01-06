@@ -69,7 +69,7 @@ TEXT([PLAIN('\n'), SET([ATOM('a'), ATOM('b'), ATOM('c')], LIST([APPLY(VAR([], AT
 
 ""
 ),(
-#   ---- 03 -- region, named, LATE_BOUNDED
+#   ---- 03 -- region, named, LATE_BOUND
 TRACE_STAGE_NONE,
 
 r"""
@@ -78,7 +78,7 @@ r"""
 ($fn2 \p1 a \b.(c) \p3 \d.\e.($d e) \fn2)
 """,
 
-TEXT([PLAIN('\n// fn()!\n'), APPLY(VAR([ATOM('u1'), ATOM('u2'), ATOM('u3')], ATOM('fn')), [VAR(LATE_BOUNDED(), ATOM('par2'))], [(ATOM('p1'), VAR([], ATOM('par1'))), (ATOM('p3'), VAR([], ATOM('par3')))]), PLAIN('\n'), APPLY(VAR([], ATOM('fn2')), [LAMBDA([([], ATOM('b'), None)], LIST([VAR([], ATOM('c'))]))], [(ATOM('p1'), VAR([], ATOM('a'))), (ATOM('p3'), LAMBDA([([], ATOM('d'), None), ([], ATOM('e'), None)], APPLY(VAR([], ATOM('d')), [VAR([], ATOM('e'))], [])))]), PLAIN('\n')], 0, 0),
+TEXT([PLAIN('\n// fn()!\n'), APPLY(VAR([ATOM('u1'), ATOM('u2'), ATOM('u3')], ATOM('fn')), [VAR(LATE_BOUND(), ATOM('par2'))], [(ATOM('p1'), VAR([], ATOM('par1'))), (ATOM('p3'), VAR([], ATOM('par3')))]), PLAIN('\n'), APPLY(VAR([], ATOM('fn2')), [LAMBDA([([], ATOM('b'), None)], LIST([VAR([], ATOM('c'))]))], [(ATOM('p1'), VAR([], ATOM('a'))), (ATOM('p3'), LAMBDA([([], ATOM('d'), None), ([], ATOM('e'), None)], APPLY(VAR([], ATOM('d')), [VAR([], ATOM('e'))], [])))]), PLAIN('\n')], 0, 0),
 
 ""
 ),(
@@ -266,7 +266,7 @@ r"""
 A
 """
 ),(
-#   ---- 04 -- LATE_BOUNDED, EMIT, parameters from list
+#   ---- 04 -- LATE_BOUND, EMIT, parameters from list
 TRACE_STAGE_NONE,
 
 r"""
@@ -285,7 +285,7 @@ r"""
 ($ \(p).{c - d} 100 500)
 """,
 
-TEXT([PLAIN('\n'), SET(ATOM('k'), INT(10)), SET(ATOM('app'), LAMBDA([([ATOM('p1'), ATOM('p2')], ATOM('f'), None), ([], ATOM('i'), None)], APPLY(VAR([], ATOM('f')), [VAR([], ATOM('k')), VAR([], ATOM('i'))], []))), SET(ATOM('l'), INT(3)), PLAIN('\n'), APPLY(VAR([], ATOM('list')), [VAR([], ATOM('k')), APPLY(VAR([], ATOM('app')), [INT(2)], [(ATOM('f'), APPLY(VAR([], ATOM('mul')), [VAR(LATE_BOUNDED(), ATOM('p1')), VAR(LATE_BOUNDED(), ATOM('p2'))], []))]), APPLY(VAR([], ATOM('app')), [VAR([], ATOM('l'))], [(ATOM('f'), APPLY(VAR([], ATOM('mul')), [VAR(LATE_BOUNDED(), ATOM('p1')), VAR(LATE_BOUNDED(), ATOM('p2'))], []))])], []), PLAIN('\n'), SET(ATOM('l'), LIST([STR('"A"'), STR('"B"'), STR('"C"')])), PLAIN('\n'), SET(ATOM('a'), INT(5)), PLAIN('\n'), EMIT(VAR([], ATOM('l')), None), PLAIN(', '), EMIT(VAR([], ATOM('l')), LAMBDA([([], ATOM('r'), None)], APPLY(VAR([], ATOM('r')), [LAMBDA([([], ATOM('s'), None)], APPLY(VAR([], ATOM('lower')), [VAR([], ATOM('s'))], []))], []))), PLAIN(', '), EMIT(VAR([], ATOM('l')), None), PLAIN(', '), EMIT(VAR([], ATOM('l')), None), PLAIN('\n'), EMIT(VAR([], ATOM('a')), LAMBDA([([], ATOM('n'), None)], INFIX(TEXT([PLAIN(' n + 1 ')], 0, 0)))), PLAIN(', '), EMIT(VAR([], ATOM('a')), LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('q')), [VAR([], ATOM('n'))], []))), PLAIN(', '), EMIT(VAR([], ATOM('a')), None), PLAIN('\n'), SET(ATOM('q'), INT(3)), PLAIN('\n'), SET(ATOM('add2'), LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('add')), [VAR([], ATOM('n')), INT(2)], []))), PLAIN('\n'), INFIX(TEXT([EMIT(VAR([], ATOM('q')), VAR([], ATOM('add2'))), PLAIN('+'), EMIT(VAR([], ATOM('q')), VAR([], ATOM('add2'))), PLAIN('+'), EMIT(VAR([], ATOM('q')), VAR([], ATOM('add2'))), PLAIN('+'), EMIT(VAR([], ATOM('q')), VAR([], ATOM('add2')))], 0, 0)), PLAIN('\n'), SET(ATOM('p'), LIST([VAR([], ATOM('c')), VAR([], ATOM('d'))])), PLAIN('\n'), APPLY(LAMBDA(VAR([], ATOM('p')), INFIX(TEXT([PLAIN('c - d')], 0, 0))), [INT(100), INT(500)], []), PLAIN('\n'), SET(ATOM('p'), LIST([VAR([], ATOM('d')), VAR([], ATOM('c'))])), PLAIN('\n'), APPLY(LAMBDA(VAR([], ATOM('p')), INFIX(TEXT([PLAIN('c - d')], 0, 0))), [INT(100), INT(500)], []), PLAIN('\n')], 0, 0),
+TEXT([PLAIN('\n'), SET(ATOM('k'), INT(10)), SET(ATOM('app'), LAMBDA([([ATOM('p1'), ATOM('p2')], ATOM('f'), None), ([], ATOM('i'), None)], APPLY(VAR([], ATOM('f')), [VAR([], ATOM('k')), VAR([], ATOM('i'))], []))), SET(ATOM('l'), INT(3)), PLAIN('\n'), APPLY(VAR([], ATOM('list')), [VAR([], ATOM('k')), APPLY(VAR([], ATOM('app')), [INT(2)], [(ATOM('f'), APPLY(VAR([], ATOM('mul')), [VAR(LATE_BOUND(), ATOM('p1')), VAR(LATE_BOUND(), ATOM('p2'))], []))]), APPLY(VAR([], ATOM('app')), [VAR([], ATOM('l'))], [(ATOM('f'), APPLY(VAR([], ATOM('mul')), [VAR(LATE_BOUND(), ATOM('p1')), VAR(LATE_BOUND(), ATOM('p2'))], []))])], []), PLAIN('\n'), SET(ATOM('l'), LIST([STR('"A"'), STR('"B"'), STR('"C"')])), PLAIN('\n'), SET(ATOM('a'), INT(5)), PLAIN('\n'), EMIT(VAR([], ATOM('l')), None), PLAIN(', '), EMIT(VAR([], ATOM('l')), LAMBDA([([], ATOM('r'), None)], APPLY(VAR([], ATOM('r')), [LAMBDA([([], ATOM('s'), None)], APPLY(VAR([], ATOM('lower')), [VAR([], ATOM('s'))], []))], []))), PLAIN(', '), EMIT(VAR([], ATOM('l')), None), PLAIN(', '), EMIT(VAR([], ATOM('l')), None), PLAIN('\n'), EMIT(VAR([], ATOM('a')), LAMBDA([([], ATOM('n'), None)], INFIX(TEXT([PLAIN(' n + 1 ')], 0, 0)))), PLAIN(', '), EMIT(VAR([], ATOM('a')), LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('q')), [VAR([], ATOM('n'))], []))), PLAIN(', '), EMIT(VAR([], ATOM('a')), None), PLAIN('\n'), SET(ATOM('q'), INT(3)), PLAIN('\n'), SET(ATOM('add2'), LAMBDA([([], ATOM('n'), None)], APPLY(VAR([], ATOM('add')), [VAR([], ATOM('n')), INT(2)], []))), PLAIN('\n'), INFIX(TEXT([EMIT(VAR([], ATOM('q')), VAR([], ATOM('add2'))), PLAIN('+'), EMIT(VAR([], ATOM('q')), VAR([], ATOM('add2'))), PLAIN('+'), EMIT(VAR([], ATOM('q')), VAR([], ATOM('add2'))), PLAIN('+'), EMIT(VAR([], ATOM('q')), VAR([], ATOM('add2')))], 0, 0)), PLAIN('\n'), SET(ATOM('p'), LIST([VAR([], ATOM('c')), VAR([], ATOM('d'))])), PLAIN('\n'), APPLY(LAMBDA(VAR([], ATOM('p')), INFIX(TEXT([PLAIN('c - d')], 0, 0))), [INT(100), INT(500)], []), PLAIN('\n'), SET(ATOM('p'), LIST([VAR([], ATOM('d')), VAR([], ATOM('c'))])), PLAIN('\n'), APPLY(LAMBDA(VAR([], ATOM('p')), INFIX(TEXT([PLAIN('c - d')], 0, 0))), [INT(100), INT(500)], []), PLAIN('\n')], 0, 0),
 
 r"""
 102030
@@ -296,7 +296,7 @@ r"""
 400
 """
 ),(
-#   ---- 05 -- LATE_BOUNDED (variable argument list)
+#   ---- 05 -- LATE_BOUND (variable argument list)
 TRACE_STAGE_NONE,
 
 r"""
@@ -325,7 +325,7 @@ r"""
 \[\def-fn-argv )
 """,
 
-TEXT([PLAIN('\n'), SET(ATOM('def-fn-argv'), LAMBDA([([], ATOM('type'), None), ([], ATOM('name'), None), ([ATOM('type'), ATOM('arg-begin'), ATOM('arg-count'), ATOM('arg-value'), ATOM('arg-end')], ATOM('body'), None)], TEXT([APPLY(VAR([], ATOM('type')), [], []), PLAIN(' '), APPLY(VAR([], ATOM('name')), [], []), PLAIN('( int argcnt, ... )\n{\n    '), APPLY(VAR([], ATOM('body')), [], [(ATOM('type'), VAR([], ATOM('type'))), (ATOM('arg-begin'), TEXT([PLAIN('        va_list argptr;\n        va_start( argptr, argcnt );')], 0, 0)), (ATOM('arg-count'), TEXT([PLAIN('        argcnt')], 0, 0)), (ATOM('arg-value'), LAMBDA([([], ATOM('type'), None)], TEXT([PLAIN('        va_arg( argptr, '), APPLY(VAR([], ATOM('type')), [], []), PLAIN(' )')], 0, 0))), (ATOM('arg-end'), TEXT([PLAIN('        va_end( argptr );')], 0, 0))]), PLAIN('\n}')], 0, 0))), PLAIN('\n\n'), APPLY(VAR([], ATOM('def-fn-argv')), [TEXT([PLAIN('    int result = 0;\n    '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-begin')), [], []), PLAIN('\n    while ( '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-count')), [], []), PLAIN('-- ) result += '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-value')), [VAR(LATE_BOUNDED(), ATOM('type'))], []), PLAIN(';\n    '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-end')), [], []), PLAIN('\n    return ( result );')], 0, 0)], [(ATOM('type'), VAR([], ATOM('int'))), (ATOM('name'), VAR([], ATOM('sumi')))]), PLAIN('\n')], 0, 0),
+TEXT([PLAIN('\n'), SET(ATOM('def-fn-argv'), LAMBDA([([], ATOM('type'), None), ([], ATOM('name'), None), ([ATOM('type'), ATOM('arg-begin'), ATOM('arg-count'), ATOM('arg-value'), ATOM('arg-end')], ATOM('body'), None)], TEXT([APPLY(VAR([], ATOM('type')), [], []), PLAIN(' '), APPLY(VAR([], ATOM('name')), [], []), PLAIN('( int argcnt, ... )\n{\n    '), APPLY(VAR([], ATOM('body')), [], [(ATOM('type'), VAR([], ATOM('type'))), (ATOM('arg-begin'), TEXT([PLAIN('        va_list argptr;\n        va_start( argptr, argcnt );')], 0, 0)), (ATOM('arg-count'), TEXT([PLAIN('        argcnt')], 0, 0)), (ATOM('arg-value'), LAMBDA([([], ATOM('type'), None)], TEXT([PLAIN('        va_arg( argptr, '), APPLY(VAR([], ATOM('type')), [], []), PLAIN(' )')], 0, 0))), (ATOM('arg-end'), TEXT([PLAIN('        va_end( argptr );')], 0, 0))]), PLAIN('\n}')], 0, 0))), PLAIN('\n\n'), APPLY(VAR([], ATOM('def-fn-argv')), [TEXT([PLAIN('    int result = 0;\n    '), APPLY(VAR(LATE_BOUND(), ATOM('arg-begin')), [], []), PLAIN('\n    while ( '), APPLY(VAR(LATE_BOUND(), ATOM('arg-count')), [], []), PLAIN('-- ) result += '), APPLY(VAR(LATE_BOUND(), ATOM('arg-value')), [VAR(LATE_BOUND(), ATOM('type'))], []), PLAIN(';\n    '), APPLY(VAR(LATE_BOUND(), ATOM('arg-end')), [], []), PLAIN('\n    return ( result );')], 0, 0)], [(ATOM('type'), VAR([], ATOM('int'))), (ATOM('name'), VAR([], ATOM('sumi')))]), PLAIN('\n')], 0, 0),
 
 r"""
 int sumi( int argcnt, ... )
@@ -417,7 +417,7 @@ r"""
 \[\def-fn-argv )
 """,
 
-TEXT([PLAIN('\n'), PLAIN('\n'), SET(ATOM('uprevst'), LAMBDA([([], ATOM('a'), None)], APPLY(VAR([], ATOM('upper')), [APPLY(VAR([], ATOM('reversed_string')), [VAR([], ATOM('a'))], [])], []))), PLAIN('\n#define '), APPLY(VAR([], ATOM('uprevst')), [VAR([], ATOM('hello'))], []), PLAIN('\n'), IMPORT_BEGIN(), COMMENT(), PLAIN('\n'), MACRO(ATOM('dict'), [ATOM('id'), ATOM('cols'), ATOM('body')], '\n\t($set cols-($id) ($range ($len (($cols)) )))\n\t($set each-($id) ($range ($len (($body)) )))\n\t($set (($cols))\n\t\t($cols-($id) \\__i.($ (($body)) \\__var.($__i __var)))\n\t)\n'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('if'), LAMBDA([([], ATOM('cond'), None), ([], ATOM('then'), TEXT([], 0, 0)), ([], ATOM('else'), TEXT([], 0, 0))], APPLY(COND(VAR([], ATOM('cond')), VAR([], ATOM('then')), VAR([], ATOM('else'))), [], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('unless'), LAMBDA([([], ATOM('cond'), None), ([], ATOM('then'), TEXT([], 0, 0)), ([], ATOM('else'), TEXT([], 0, 0))], APPLY(COND(VAR([], ATOM('cond')), VAR([], ATOM('else')), VAR([], ATOM('then'))), [], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('unfold'), LAMBDA([([], ATOM('count'), None), ([], ATOM('...'), None)], LET([ATOM('__last'), ATOM('__func')], LIST([APPLY(VAR([], ATOM('sub')), [APPLY(VAR([], ATOM('len')), [APPLY(VAR([], ATOM('lazy')), [VAR([], ATOM('__va_args__'))], [])], []), INT(1)], []), APPLY(VAR([], ATOM('__last')), [APPLY(VAR([], ATOM('lazy')), [VAR([], ATOM('__va_args__'))], [])], [])]), APPLY(APPLY(VAR([], ATOM('range')), [VAR([], ATOM('count'))], []), [LAMBDA([([], ATOM('__i'), None)], APPLY(VAR([], ATOM('if')), [INFIX(TEXT([PLAIN(' __i < __last ')], 0, 0)), APPLY(VAR([], ATOM('__i')), [APPLY(VAR([], ATOM('lazy')), [VAR([], ATOM('__va_args__'))], [])], []), APPLY(VAR([], ATOM('__func')), [VAR([], ATOM('__i'))], [])], []))], [])))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('do'), [ATOM('body')], 'do {\n($body)\n} while ( 0 )'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('foo'), [ATOM('body')], '({\n($body)\n})'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('__EOL__'), COND(APPLY(VAR([], ATOM('not')), [APPLY(VAR([], ATOM('isatom')), [VAR([], ATOM('EOL'))], [])], []), VAR([], ATOM('EOL')), TEXT([PLAIN('\n')], 0, 0))), PLAIN('\n'), SET(ATOM('define'), LAMBDA([([], ATOM('sig'), None), ([], ATOM('body'), None)], APPLY(VAR([], ATOM('join')), [APPLY(VAR([], ATOM('split')), [TEXT([APPLY(VAR([], ATOM('unq')), [STR('"#define"')], []), PLAIN(' '), APPLY(VAR([], ATOM('sig')), [], []), PLAIN(' '), APPLY(VAR([], ATOM('body')), [], [])], 0, 0), VAR([], ATOM('__EOL__'))], []), TEXT([PLAIN(' \\'), APPLY(VAR([], ATOM('__EOL__')), [], [])], 0, 0)], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('def'), [ATOM('name')], '($set ($name) 1)\n($unq "#define") ($name)'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('undef'), [ATOM('name')], '($set ($name) 0)\n($unq "#undef")  ($name)'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('def-if'), [ATOM('cond'), ATOM('name')], '($set ($name) 1 ? ($cond) | 0)\n($if ($name) [($unq "#define") ($name)])'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('skip-if'), [ATOM('cond')], '($if ($cond) ($skip))'), PLAIN('\n'), MACRO(ATOM('skip-if-not'), [ATOM('cond')], '($if ($not ($cond)) ($skip))'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('BIN'), LAMBDA([([], ATOM('b'), None)], APPLY(VAR([], ATOM('atoi')), [VAR([], ATOM('b')), INT(2)], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('BB'), LAMBDA([([], ATOM('...'), None)], APPLY(VAR([], ATOM('sum')), [APPLY(APPLY(VAR([], ATOM('range')), [APPLY(VAR([], ATOM('len')), [VAR([], ATOM('__va_args__'))], [])], []), [LAMBDA([([], ATOM('__i'), None)], INFIX(TEXT([PLAIN(' '), APPLY(VAR([], ATOM('BIN')), [APPLY(VAR([], ATOM('__i')), [APPLY(VAR([], ATOM('reversed')), [VAR([], ATOM('__va_args__'))], [])], [])], []), PLAIN(' << '), APPLY(VAR([], ATOM('__i')), [], []), PLAIN(' * 8 ')], 0, 0)))], [])], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('def-fn-argv'), LAMBDA([([], ATOM('type'), None), ([], ATOM('name'), None), ([ATOM('type'), ATOM('arg-begin'), ATOM('arg-count'), ATOM('arg-value'), ATOM('arg-end')], ATOM('body'), None)], TEXT([APPLY(VAR([], ATOM('type')), [], []), PLAIN(' '), APPLY(VAR([], ATOM('name')), [], []), PLAIN('( int argcnt, ... )\n{\n\t'), APPLY(VAR([], ATOM('body')), [], [(ATOM('type'), VAR([], ATOM('type'))), (ATOM('arg-begin'), TEXT([PLAIN('\t\tva_list argptr;\n\t\tva_start( argptr, argcnt );')], 0, 0)), (ATOM('arg-count'), TEXT([PLAIN('\t\targcnt')], 0, 0)), (ATOM('arg-value'), LAMBDA([([], ATOM('type'), None)], TEXT([PLAIN('\t\tva_arg( argptr, '), APPLY(VAR([], ATOM('type')), [], []), PLAIN(' )')], 0, 0))), (ATOM('arg-end'), TEXT([PLAIN('\t\tva_end( argptr );')], 0, 0))]), PLAIN('\n}')], 0, 0))), PLAIN('\n\n'), SET(ATOM('INT_MAX'), INFIX(TEXT([PLAIN(' sys.maxsize ')], 0, 0))), PLAIN('\n\n'), SET(ATOM('INT_MIN'), INFIX(TEXT([PLAIN(' -sys.maxsize - 1 ')], 0, 0))), PLAIN('\n'), IMPORT_END(), PLAIN('\n'), APPLY(VAR([], ATOM('def-fn-argv')), [TEXT([PLAIN('    int result = 0;\n    '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-begin')), [], []), PLAIN('\n    while ( '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-count')), [], []), PLAIN('-- ) result += '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-value')), [VAR(LATE_BOUNDED(), ATOM('type'))], []), PLAIN(';\n    '), APPLY(VAR(LATE_BOUNDED(), ATOM('arg-end')), [], []), PLAIN('\n    return ( result );')], 0, 0)], [(ATOM('type'), VAR([], ATOM('int'))), (ATOM('name'), VAR([], ATOM('sumi')))]), PLAIN('\n')], 0, 0),
+TEXT([PLAIN('\n'), PLAIN('\n'), SET(ATOM('uprevst'), LAMBDA([([], ATOM('a'), None)], APPLY(VAR([], ATOM('upper')), [APPLY(VAR([], ATOM('reversed_string')), [VAR([], ATOM('a'))], [])], []))), PLAIN('\n#define '), APPLY(VAR([], ATOM('uprevst')), [VAR([], ATOM('hello'))], []), PLAIN('\n'), IMPORT_BEGIN(), COMMENT(), PLAIN('\n'), MACRO(ATOM('dict'), [ATOM('id'), ATOM('cols'), ATOM('body')], '\n\t($set cols-($id) ($range ($len (($cols)) )))\n\t($set each-($id) ($range ($len (($body)) )))\n\t($set (($cols))\n\t\t($cols-($id) \\__i.($ (($body)) \\__var.($__i __var)))\n\t)\n'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('if'), LAMBDA([([], ATOM('cond'), None), ([], ATOM('then'), TEXT([], 0, 0)), ([], ATOM('else'), TEXT([], 0, 0))], APPLY(COND(VAR([], ATOM('cond')), VAR([], ATOM('then')), VAR([], ATOM('else'))), [], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('unless'), LAMBDA([([], ATOM('cond'), None), ([], ATOM('then'), TEXT([], 0, 0)), ([], ATOM('else'), TEXT([], 0, 0))], APPLY(COND(VAR([], ATOM('cond')), VAR([], ATOM('else')), VAR([], ATOM('then'))), [], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('unfold'), LAMBDA([([], ATOM('count'), None), ([], ATOM('...'), None)], LET([ATOM('__last'), ATOM('__func')], LIST([APPLY(VAR([], ATOM('sub')), [APPLY(VAR([], ATOM('len')), [APPLY(VAR([], ATOM('lazy')), [VAR([], ATOM('__va_args__'))], [])], []), INT(1)], []), APPLY(VAR([], ATOM('__last')), [APPLY(VAR([], ATOM('lazy')), [VAR([], ATOM('__va_args__'))], [])], [])]), APPLY(APPLY(VAR([], ATOM('range')), [VAR([], ATOM('count'))], []), [LAMBDA([([], ATOM('__i'), None)], APPLY(VAR([], ATOM('if')), [INFIX(TEXT([PLAIN(' __i < __last ')], 0, 0)), APPLY(VAR([], ATOM('__i')), [APPLY(VAR([], ATOM('lazy')), [VAR([], ATOM('__va_args__'))], [])], []), APPLY(VAR([], ATOM('__func')), [VAR([], ATOM('__i'))], [])], []))], [])))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('do'), [ATOM('body')], 'do {\n($body)\n} while ( 0 )'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('foo'), [ATOM('body')], '({\n($body)\n})'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('__EOL__'), COND(APPLY(VAR([], ATOM('not')), [APPLY(VAR([], ATOM('isatom')), [VAR([], ATOM('EOL'))], [])], []), VAR([], ATOM('EOL')), TEXT([PLAIN('\n')], 0, 0))), PLAIN('\n'), SET(ATOM('define'), LAMBDA([([], ATOM('sig'), None), ([], ATOM('body'), None)], APPLY(VAR([], ATOM('join')), [APPLY(VAR([], ATOM('split')), [TEXT([APPLY(VAR([], ATOM('unq')), [STR('"#define"')], []), PLAIN(' '), APPLY(VAR([], ATOM('sig')), [], []), PLAIN(' '), APPLY(VAR([], ATOM('body')), [], [])], 0, 0), VAR([], ATOM('__EOL__'))], []), TEXT([PLAIN(' \\'), APPLY(VAR([], ATOM('__EOL__')), [], [])], 0, 0)], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('def'), [ATOM('name')], '($set ($name) 1)\n($unq "#define") ($name)'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('undef'), [ATOM('name')], '($set ($name) 0)\n($unq "#undef")  ($name)'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('def-if'), [ATOM('cond'), ATOM('name')], '($set ($name) 1 ? ($cond) | 0)\n($if ($name) [($unq "#define") ($name)])'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), MACRO(ATOM('skip-if'), [ATOM('cond')], '($if ($cond) ($skip))'), PLAIN('\n'), MACRO(ATOM('skip-if-not'), [ATOM('cond')], '($if ($not ($cond)) ($skip))'), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('BIN'), LAMBDA([([], ATOM('b'), None)], APPLY(VAR([], ATOM('atoi')), [VAR([], ATOM('b')), INT(2)], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('BB'), LAMBDA([([], ATOM('...'), None)], APPLY(VAR([], ATOM('sum')), [APPLY(APPLY(VAR([], ATOM('range')), [APPLY(VAR([], ATOM('len')), [VAR([], ATOM('__va_args__'))], [])], []), [LAMBDA([([], ATOM('__i'), None)], INFIX(TEXT([PLAIN(' '), APPLY(VAR([], ATOM('BIN')), [APPLY(VAR([], ATOM('__i')), [APPLY(VAR([], ATOM('reversed')), [VAR([], ATOM('__va_args__'))], [])], [])], []), PLAIN(' << '), APPLY(VAR([], ATOM('__i')), [], []), PLAIN(' * 8 ')], 0, 0)))], [])], []))), PLAIN('\n\n'), COMMENT(), PLAIN('\n'), SET(ATOM('def-fn-argv'), LAMBDA([([], ATOM('type'), None), ([], ATOM('name'), None), ([ATOM('type'), ATOM('arg-begin'), ATOM('arg-count'), ATOM('arg-value'), ATOM('arg-end')], ATOM('body'), None)], TEXT([APPLY(VAR([], ATOM('type')), [], []), PLAIN(' '), APPLY(VAR([], ATOM('name')), [], []), PLAIN('( int argcnt, ... )\n{\n\t'), APPLY(VAR([], ATOM('body')), [], [(ATOM('type'), VAR([], ATOM('type'))), (ATOM('arg-begin'), TEXT([PLAIN('\t\tva_list argptr;\n\t\tva_start( argptr, argcnt );')], 0, 0)), (ATOM('arg-count'), TEXT([PLAIN('\t\targcnt')], 0, 0)), (ATOM('arg-value'), LAMBDA([([], ATOM('type'), None)], TEXT([PLAIN('\t\tva_arg( argptr, '), APPLY(VAR([], ATOM('type')), [], []), PLAIN(' )')], 0, 0))), (ATOM('arg-end'), TEXT([PLAIN('\t\tva_end( argptr );')], 0, 0))]), PLAIN('\n}')], 0, 0))), PLAIN('\n\n'), SET(ATOM('INT_MAX'), INFIX(TEXT([PLAIN(' sys.maxsize ')], 0, 0))), PLAIN('\n\n'), SET(ATOM('INT_MIN'), INFIX(TEXT([PLAIN(' -sys.maxsize - 1 ')], 0, 0))), PLAIN('\n'), IMPORT_END(), PLAIN('\n'), APPLY(VAR([], ATOM('def-fn-argv')), [TEXT([PLAIN('    int result = 0;\n    '), APPLY(VAR(LATE_BOUND(), ATOM('arg-begin')), [], []), PLAIN('\n    while ( '), APPLY(VAR(LATE_BOUND(), ATOM('arg-count')), [], []), PLAIN('-- ) result += '), APPLY(VAR(LATE_BOUND(), ATOM('arg-value')), [VAR(LATE_BOUND(), ATOM('type'))], []), PLAIN(';\n    '), APPLY(VAR(LATE_BOUND(), ATOM('arg-end')), [], []), PLAIN('\n    return ( result );')], 0, 0)], [(ATOM('type'), VAR([], ATOM('int'))), (ATOM('name'), VAR([], ATOM('sumi')))]), PLAIN('\n')], 0, 0),
 
 r"""
 #define OLLEH
@@ -737,7 +737,7 @@ def ___title___( t ):
     return CH * d + ' ' + t + ' ' + CH * ( LL - 2 - l - d )
 
 #   ---------------------------------------------------------------------------
-def test( kit, t ):                                                                                                    #pylint: disable=too-many-statements
+def test( kit, caseset, t ):                                                                                                    #pylint: disable=too-many-statements
     """
     For each test case: ( text, parsed, evaluated ),
     check: ( yuparse( yushell.input_file ) == parsed ) and ( yueval( parsed ) == evaluated ).
@@ -746,10 +746,17 @@ def test( kit, t ):                                                             
     print( ___title___( t ))
 
     failed = []
+    skipped = []
+    total = 0
     i = 0
     for ( TR, text, parsed, evaluated ) in kit:
         i += 1
-        trace.stages = TR | _TRACE
+        if i not in caseset:
+            skipped += [ i ]
+            continue
+
+        total += 1
+        trace.stage = TR | _TRACE
         trace.set_current( TRACE_STAGE_PARSE )
         TR2F = trace.enabled and trace.file
         LOG = not trace.enabled or trace.file
@@ -847,7 +854,8 @@ def test( kit, t ):                                                             
 
     print( ___ )
     print( '%47s\n' % ( 'F A I L E D' if failed else 'P A S S E D' ))
-    print( '  %d fault(s) in %d test(s)' % ( len( failed ), len( kit )))
+    print( '  %d fault(s) in %d test(s)' % ( len( failed ), total )
+    + ( ', %d skipped' % len( skipped ) if skipped else '' ))
     if failed:
         print( '  %s' % ( str( failed )))
     print( ___ )
@@ -857,7 +865,9 @@ def test( kit, t ):                                                             
 #   ---------------------------------------------------------------------------
 if __name__ == '__main__':
     t_failed = 0
-    t_failed -= test( t_parse_kit, t_parse_title )
-    t_failed -= test( t_eval_kit, t_eval_title )
+    t_parse_caseset = set( range( 1, 256 ))
+    t_eval_caseset  = set( range( 1, 256 ))
+    t_failed -= test( t_parse_kit, t_parse_caseset, t_parse_title )
+    t_failed -= test( t_eval_kit,  t_eval_caseset,  t_eval_title )
 
     sys.exit( t_failed )

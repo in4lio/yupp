@@ -44,9 +44,8 @@ def read_header( fn ):
     try:
         with open( fn, 'r' ) as f:
             header = f.readline()
-            ln = header.strip()
-            if not ln or ln.startswith( '#' ) and 'coding' not in ln:
-                header += f.readline().strip()
+            if 'coding:' not in header:
+                header += f.readline()
     except:
         pass
     return header

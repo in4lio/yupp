@@ -125,7 +125,7 @@ def _create_trace( default_stage ):
     _trace = _create_logger( 'trace', hl, TRACE_FORMAT )
     _trace.file = fn if _to_file else None
 #   -- default trace
-    _trace.stages = default_stage
+    _trace.stage = default_stage
     _trace.enabled = False
     _trace.TEMPL_DEEPEST = 'deepest call - %d'
     _trace.set_current = _trace_set_current.__get__( _trace, _trace.__class__ )                                        #pylint: disable=no-member,too-many-function-args
@@ -134,7 +134,7 @@ def _create_trace( default_stage ):
 
 #   ---------------------------------------------------------------------------
 def _trace_set_current( self, _stage ):
-    if self.stages & _stage:
+    if self.stage & _stage:
         self.enabled = True
         self.setLevel( logging.INFO )
     else:
@@ -457,9 +457,9 @@ class BASE_MARK( BASE_OBJECT ):
         return isinstance( other, self.__class__ )
 
 #   ---------------------------------------------------------------------------
-class LATE_BOUNDED( BASE_MARK ):
+class LATE_BOUND( BASE_MARK ):
     """
-    AST: LATE_BOUNDED() <-- &atom
+    AST: LATE_BOUND() <-- &atom
     """
 #   ---------------
     pass
@@ -568,7 +568,7 @@ class TEXT( BASE_OBJECT ):
 #   ---------------------------------------------------------------------------
 class VAR( BASE_OBJECT ):
     """
-    AST: VAR( LATE_BOUNDED | [ ATOM ], ATOM ) <-- &atom
+    AST: VAR( LATE_BOUND | [ ATOM ], ATOM ) <-- &atom
                                                   atom
                                                   atom::atom
     """
@@ -1571,9 +1571,9 @@ def ps_function( sou, depth = 0 ):
 @echo__ps_
 def ps_variable( sou, depth = 0 ):
     """
-    variable ::= { region '::' }0... atom | '&' late-bounded;
+    variable ::= { region '::' }0... atom | '&' late-bound;
     region ::= atom;
-    late-bounded ::= atom;
+    late-bound ::= atom;
     """
 #   ---------------
 #   ---- &
@@ -1581,9 +1581,9 @@ def ps_variable( sou, depth = 0 ):
 #   ---- atom
         ( sou, leg ) = ps_atom( sou[ 1: ], depth + 1 )
         if leg is not None:
-            return ( sou, VAR( LATE_BOUNDED(), leg ))
+            return ( sou, VAR( LATE_BOUND(), leg ))
 
-        raise SyntaxError( '%s: late-bounded expected' % ( callee()) + sou.loc())
+        raise SyntaxError( '%s: late-bound expected' % ( callee()) + sou.loc())
 
     else:
 #   ---- atom
@@ -2220,7 +2220,7 @@ def ps_number( sou, depth = 0 ):
 #   ---------------------------------------------------------------------------
 class BOUND( BASE_MARK ):
     """
-    AST: marker of bounded unassigned variable
+    AST: marker of bound unassigned variable
     """
 #   ---------------
     pass
@@ -3226,7 +3226,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                                 + node.fn.atom.loc())
 
                             if isinstance( node.args[ 0 ], ATOM ) or isinstance( node.args[ 0 ], VAR ):
-#                               -- undefined or LATE_BOUNDED variable
+#                               -- undefined or LATE_BOUND variable
                                 return 1
 
                             return 0
@@ -3347,7 +3347,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
 #                       -- apply default
                         val = yueval( node.fn.default[ var ], env, depth + 1 )
-#                   -- late bounded -- second yueval()
+#                   -- late bound -- second yueval()
                     if var in node.fn.late:
                         val = yueval( L_CLOSURE( val, ENV( None, node.fn.late[ var ])), env, depth + 1 )
                     node.fn.env[ var ] = val
@@ -3429,8 +3429,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
             elif isinstance( node, VAR ):
                 val = env.lookup( node.reg, node.atom )
                 if val is NOT_FOUND:
-#   ---- VAR -- LATE_BOUNDED
-                    if isinstance( node.reg, LATE_BOUNDED ):
+#   ---- VAR -- LATE_BOUND
+                    if isinstance( node.reg, LATE_BOUND ):
 #                       -- irreducible
                         return node
 
@@ -3443,9 +3443,9 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         if node.atom in builtin_special:
                             return BUILTIN_SPECIAL( node.atom, builtin_special[ node.atom ])
 
-#                       -- if not valid C identifier mark as LATE_BOUNDED
+#                       -- if not valid C identifier mark as LATE_BOUND
                         if not node.atom.is_valid_c_id():
-                            node.reg = LATE_BOUNDED()
+                            node.reg = LATE_BOUND()
 #                           -- irreducible
                             return node
 

@@ -177,7 +177,6 @@ def shell_parse_cli_arguments( arglist ):
             sys.exit( 2 )
 
     return argp.parse_args( arglist )
-#    return argp.parse_args([ '-h' ])
 
 #   ---------------------------------------------------------------------------
 def _exec_yuconfig_script( fn_cfg, context ):

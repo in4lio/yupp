@@ -12,6 +12,7 @@
             "request": "launch",
             "args": [
                 "--type-file",
+                "-t=2",
                 "${file}"
             ],
             "console": "integratedTerminal"
