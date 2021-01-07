@@ -4,21 +4,25 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "yupp: Current File",
+            "label": "yupp: Trace Current File",
             "type": "shell",
             "command": "python3",
             "args": [
                 "-m",
-                "pp",
+                "pp",          // yupp
+                "-q",          // quiet
+                "-t2",         // TRACE_STAGE_EVAL
                 "--type-file",
-                "${file}"
+                "${file}",
+                ">",           // to ".trace" file
+                "${file}.trace",
             ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
             "presentation": {
-                "reveal": "always",
+                "reveal": "silent",
                 "panel": "new"
             },
             "problemMatcher": []

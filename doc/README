@@ -247,8 +247,8 @@
 
         ($set (b c d) ('B' 'C' 'D'))
 
-    ($! an atom binding in an expression – ($let <atom> <expr>)
-        or ($let (<atoms>) <expr>) )
+    ($! an atom binding in an expression – ($let <atom> <expr> <expr>)
+        or ($let (<atoms>) <expr> <expr>) )
 
         ($let (pow2 pow4) (\x.($mul x x) \x.($pow2 ($pow2 x))) ($pow2 ($pow4 2)))
 

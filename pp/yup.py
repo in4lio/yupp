@@ -567,8 +567,8 @@ def cli( arglist ):
 
     if not shell.quiet:
         print( TITLE )
-        if trace.stage > 0:
-            print( TR_FILE % trace.file )
+        if trace.stage > 0 and trace.file:
+            print( TR_FILE % ( trace.file ))
 #       -- startup testing
         _pp_test( r"""($($\y:u.\m.\...(m y($\C.\p.(r)e p)($\ro.(ce)s)))so r)""" )
         _pp_test( r"""

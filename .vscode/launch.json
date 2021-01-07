@@ -12,17 +12,16 @@
             "request": "launch",
             "args": [
                 "--type-file",
-                "-t=2",
-                "${file}"
+                "${file}",
             ],
-            "console": "integratedTerminal"
+            "console": "internalConsole",
         },
         {
             "name": "Python: Current File",
             "type": "python",
             "request": "launch",
             "program": "${file}",
-            "console": "integratedTerminal"
+            "console": "internalConsole",
         }
     ]
 }

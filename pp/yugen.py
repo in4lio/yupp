@@ -106,31 +106,33 @@ log.setLevel( LOG_LEVEL * LOG_LEVEL__SCALE_ )
 
 TRACE_FORMAT = '%(message)s'
 
-#   -- write trace into a temporary file, if None - into stdout
-TRACE_FILE = 'yupp.trace'
+#   -- write trace into a temporary file
+TRACE_TO_FILE = False
 
 #   ---------------------------------------------------------------------------
 def _create_trace( default_stage ):
-    _to_file = TRACE_FILE is not None
-    if _to_file:
+    global TRACE_TO_FILE
+
+    if TRACE_TO_FILE:
         try:
-            fn = os.path.join( tempfile.gettempdir(), TRACE_FILE )
+            fn = os.path.join( tempfile.gettempdir(), 'yupp.trace' )
             hl = logging.FileHandler( fn, mode = 'w' )
         except ( OSError, NotImplementedError ):
 #           -- e.g. permission denied
-            _to_file = False
-    if not _to_file:
+            TRACE_TO_FILE = False
+    if not TRACE_TO_FILE:
+        fn = None
         hl = logging.StreamHandler( sys.stdout )
 
-    _trace = _create_logger( 'trace', hl, TRACE_FORMAT )
-    _trace.file = fn if _to_file else None
+    trace = _create_logger( 'trace', hl, TRACE_FORMAT )
 #   -- default trace
-    _trace.stage = default_stage
-    _trace.enabled = False
-    _trace.TEMPL_DEEPEST = 'deepest call - %d'
-    _trace.set_current = _trace_set_current.__get__( _trace, _trace.__class__ )                                        #pylint: disable=no-member,too-many-function-args
-    _trace.set_current( TRACE_STAGE_NONE )
-    return _trace
+    trace.file = fn
+    trace.stage = default_stage
+    trace.enabled = False
+    trace.TEMPL_DEEPEST = 'deepest call - %d'
+    trace.set_current = _trace_set_current.__get__( trace, trace.__class__ )                                        #pylint: disable=no-member,too-many-function-args
+    trace.set_current( TRACE_STAGE_NONE )
+    return trace
 
 #   ---------------------------------------------------------------------------
 def _trace_set_current( self, _stage ):

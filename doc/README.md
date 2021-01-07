@@ -228,8 +228,8 @@ Binding of a few atoms at once – `($set (<atoms>) <expr>)`:
 
     ($set (b c d) ('B' 'C' 'D'))
 
-An atom binding in an expression – `($let <atom> <expr>)`
-or `($let (<atoms>) <expr>)`:
+An atom binding in an expression – `($let <atom> <expr> <expr>)`
+or `($let (<atoms>) <expr> <expr>)`:
 
     ($let (pow2 pow4) (\x.($mul x x) \x.($pow2 ($pow2 x))) ($pow2 ($pow4 2)))
 
