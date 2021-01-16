@@ -146,11 +146,9 @@ def _trace_set_current( self, _stage ):
 
 trace = _create_trace( TRACE_STAGE )
 
-TR_INDENT = '.'
-TR_DELIMIT  = ' <--\n'
-TR_EVAL_IN  = ' E <--\n'
-TR_EVAL_ENV = '<< '
-TR_EVAL_OUT = ' E -->\n'
+TR_PARSE       = '%d %s <-- %s'
+TR_EVAL_INPUT  = '%d <-- %s'
+TR_EVAL_OUTPUT = '%d --> %s'
 TR_SLICE = 64
 
 #   ---------------------------------------------------------------------------
@@ -929,7 +927,7 @@ def trace__ps_( name, sou, depth ):
     if depth > trace.deepest:
         trace.deepest = depth
     if trace.enabled:
-        trace.info( TR_INDENT * depth + name + TR_DELIMIT + repr( sou[ :TR_SLICE ]))
+        trace.info( TR_PARSE % ( depth, name, repr( sou[ :TR_SLICE ])))
 
 #   ---------------------------------------------------------------------------
 def echo__ps_( fn ):
@@ -3046,13 +3044,13 @@ def _list_eval_1( args, env, depth = 0 ):
 #   ---------------------------------------------------------------------------
 def trace__eval_in_( node, env, depth ):
     if trace.enabled:
-        trace.info( TR_INDENT * depth + TR_EVAL_IN + _ast_pretty( repr( node )))
-        trace.info( TR_EVAL_ENV + _ast_pretty( repr( env )))
+        trace.info( TR_EVAL_INPUT % ( depth, _ast_pretty( repr( node ))))
+        trace.info( _ast_pretty( repr( env )))
 
 #   ---------------------------------------------------------------------------
 def trace__eval_out_( node, depth ):
     if trace.enabled:
-        trace.info( TR_INDENT * depth + TR_EVAL_OUT + _ast_pretty( repr( node )))
+        trace.info( TR_EVAL_OUTPUT % ( depth, _ast_pretty( repr( node ))))
 
 #   ---------------------------------------------------------------------------
 def echo__eval_( fn ):
