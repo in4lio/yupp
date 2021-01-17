@@ -6,7 +6,6 @@ import sys
 from distutils.util import convert_path
 from fnmatch import fnmatchcase
 from setuptools import setup, find_packages
-from distutils.sysconfig import get_python_lib
 
 def read(fname):
     return codecs.open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -111,6 +110,17 @@ AUTHOR = pack.__author__
 AUTHOR_EMAIL = pack.__author_email__
 URL = pack.__url__
 
+ROOT=""
+packages=find_packages(exclude=["eg.*"])
+packages.append(ROOT)
+
+package_data = find_package_data(
+    where=PACKAGE,
+    package=ROOT,
+    only_in_packages=False
+)
+package_data[ROOT].append("yupp.pth")
+
 setup(
     name=NAME,
     version=VERSION,
@@ -120,13 +130,9 @@ setup(
     author_email=AUTHOR_EMAIL,
     license="MIT",
     url=URL,
-    packages=find_packages(exclude=["eg.*"]),
+    packages=packages,
     install_requires=[ 'future' ],
-    package_data=find_package_data(
-        PACKAGE,
-        only_in_packages=False
-    ),
-    data_files=[("lib/python/site-packages", ["yupp.pth"])],
+    package_data=package_data,
     entry_points={
         'console_scripts': [
             'yupp = yupp.__main__:main'

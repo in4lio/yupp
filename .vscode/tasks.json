@@ -54,6 +54,20 @@
                 "panel": "new"
             },
             "problemMatcher": []
+        },
+        {
+            "label": "pkg: Upload Dist",
+            "type": "shell",
+            "command": "${workspaceFolder}/script/pkg-upload.sh",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": []
         }
     ]
 }
