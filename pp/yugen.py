@@ -10,7 +10,21 @@ http://github.com/in4lio/yupp/
 yugen.py -- an implementation of yupp preprocessor in Python
 """
 
+from __future__ import absolute_import
 from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+from builtins import next
+from builtins import map
+from builtins import str
+from builtins import bytes
+from builtins import zip
+from builtins import range
+from builtins import object
+from builtins import int
+from future.utils import raise_
+from future.utils import native_str
 import sys
 import os
 import tempfile
@@ -24,13 +38,15 @@ import operator
 import math
 import datetime
 import zlib
+import codecs
 from textwrap import dedent
 from ast import NodeVisitor
 from ast import parse
 from ast import literal_eval
+from functools import reduce
 
-from yulic import *                                                                                                    #pylint: disable=wildcard-import,unused-wildcard-import
-from yuconfig import *                                                                                                 #pylint: disable=wildcard-import,unused-wildcard-import
+from .yulic import *                                                                                                    #pylint: disable=wildcard-import,unused-wildcard-import
+from .yuconfig import *                                                                                                 #pylint: disable=wildcard-import,unused-wildcard-import
 
 sys.setrecursionlimit( 2 ** 20 )
 
@@ -90,35 +106,37 @@ log.setLevel( LOG_LEVEL * LOG_LEVEL__SCALE_ )
 
 TRACE_FORMAT = '%(message)s'
 
-#   -- write trace into a temporary file, if None - into stdout
-TRACE_FILE = 'yupp.trace'
+#   -- write trace into a temporary file
+TRACE_TO_FILE = False
 
 #   ---------------------------------------------------------------------------
 def _create_trace( default_stage ):
-    _to_file = TRACE_FILE is not None
-    if _to_file:
+    global TRACE_TO_FILE
+
+    if TRACE_TO_FILE:
         try:
-            fn = os.path.join( tempfile.gettempdir(), TRACE_FILE )
+            fn = os.path.join( tempfile.gettempdir(), 'yupp.trace' )
             hl = logging.FileHandler( fn, mode = 'w' )
         except ( OSError, NotImplementedError ):
 #           -- e.g. permission denied
-            _to_file = False
-    if not _to_file:
-        hl = logging.StreamHandler( sys.stdout )                                                                       #pylint: disable=redefined-variable-type
+            TRACE_TO_FILE = False
+    if not TRACE_TO_FILE:
+        fn = None
+        hl = logging.StreamHandler( sys.stdout )
 
-    _trace = _create_logger( 'trace', hl, TRACE_FORMAT )
-    _trace.file = fn if _to_file else None
+    trace = _create_logger( 'trace', hl, TRACE_FORMAT )
 #   -- default trace
-    _trace.stages = default_stage
-    _trace.enabled = False
-    _trace.TEMPL_DEEPEST = 'deepest call - %d'
-    _trace.set_current = _trace_set_current.__get__( _trace, _trace.__class__ )                                        #pylint: disable=no-member
-    _trace.set_current( TRACE_STAGE_NONE )
-    return _trace
+    trace.file = fn
+    trace.stage = default_stage
+    trace.enabled = False
+    trace.TEMPL_DEEPEST = 'deepest call - %d'
+    trace.set_current = _trace_set_current.__get__( trace, trace.__class__ )                                        #pylint: disable=no-member,too-many-function-args
+    trace.set_current( TRACE_STAGE_NONE )
+    return trace
 
 #   ---------------------------------------------------------------------------
 def _trace_set_current( self, _stage ):
-    if self.stages & _stage:
+    if self.stage & _stage:
         self.enabled = True
         self.setLevel( logging.INFO )
     else:
@@ -128,11 +146,9 @@ def _trace_set_current( self, _stage ):
 
 trace = _create_trace( TRACE_STAGE )
 
-TR_INDENT = '.'
-TR_DELIMIT  = ' <--\n'
-TR_EVAL_IN  = ' E <--\n'
-TR_EVAL_ENV = '<< '
-TR_EVAL_OUT = ' E -->\n'
+TR_PARSE       = '%d %s <-- %s'
+TR_EVAL_INPUT  = '%d <-- %s'
+TR_EVAL_OUTPUT = '%d --> %s'
 TR_SLICE = 64
 
 #   ---------------------------------------------------------------------------
@@ -267,7 +283,11 @@ class BASE_STR( SOURCE ):
 
 #   -----------------------------------
     def __eq__( self, other ):
-        return isinstance( other, str ) and str.__eq__( self, other )
+        return (isinstance( other, str ) or isinstance( other, native_str )) and str.__eq__( self, other )
+
+#   -----------------------------------
+    def __hash__( self ):
+        return str.__hash__( self )
 
 #   ---------------------------------------------------------------------------
 class ATOM( BASE_STR ):
@@ -376,17 +396,25 @@ class FLOAT( float ):
         return '%s(%s)' % ( self.__class__.__name__, float.__repr__( self ))
 
 #   -----------------------------------
+    def __str__(self):
+        return float.__str__( float( self ))
+
+#   -----------------------------------
     def loc( self ):
         return _loc_repr( self )
 
 #   ---------------------------------------------------------------------------
-class INT( long ):
+class INT( int ):
     """
     AST: INT( number )
     """
 #   -----------------------------------
     def __repr__( self ):
-        return '%s(%s)' % ( self.__class__.__name__, long.__repr__( self ))
+        return '%s(%s)' % ( self.__class__.__name__, int.__repr__( self ))
+
+#   -----------------------------------
+    def __str__(self):
+        return int.__str__( int( self ))
 
 #   -----------------------------------
     def loc( self ):
@@ -429,9 +457,9 @@ class BASE_MARK( BASE_OBJECT ):
         return isinstance( other, self.__class__ )
 
 #   ---------------------------------------------------------------------------
-class LATE_BOUNDED( BASE_MARK ):
+class LATE_BOUND( BASE_MARK ):
     """
-    AST: LATE_BOUNDED() <-- &atom
+    AST: LATE_BOUND() <-- &atom
     """
 #   ---------------
     pass
@@ -540,7 +568,7 @@ class TEXT( BASE_OBJECT ):
 #   ---------------------------------------------------------------------------
 class VAR( BASE_OBJECT ):
     """
-    AST: VAR( LATE_BOUNDED | [ ATOM ], ATOM ) <-- &atom
+    AST: VAR( LATE_BOUND | [ ATOM ], ATOM ) <-- &atom
                                                   atom
                                                   atom::atom
     """
@@ -724,11 +752,11 @@ ps_EOL = frozenset([ ord( EOL ), ord( '\r' )])
 #   ---- SPACE | TAB
 ps_SPACE = frozenset([ ord( ' ' ), ord( '\t' )])
 #   ---- any Roman letter | _
-ps_LETTER = frozenset( range( ord( 'a' ), ord( 'z' ) + 1 ) + range( ord( 'A' ), ord( 'Z' ) + 1 ) + [ ord( '_' )])
+ps_LETTER = frozenset( list( range( ord( 'a' ), ord( 'z' ) + 1 )) + list( range( ord( 'A' ), ord( 'Z' ) + 1 )) + [ ord( '_' )])
 #   ---- any figure
-ps_FIGURE = frozenset( range( ord( '0' ), ord( '9' ) + 1 ) + [ ord( '-' )])
+ps_FIGURE = frozenset( list( range( ord( '0' ), ord( '9' ) + 1 )) + [ ord( '-' )])
 #   ---- any printable character
-ps_ANY = frozenset([ ord( EOL ), ord( '\r' ), ord( '\t' )] + range( ord( ' ' ), 256 ))
+ps_ANY = frozenset([ ord( EOL ), ord( '\r' ), ord( '\t' )] + list( range( ord( ' ' ), 256 )))
 #   ---- code mark
 ps_CODE = '($code'
 l_CODE = len( ps_CODE )
@@ -820,7 +848,7 @@ def _unq( st ):
 
                 return result
 
-            result = st.decode( 'string-escape' )
+            result = codecs.unicode_escape_decode( st )[ 0 ]
             if isinstance( st, STR ):
                 return STR( result, st.input_file, st.pos )
 
@@ -853,7 +881,7 @@ def _import_source( lib, once ):
             sou = _unify_eol( f.read())
     except:
         e_type, e, tb = sys.exc_info()
-        raise e_type, 'ps_import: %s' % ( e ) + lib.loc(), tb
+        raise_( e_type, 'ps_import: %s' % ( e ) + lib.loc(), tb )
 
     yushell.source[ lib ] = ( lpath, sou )
     return lib
@@ -872,11 +900,11 @@ def _import_python( name, script ):
             if os.path.isfile( lpath ):
                 break
     try:
-        mod = imp.load_source( name, lpath )
+        mod = imp.load_source( name, str( lpath ))
         builtin.update( vars( mod ))
     except:
         e_type, e, tb = sys.exc_info()
-        raise e_type, 'ps_import_python: %s' % ( e ) + script.loc(), tb
+        raise_( e_type, 'ps_import_python: %s' % ( e ) + script.loc(), tb )
 
     yushell.script.append( script )
 
@@ -884,10 +912,10 @@ def _import_python( name, script ):
 def _import_eval( infix ):
     try:
         code = STR( ''.join( str( x ) for x in infix.ast.ast ), infix.input_file, infix.pos )
-        sou = eval( code, dict( globals(), **builtin ))                                                                #pylint: disable=eval-used
+        sou = str( eval( code, dict( globals(), **builtin )))                                                                #pylint: disable=eval-used
     except:
         e_type, e, tb = sys.exc_info()
-        raise e_type, 'ps_import_eval: %s' % ( e ) + infix.loc(), tb
+        raise_( e_type, 'ps_import_eval: %s' % ( e ) + infix.loc(), tb )
 
     yushell.inclusion.append( None )
     _import = str( len( yushell.inclusion ) - 1 )
@@ -899,7 +927,7 @@ def trace__ps_( name, sou, depth ):
     if depth > trace.deepest:
         trace.deepest = depth
     if trace.enabled:
-        trace.info( TR_INDENT * depth + name + TR_DELIMIT + repr( sou[ :TR_SLICE ]))
+        trace.info( TR_PARSE % ( depth, name, repr( sou[ :TR_SLICE ])))
 
 #   ---------------------------------------------------------------------------
 def echo__ps_( fn ):
@@ -929,7 +957,7 @@ def yuparse( input_file ):
 #   ---- text
         text = ps_text( sou, 0 )
         while sou:
-            ( sou, ast ) = text.next()
+            ( sou, ast ) = next( text )
 
         if header:
             ast.extend_text( 0, header )
@@ -941,11 +969,11 @@ def yuparse( input_file ):
 #   ---- Python exception
         arg = e.args[ 0 ] if e.args else None
         if not isinstance( arg, str ) or not arg.startswith( 'ps_' ) and not arg.startswith( 'python' ):
-            raise e_type, 'python: %s' % ( e ) + sou.loc(), tb
+            raise_( e_type, 'python: %s' % ( e ) + sou.loc(), tb )
 
 #   ---- raised exception
         else:
-            raise e_type, e, tb
+            raise_( e_type, e, tb )
 
 #   ---------------------------------------------------------------------------
 def ps_text( sou, depth = 0 ):
@@ -1030,7 +1058,7 @@ def ps_text( sou, depth = 0 ):
         else:
             plain = ps_plain( sou, depth_pth_sq, depth_pth, None if ast else '', depth + 1 )
 
-        ( sou, leg, depth_pth_sq, depth_pth ) = plain.next()
+        ( sou, leg, depth_pth_sq, depth_pth ) = next( plain )
         ast.append( leg )
         _plain_ret = sou
 
@@ -1230,7 +1258,7 @@ def ps_macro( sou, depth = 0 ):
     plain = ps_plain( sou, 0, 0, None, depth + 1 )
     while True:
 #   ---- plain
-        ( sou, leg, _, depth_pth ) = plain.next()
+        ( sou, leg, _, depth_pth ) = next( plain )
 #   ---- ) & [eq depth_pth 0]
         if ( sou[ :1 ] == ')' ) and ( depth_pth == 0 ):
             return ( sou[ 1: ], MACRO( name, pars, str( leg )))
@@ -1523,7 +1551,7 @@ def ps_plain( sou, pth_sq, pth, indent, depth = 0 ):
             if isinstance( indent, str ):
                 indent += sou[ i ]
         else:
-            indent = False                                                                                             #pylint: disable=redefined-variable-type
+            indent = False
         i += 1
 #   ---- YIELD
         yield ( sou[ i: ], PLAIN( sou[ :i ], indent ), depth_pth_sq, depth_pth )
@@ -1543,9 +1571,9 @@ def ps_function( sou, depth = 0 ):
 @echo__ps_
 def ps_variable( sou, depth = 0 ):
     """
-    variable ::= { region '::' }0... atom | '&' late-bounded;
+    variable ::= { region '::' }0... atom | '&' late-bound;
     region ::= atom;
-    late-bounded ::= atom;
+    late-bound ::= atom;
     """
 #   ---------------
 #   ---- &
@@ -1553,9 +1581,9 @@ def ps_variable( sou, depth = 0 ):
 #   ---- atom
         ( sou, leg ) = ps_atom( sou[ 1: ], depth + 1 )
         if leg is not None:
-            return ( sou, VAR( LATE_BOUNDED(), leg ))
+            return ( sou, VAR( LATE_BOUND(), leg ))
 
-        raise SyntaxError( '%s: late-bounded expected' % ( callee()) + sou.loc())
+        raise SyntaxError( '%s: late-bound expected' % ( callee()) + sou.loc())
 
     else:
 #   ---- atom
@@ -1804,7 +1832,7 @@ def ps_code( sou, depth = 0 ):                                                  
             text = ps_text( rest, depth + 1 )
             while True:
 #   ---- text
-                ( rest, leg ) = text.next()
+                ( rest, leg ) = next( text )
 #   ---- EOL
                 ( rest, eol ) = ps_eol( rest, depth + 1 )
                 if eol:
@@ -1825,7 +1853,7 @@ def ps_code( sou, depth = 0 ):                                                  
             text = ps_text( sou[ 1: ], depth + 1 )
             while True:
 #   ---- text
-                ( rest, leg ) = text.next()
+                ( rest, leg ) = next( text )
 #   ---- '[' >>
                 pos = _open_sq_bracket( rest )
                 if pos:
@@ -1848,7 +1876,7 @@ def ps_code( sou, depth = 0 ):                                                  
         text = ps_text( sou[ 1: ], depth + 1 )
         while True:
 #   ---- text
-            ( rest, leg ) = text.next()
+            ( rest, leg ) = next( text )
 #   ---- ']' & [eq depth_pth_sq 0]
             if ( rest[ :1 ] == ']' ) and ( leg.depth_pth_sq == 0 ):
                 return ( rest[ 1: ], leg )
@@ -1858,7 +1886,7 @@ def ps_code( sou, depth = 0 ):                                                  
         text = ps_text( sou[ l_CODE: ], depth + 1 )
         while True:
 #   ---- text
-            ( rest, leg ) = text.next()
+            ( rest, leg ) = next( text )
 #   ---- ) & [eq depth_pth 0]
             if ( rest[ :1 ] == ')' ) and ( leg.depth_pth == 0 ):
                 return ( rest[ 1: ], leg )
@@ -1869,7 +1897,7 @@ def ps_code( sou, depth = 0 ):                                                  
         text = ps_text( sou[ l_DUALCOMMA: ], depth + 1 )
         while True:
 #   ---- text
-            ( rest, leg ) = text.next()
+            ( rest, leg ) = next( text )
 #   ---- ;;
             if rest[ :l_DUALSEMI ] == ps_DUALSEMI:
                 return ( rest[ l_DUALSEMI: ], leg )
@@ -1940,7 +1968,7 @@ def ps_infix( sou, depth = 0 ):
         text = ps_text( sou[ 1: ], depth + 1 )
         while True:
 #   ---- text
-            ( rest, leg ) = text.next()
+            ( rest, leg ) = next( text )
 #   ---- }
             if rest[ :1 ] == '}':
                 return ( rest[ 1: ], INFIX( leg, sou.input_file, sou.pos ))
@@ -1950,7 +1978,7 @@ def ps_infix( sou, depth = 0 ):
         text = ps_text( sou[ l_INFIX: ], depth + 1 )
         while True:
 #   ---- text
-            ( rest, leg ) = text.next()
+            ( rest, leg ) = next( text )
 #   ---- ) & [eq depth_pth 0]
             if ( rest[ :1 ] == ')' ) and ( leg.depth_pth == 0 ):
                 return ( rest[ 1: ], INFIX( leg, sou.input_file, sou.pos + 1 ))
@@ -2053,7 +2081,7 @@ def ps_quote( sou, depth = 0 ):
         plain = ps_plain( sou, 0, 0, None, depth + 1 )
         while True:
 #   ---- plain
-            ( sou, leg, _, depth_pth ) = plain.next()
+            ( sou, leg, _, depth_pth ) = next( plain )
 #   ---- ) & [eq depth_pth 0]
             if ( sou[ :1 ] == ')' ) and ( depth_pth == 0 ):
                 return ( sou[ 1: ], STR( leg ))
@@ -2143,7 +2171,7 @@ def ps_comment( sou, depth = 0 ):
         plain = ps_plain( sou, 0, 0, None, depth + 1 )
         while True:
 #   ---- plain
-            ( sou, _leg, _, depth_pth ) = plain.next()
+            ( sou, _leg, _, depth_pth ) = next( plain )
 #   ---- ) & [eq depth_pth 0]
             if ( sou[ :1 ] == ')' ) and ( depth_pth == 0 ):
                 return ( sou[ 1: ], COMMENT())
@@ -2172,6 +2200,8 @@ def ps_number( sou, depth = 0 ):
     mch = re_INT.match( sou )
     if mch:
         leg = mch.group( 0 )
+        if leg[ -1 ] in [ 'l', 'L' ]:
+            leg = leg[ :-1 ]
         return ( sou[ mch.end(): ], INT( leg, 0 ))
 
     return ( sou, None )
@@ -2190,7 +2220,7 @@ def ps_number( sou, depth = 0 ):
 #   ---------------------------------------------------------------------------
 class BOUND( BASE_MARK ):
     """
-    AST: marker of bounded unassigned variable
+    AST: marker of bound unassigned variable
     """
 #   ---------------
     pass
@@ -2446,7 +2476,7 @@ class TRIM( BASE_OBJECT, CAPTION ):
                     pos -= delta
                 elif delta < 0:
 #                   -- added indent
-                    for _ in xrange( -delta ):
+                    for _ in range( -delta ):
                         total -= 1
                         offset.append(( pos, total ))
                         pos += 1
@@ -2577,7 +2607,7 @@ class ENV( dict ):
         result = []
         env = self
         while env is not None:
-            for key, value in env.items():
+            for key, value in list( env.items()):
                 result.append( str( key ) if isinstance( value, BOUND ) else key.upper())
             env = env.parent
         return '%s(%s)' % ( self.__class__.__name__, ' '.join( result ))
@@ -2616,7 +2646,7 @@ class SKIP( BASE_MARK ):
     pass
 
 #   -----------------------------------
-#   Built-in functions and consts
+#   Built-in functions and constants
 #   -----------------------------------
 
 SOURCE_EMPTY = '<null>'
@@ -2643,7 +2673,7 @@ def yushell( text, _input = None, _output = None ):
     yushell.directory.extend( config.directory )
 #   -- yupp lib directory
     if '__file__' in globals():
-        yushell.directory.append( os.path.join( os.path.dirname( os.path.realpath( __file__ )), 'lib' ))
+        yushell.directory.append( os.path.join( os.path.dirname( os.path.dirname( os.path.realpath( __file__ ))), 'lib' ))
     else:
         yushell.directory.append( './lib' )
 #   -- to skip comments we have to parse them
@@ -2652,7 +2682,7 @@ def yushell( text, _input = None, _output = None ):
         yushell.pp_skip_comments = PP_SKIP_PYTHON_COMMENTS if yushell.output_python else PP_SKIP_C_COMMENTS
 #   -- the number of deleted lines at the beginning (Python)
     yushell.shrink = 0
-    _update_biultin_from_config()
+    _update_builtin_from_config()
 
 #   ---------------------------------------------------------------------------
 _title_template_c = r"""/*  %(output)s was generated by %(app)s %(version)s
@@ -2663,8 +2693,44 @@ _title_template_python = """#  %(output)s was generated by %(app)s %(version)s
 #  out of %(input)s %(datetime)s"""
 
 #   ---------------------------------------------------------------------------
+def _print( s ):
+    sys.stdout.write( s )
+    sys.stdout.flush()
+
+#   ---------------------------------------------------------------------------
 builtin = dict()
 builtin.update( vars( string ))
+
+if 'lower' not in builtin:
+#   -- add deprecated string functions
+    builtin.update({
+        'lower': lambda s : s.lower(),
+        'upper': lambda s : s.upper(),
+        'swapcase': lambda s : s.swapcase(),
+        'strip': lambda s, chars=None : s.strip( chars ),
+        'lstrip': lambda s, chars=None : s.lstrip( chars ),
+        'rstrip': lambda s, chars=None : s.rstrip( chars ),
+        'split': lambda s, sep=None, maxsplit=-1 : s.split( sep, maxsplit ),
+        'rsplit': lambda s, sep=None, maxsplit=-1 : s.rsplit( sep, maxsplit ),
+        'join': lambda words, sep = ' ' : sep.join( words ),
+        'index': lambda s, *args : s.index( *args ),
+        'rindex': lambda s, *args : s.rindex( *args ),
+        'count': lambda s, *args : s.count( *args ),
+        'find': lambda s, *args : s.find( *args ),
+        'rfind': lambda s, *args : s.rfind( *args ),
+        'atof': lambda s : float( s ),
+        'atoi': lambda s , base=10 : int( s, base ),
+        'atol': lambda s, base=10 : long( s, base ),
+        'ljust': lambda s, width, *args : s.ljust( width, *args ),
+        'rjust': lambda s, width, *args : s.rjust( width, *args ),
+        'center': lambda s, width, *args : s.center( width, *args ),
+        'zfill': lambda x, width : x.zfill( width ) if isinstance( x, str ) else repr( x ).zfill( width ),
+        'expandtabs': lambda s, tabsize=8 : s.expandtabs( tabsize ),
+        'translate': lambda s, table, deletions="" : s.translate( table, deletions ) if deletions or table is None else s.translate( table + s[ :0 ]),
+        'capitalize': lambda s : s.capitalize(),
+        'replace': lambda s, old, new, maxreplace=-1 : s.replace( old, new, maxreplace )
+    })
+
 builtin.update( vars( operator ))
 builtin.update( vars( math ))
 builtin.update({
@@ -2681,12 +2747,14 @@ builtin.update({
     'car': lambda l : l[ :1 ],
     'cdr': lambda l : l[ 1: ],
     'chr': chr,
-    'cmp': cmp,
-    'crc32': lambda val : ( zlib.crc32( str( val )) & 0xffffffff ),
+    'cmp': lambda x, y : ( x > y ) - ( x < y ),
+    'crc32': lambda val : ( zlib.crc32( bytes( val, 'utf8' )) & 0xffffffff ),
     'dec': lambda val : ( val - 1 ),
+    'div': operator.truediv,
     'getslice': lambda l, *sl : l[ slice( *( None if x == '' else x for x in sl ))],
     'hex': hex,
     'inc': lambda val : ( val + 1 ),
+# -- redefine
     'index': lambda l, val : l.index( val ) if val in l else -1,
     'int_': int,
     'isdigit': lambda val : str( val ).isdigit(),
@@ -2697,12 +2765,13 @@ builtin.update({
     'oct': oct,
     'or': operator.or_,
     'ord': lambda val : ord( val ) if isinstance( val, STR ) else ord( str( val )),
-    'print': lambda *l : sys.stdout.write( ' '.join(( _unq( x ) if isinstance( x, STR ) else str( x )) for x in l )),
-    'q': lambda val : STR( '"%s"' % str( val ).encode( 'string-escape' )),
-    'qs': lambda val : STR( "'%s'" % str( val ).encode( 'string-escape' )),
-    'range': lambda *l : LIST( range( *l )),
-    'reversed': lambda l : l[ ::-1 ],
-    're-split': lambda regex, val : LIST( filter( None, re.split( regex, val ))),
+    'print': lambda *l : _print( ' '.join(( _unq( x ) if isinstance( x, STR ) else str( x )) for x in l )),
+    'q': lambda val : STR( '"%s"' % codecs.unicode_escape_encode( str( val ))[ 0 ].decode()),
+    'qs': lambda val : STR( "'%s'" % codecs.unicode_escape_encode( str( val ))[ 0 ].decode()),
+    'range': lambda *l : LIST( list( range( *l ))),
+    'reversed': lambda val : val[ ::-1 ],
+    're-split': lambda regex, val : LIST([ x for x in re.split( regex, val ) if x is not None ]),
+# -- redefine
     'rindex': lambda l, val : ( len( l ) - 1 ) - l[ ::-1 ].index( val ) if val in l else -1,
     'round': round,
     'SPACE': lambda : STEADY_SPACE,
@@ -2716,7 +2785,7 @@ builtin.update({
 })
 
 #   ---------------------------------------------------------------------------
-def _update_biultin_from_config():
+def _update_builtin_from_config():
     for x in config.pp_define:
         pair = x.split( ':', 1 )
         rest, atom = ps_atom( pair[ 0 ].strip())
@@ -2766,8 +2835,8 @@ def _is_term( node ):                                                           
     if isinstance( node, LAZY ):
         return True
 
-#   ---- str based | int | float | long
-    if isinstance( node, str ) or isinstance( node, int ) or isinstance( node, long ) or isinstance( node, float ):
+#   ---- str based | int | float
+    if isinstance( node, str ) or isinstance( node, int ) or isinstance( node, float ):
         return True
 
     return False
@@ -2775,7 +2844,7 @@ def _is_term( node ):                                                           
 #   ---------------------------------------------------------------------------
 def _detect_deadlock( node ):                                                                                          #pylint: disable=too-many-return-statements
     """
-    Initial, simplistic release of unreducible expressions detection.
+    Initial, simplistic release of irreducible expressions detection.
     """
 #   ---------------
     if node is None:
@@ -2825,7 +2894,7 @@ def _plain( node ):                                                             
     if isinstance( node, PLAIN ):
         return node.get_trimmed()
 
-#   ---- str based | int | float | long
+#   ---- str based | int | float
     return str( node )
 
 #   ---------------------------------------------------------------------------
@@ -2910,7 +2979,7 @@ def _plain_with_browse( node ):                                                 
 
 #   ---- list
     if isinstance( node, list ):
-        return reduce( RESULT.add_text, map( _plain_with_browse, node )) if node else RESULT( '' )
+        return reduce( RESULT.add_text, list( map( _plain_with_browse, node ))) if node else RESULT( '' )
 
 #   ---- LAZY
     if isinstance( node, LAZY ):
@@ -2924,7 +2993,7 @@ def _plain_with_browse( node ):                                                 
     if isinstance( node, SOURCE ):
         return RESULT( str( node ), RESULT.loc( node.input_file, node.pos ) if node and node.input_file else [])
 
-#   ---- str based | int | float | long
+#   ---- str based | int | float
     return RESULT( str( node ))
 
 #   ---------------------------------------------------------------------------
@@ -2965,7 +3034,7 @@ def _list_eval_1( args, env, depth = 0 ):
 
 #   ---- EMBED -- VAR | APPLY
         if isinstance( arg.ast, VAR ) or isinstance( arg.ast, APPLY ):
-#           -- unreducible
+#           -- irreducible
             return ( NOT_FOUND, args )
 
         return ( arg.ast, args[ 1: ])
@@ -2975,13 +3044,13 @@ def _list_eval_1( args, env, depth = 0 ):
 #   ---------------------------------------------------------------------------
 def trace__eval_in_( node, env, depth ):
     if trace.enabled:
-        trace.info( TR_INDENT * depth + TR_EVAL_IN + _ast_pretty( repr( node )))
-        trace.info( TR_EVAL_ENV + _ast_pretty( repr( env )))
+        trace.info( TR_EVAL_INPUT % ( depth, _ast_pretty( repr( node ))))
+        trace.info( _ast_pretty( repr( env )))
 
 #   ---------------------------------------------------------------------------
 def trace__eval_out_( node, depth ):
     if trace.enabled:
-        trace.info( TR_INDENT * depth + TR_EVAL_OUT + _ast_pretty( repr( node )))
+        trace.info( TR_EVAL_OUTPUT % ( depth, _ast_pretty( repr( node ))))
 
 #   ---------------------------------------------------------------------------
 def echo__eval_( fn ):
@@ -3008,7 +3077,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #   ---------------
 #   TODO: This is an experimental release of the eval-apply cycle, it's slightly theoretically incorrect and unstable,
 #   you may run into problems using a recursion or to face with a wrong scope of a name binding.
-                                                                                                                       #pylint: disable=too-many-nested-blocks,redefined-variable-type
+                                                                                                                       #pylint: disable=too-many-nested-blocks
     try:
         tr = False
         while True:
@@ -3028,7 +3097,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                 for i, x in enumerate( node ):
                     nx = i + 1
                     x_apply = isinstance( x, APPLY )
-#                   -- skip text upto the end of module
+#                   -- skip text up to the end of module
                     if skip_level:
                         if isinstance( x, IMPORT_BEGIN ):
                             skip_level += 1
@@ -3114,7 +3183,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                 if _is_term( t ):
                     return _plain_with_browse( t ) if config.pp_browse else _plain( t )
 
-#               -- unreducible
+#               -- irreducible
                 return t
 
 #   ---- APPLY
@@ -3140,7 +3209,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                             if not isinstance( node.args[ 0 ], VAR ):
 #                               -- argument is substituted
                                 return node.fn.fn( node.args[ 0 ])
-#                           -- unreducible
+#                           -- irreducible
                             return node
 
                         if node.fn.atom == 'reduce':
@@ -3157,7 +3226,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                                 + node.fn.atom.loc())
 
                             if isinstance( node.args[ 0 ], ATOM ) or isinstance( node.args[ 0 ], VAR ):
-#                               -- undefined or LATE_BOUNDED variable
+#                               -- undefined or LATE_BOUND variable
                                 return 1
 
                             return 0
@@ -3182,14 +3251,14 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                                 val = node.fn.fn( *node.args )
                             except:
                                 e_type, e, tb = sys.exc_info()
-                                raise e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb
+                                raise_( e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb )
 
-                            return int( val ) if isinstance( val, bool ) else val
+                            return int( val ) if isinstance( val, bool ) else str( val ) if isinstance( val, native_str ) else val
 
                         if _detect_deadlock( node.args ):
-                            raise TypeError( '%s: unreducible expression' % ( _callee()) + node.loc())
+                            raise TypeError( '%s: irreducible expression' % ( _callee()) + node.loc())
 
-#                       -- unreducible
+#                       -- irreducible
                         return node
 
 #   ---- APPLY -- BUILTIN -- const
@@ -3197,10 +3266,11 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         raise TypeError( '%s: no arguments of constant expected' % ( _callee())
                         + node.fn.atom.loc())
 
-                    return node.fn.fn
+                    val = node.fn.fn
+                    return str( val ) if isinstance( val, native_str ) else val
 
-#   ---- APPLY -- int | float | long (subscripting)
-                elif isinstance( node.fn, int ) or isinstance( node.fn, long ) or isinstance( node.fn, float ):
+#   ---- APPLY -- int | float (subscripting)
+                elif isinstance( node.fn, int ) or isinstance( node.fn, float ):
                     if node.named:
                         raise TypeError( '%s: unexpected named argument of index function' % ( _callee())
                         + node.named[ 0 ][ 0 ].loc())
@@ -3214,7 +3284,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                             else:
                                 return node.args[ pos ] if pos < len( node.args ) else None
 
-#                       -- unreducible
+#                       -- irreducible
                         return node
 
                     return node.fn
@@ -3259,7 +3329,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         else:
                             val, node.args = _list_eval_1( node.args, env, depth + 1 )
 
-#                       -- unreducible -- EMBED
+#                       -- irreducible -- EMBED
                         if val is NOT_FOUND:
                             return node
 
@@ -3277,7 +3347,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
 #                       -- apply default
                         val = yueval( node.fn.default[ var ], env, depth + 1 )
-#                   -- late bounded -- second yueval()
+#                   -- late bound -- second yueval()
                     if var in node.fn.late:
                         val = yueval( L_CLOSURE( val, ENV( None, node.fn.late[ var ])), env, depth + 1 )
                     node.fn.env[ var ] = val
@@ -3313,7 +3383,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         node.named[ i ] = ( var, val )
                         term = term and _is_term( val )
                     if not term or not _is_term( node.args ):
-#                       -- unreducible
+#                       -- irreducible
                         return node
 
                     for i, val in enumerate( node.args ):
@@ -3330,7 +3400,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
 #                   -- !? is it right without
 #                   if not _is_term( node.fn ):
-#                       -- unreducible
+#                       -- irreducible
 #                       return node
 
                     lst = LIST()
@@ -3352,16 +3422,16 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
 #   ---- APPLY -- ...
                 else:
-#                   -- unreducible
+#                   -- irreducible
                     return node
 
 #   ---- VAR
             elif isinstance( node, VAR ):
                 val = env.lookup( node.reg, node.atom )
                 if val is NOT_FOUND:
-#   ---- VAR -- LATE_BOUNDED
-                    if isinstance( node.reg, LATE_BOUNDED ):
-#                       -- unreducible
+#   ---- VAR -- LATE_BOUND
+                    if isinstance( node.reg, LATE_BOUND ):
+#                       -- irreducible
                         return node
 
                     if not node.reg:
@@ -3373,10 +3443,10 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         if node.atom in builtin_special:
                             return BUILTIN_SPECIAL( node.atom, builtin_special[ node.atom ])
 
-#                       -- if not valid C identifier mark as LATE_BOUNDED
+#                       -- if not valid C identifier mark as LATE_BOUND
                         if not node.atom.is_valid_c_id():
-                            node.reg = LATE_BOUNDED()
-#                           -- unreducible
+                            node.reg = LATE_BOUND()
+#                           -- irreducible
                             return node
 
                         return node.atom
@@ -3386,7 +3456,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
 #   ---- VAR -- BOUND
                 if isinstance( val, BOUND ):
-#                   -- unreducible
+#                   -- irreducible
                     return node
 
                 return copy.deepcopy( val )
@@ -3397,7 +3467,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                 if isinstance( node.bound, VAR ):
                     val = env.lookup( node.bound.reg, node.bound.atom )
                     if isinstance( val, BOUND ):
-#                       -- unreducible
+#                       -- irreducible
                         return node
 
                     bound_atom = node.bound.atom
@@ -3419,7 +3489,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         var = __va_args__
                     env_l[ var ] = BOUND()
 #               -- eval L_CLOSURE
-                node = L_CLOSURE( node.l_form, env_l, d_late, d_default )                                              #pylint: disable=redefined-variable-type
+                node = L_CLOSURE( node.l_form, env_l, d_late, d_default )
                 # fall through -- yueval( node )
 
 #   ---- L_CLOSURE
@@ -3427,7 +3497,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                 node.env.parent = env
                 if node.env.unassigned() is not NOT_FOUND:
                     node.l_form = yueval( node.l_form, node.env, depth + 1 )
-#                   -- unreducible
+#                   -- irreducible
                     return node
 
                 env = node.env
@@ -3485,18 +3555,18 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                 if _is_term( node.form ):
                     return node.form
 
-#               -- unreducible
+#               -- irreducible
                 return node
 
 #   ---- MACRO --> ENV( None, ( name, M_CLOSURE( text, ENV( None, [( par, BOUND )]))))
             elif isinstance( node, MACRO ):
                 return ENV( None, [( node.name, M_CLOSURE( node.text, ENV( None
-                , zip( node.pars, [ BOUND()] * len( node.pars ))), node.name ))])
+                , list( zip( node.pars, [ BOUND()] * len( node.pars )))), node.name ))])
 
 #   ---- M_CLOSURE --> EVAL
             elif isinstance( node, M_CLOSURE ):
                 if not node.env.eval_local( env, depth + 1 ):
-#                   -- unreducible
+#                   -- irreducible
                     return node
 
                 for var, val in node.env.xlocal():
@@ -3508,7 +3578,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
             elif isinstance( node, EVAL ):
                 node.ast = yueval( node.ast, env, depth + 1 )
                 if not isinstance( node.ast, str ):
-#                   -- unreducible
+#                   -- irreducible
                     return node
 
                 if isinstance( node.ast, STR ):
@@ -3535,7 +3605,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
             elif isinstance( node, COND ):
                 node.cond = yueval( node.cond, env, depth + 1 )
                 if not _is_term( node.cond ):
-#                   -- unreducible
+#                   -- irreducible
                     return COND_CLOSURE( node.cond, node.leg_1, node.leg_0 )
 
                 node = node.leg_1 if node.cond else node.leg_0
@@ -3549,7 +3619,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #                   -- also it makes impossible to perform operations with side effect such as raising an exception
                     node.leg_1 = yueval( node.leg_1, env, depth + 1 )
                     node.leg_0 = yueval( node.leg_0, env, depth + 1 )
-#                   -- unreducible
+#                   -- irreducible
                     return node
 
                 node = yueval( node.leg_1 if node.cond else node.leg_0, env, depth + 1 )
@@ -3559,14 +3629,14 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
             elif isinstance( node, INFIX ):
                 node.ast = yueval( node.ast, env, depth + 1 )
                 if not isinstance( node.ast, str ):
-#                   -- unreducible
+#                   -- irreducible
                     return node
 
                 try:
                     tree = parse( node.ast.lstrip(), mode = 'eval' )
                 except:
                     e_type, e, tb = sys.exc_info()
-                    raise e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb
+                    raise_( e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb )
 
                 infix_visitor = INFIX_VISITOR()
                 infix_visitor.visit( tree )
@@ -3586,16 +3656,17 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
             elif isinstance( node, INFIX_CLOSURE ):
 
                 if not node.env.eval_local( env, depth + 1 ):
-#                   -- unreducible
+#                   -- irreducible
                     return node
 
                 try:
                     code = compile( node.tree, '', 'eval' )
-                    return eval( code, dict( globals(), **builtin ), node.env )                                        #pylint: disable=eval-used
+                    val = eval( code, dict( globals(), **builtin ), node.env )                                        #pylint: disable=eval-used
+                    return str( val ) if isinstance( val, native_str ) else val
 
                 except:
                     e_type, e, tb = sys.exc_info()
-                    raise e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb
+                    raise_( e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb )
 
 #   ---- EMIT
             elif isinstance( node, EMIT ):
@@ -3606,7 +3677,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
 #   ---- EMIT -- VAR -- BOUND
                 if isinstance( val, BOUND ):
-#                   -- unreducible
+#                   -- irreducible
                     return node
 
                 if isinstance( val, list ):
@@ -3641,7 +3712,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         else:
 #   ---- LIST -- EMBED -- VAR | APPLY
                             if isinstance( x.ast, VAR ) or isinstance( x.ast, APPLY ):
-#                               -- unreducible
+#                               -- irreducible
                                 lst.append( x )
                             else:
                                 lst.append( x.ast )
@@ -3669,14 +3740,14 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
         if ( not isinstance( arg, str )
         or not arg.startswith( 'yueval' ) and not arg.startswith( 'python' ) and not arg.startswith( 'ps_' )):
             if isinstance( arg, str ) and arg.startswith( 'maximum recursion depth' ):
-                raise e_type, 'yueval: %s' % ( e ), tb
+                raise_( e_type, 'yueval: %s' % ( e ), tb )
             else:
 #               -- this 'raise' expr. could be cause of new exception when maximum recursion depth is exceeded
-                raise e_type, 'python: %s' % ( e ) + node.loc(), tb
+                raise_( e_type, 'python: %s' % ( e ) + node.loc(), tb )
 
 #   ---- raised exception
         else:
-            raise e_type, e, tb
+            raise_( e_type, e, tb )
 
 #   ---------------------------------------------------------------------------
 def yuinit():
@@ -3741,8 +3812,8 @@ def make_ast_readable( node ):                                                  
     if isinstance( node, PLAIN ):
         return node.get_trimmed()
 
-#   ---- str based | int | float | long
-    if isinstance( node, str ) or isinstance( node, int ) or isinstance( node, long ) or isinstance( node, float ):
+#   ---- str based | int | float
+    if isinstance( node, str ) or isinstance( node, int ) or isinstance( node, float ):
         return str( node )
 
     return _ast_pretty( repr( node ))

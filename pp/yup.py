@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 r"""
 http://github.com/in4lio/yupp/
  __    __    _____ _____
@@ -12,7 +10,17 @@ http://github.com/in4lio/yupp/
 yup.py -- shell of yupp preprocessor
 """
 
+from __future__ import absolute_import
 from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+from past.builtins import execfile
+from builtins import input
+from builtins import str
+from builtins import range
+from builtins import open
+
 import os
 import sys
 import re
@@ -20,13 +28,17 @@ import json
 import traceback
 from argparse import ArgumentParser
 import stat
+try:
+    import readline
+except:
+    pass
 
-from yugen import log, trace
-from yugen import config, feedback, yushell, yuinit, yuparse, yueval, RESULT
-from yugen import make_ast_readable, reduce_emptiness, replace_steady
+from .yugen import log, trace
+from .yugen import config, feedback, yushell, yuinit, yuparse, yueval, RESULT
+from .yugen import make_ast_readable, reduce_emptiness, replace_steady
 
-from yulic import *                                                                                                    #pylint: disable=wildcard-import
-from yuconfig import *                                                                                                 #pylint: disable=wildcard-import,unused-wildcard-import
+from .yulic import *                                                                                                    #pylint: disable=wildcard-import
+from .yuconfig import *                                                                                                 #pylint: disable=wildcard-import,unused-wildcard-import
 
 __version__ = VERSION
 
@@ -97,9 +109,9 @@ SYSTEM_EXIT_HELP = 'Moreover, you can pass the arguments through a response file
 def shell_parse_cli_arguments( arglist ):
     argp = ArgumentParser(
       description = 'yupp, %(description)s' % { 'description': DESCRIPTION }
-    , version = '%(app)s %(version)s' % { 'app': APP, 'version': VERSION }
     , epilog = SYSTEM_EXIT_HELP
     )
+    argp.add_argument( '--version', action = 'version', version = '%(app)s %(version)s' % { 'app': APP, 'version': VERSION })
     argp.add_argument( 'files', metavar = 'FILE', type = str, nargs = '*', help = "an input file" )
     argp.add_argument( '-q', '--quiet', action = 'store_true', dest = 'quiet', default = shell.quiet
     , help = QUIET_HELP )
@@ -111,7 +123,7 @@ def shell_parse_cli_arguments( arglist ):
     , help = READ_ONLY_HELP )
 #   -- preprocessor options
     argp.add_argument( '--pp-skip-comments', metavar = 'TYPE', type = int, dest = 'pp_skip_comments'
-    , choices = range( 0, 4 ), help = PP_SKIP_COMMENTS_HELP )
+    , choices = list( range( 0, 4 )), help = PP_SKIP_COMMENTS_HELP )
     argp.add_argument( '--pp-no-trim-app-indent', action = 'store_false', dest = 'pp_trim_app_indent' )
     argp.add_argument( '--pp-trim-app-indent', action = 'store_true', dest = 'pp_trim_app_indent'
     , help = PP_TRIM_APP_INDENT_HELP )
@@ -129,13 +141,13 @@ def shell_parse_cli_arguments( arglist ):
     , dest = 'warn_unbound_application', help = WARN_UNBOUND_APPLICATION_HELP )
 #   -- debug options
     argp.add_argument( '-l', '--log', metavar = 'LEVEL', type = int, dest = 'log_level'
-    , default = ( LOG_LEVEL ), choices = range( 1, 6 )
+    , default = ( LOG_LEVEL ), choices = list( range( 1, 6 ))
     , help = LOG_LEVEL_HELP )
     argp.add_argument( '-t', '--trace', metavar = 'STAGE', type = int, dest = 'trace_stage'
-    , default = TRACE_STAGE, choices = range( 0, 4 )
+    , default = TRACE_STAGE, choices = list( range( 0, 4 ))
     , help = TRACE_STAGE_HELP )
     argp.add_argument( '-b', '--traceback', metavar = 'TYPE', type = int, dest = 'traceback'
-    , default = TRACEBACK, choices = range( 0, 3 )
+    , default = TRACEBACK, choices = list( range( 0, 3 ))
     , help = TRACEBACK_HELP )
     argp.add_argument( '--type-file', action = 'store_true', dest = 'type_output', default = shell.type_output
     , help = TYPE_OUTPUT_HELP )
@@ -165,7 +177,6 @@ def shell_parse_cli_arguments( arglist ):
             sys.exit( 2 )
 
     return argp.parse_args( arglist )
-#    return argp.parse_args([ '-h' ])
 
 #   ---------------------------------------------------------------------------
 def _exec_yuconfig_script( fn_cfg, context ):
@@ -187,7 +198,7 @@ def shell_parse_yuconfig( fn ):
     _exec_yuconfig_script( '' + E_YUCFG, context )
 #   -- configuration for concrete source file
     _exec_yuconfig_script( os.path.splitext( fn )[ 0 ] + E_YUCFG, context )
-    cfg = { k: val for k, val in context.items() if isinstance( val, yuconfig_types )}
+    cfg = { k: val for k, val in list( context.items()) if isinstance( val, yuconfig_types )}
     if isinstance( context[ 'directory' ], list ):
         cfg[ 'directory' ] = context[ 'directory' ]
     if isinstance( context[ 'dependency' ], list ):
@@ -199,11 +210,12 @@ def shell_parse_yuconfig( fn ):
 #   ---------------------------------------------------------------------------
 def shell_input():
     try:
-        return raw_input( PROMPT )
+        val = input( PROMPT )
+        return val if isinstance( val, str ) else val.decode( 'utf8' )
 
     except ( EOFError, ValueError ):
 #       -- e.g. run into environment without terminal input
-        print
+        print()
         return REPL_EXIT
 
 #   ---------------------------------------------------------------------------
@@ -217,7 +229,7 @@ def shell_backup( fn ):
 
 #   ---------------------------------------------------------------------------
 def shell_savetofile( fn, text ):
-    with open( fn, 'wb' ) as f:
+    with open( fn, mode='w', encoding='utf8' ) as f:
         f.write( text )
 
 
@@ -246,33 +258,33 @@ def _pp_configure( cfg ):
 
 #  DEBUG OUTPUT
 #    if log.level != LOG_LEVEL * LOG_LEVEL__SCALE_:
-#        print 'log_level', log.level
+#        print( 'log_level', log.level )
 #    if trace.stage != TRACE_STAGE:
-#        print 'stage', trace.stage
+#        print( 'stage', trace.stage )
 #    if config.pp_skip_comments != PP_SKIP_COMMENTS:
-#        print 'pp_skip_comments', config.pp_skip_comments
+#        print( 'pp_skip_comments', config.pp_skip_comments )
 #    if config.pp_trim_app_indent != PP_TRIM_APP_INDENT:
-#        print 'pp_trim_app_indent', config.pp_trim_app_indent
+#        print( 'pp_trim_app_indent', config.pp_trim_app_indent )
 #    if config.pp_reduce_emptiness != PP_REDUCE_EMPTINESS:
-#        print 'pp_reduce_emptiness', config.pp_reduce_emptiness
+#        print( 'pp_reduce_emptiness', config.pp_reduce_emptiness )
 #    if config.pp_browse != PP_BROWSE:
-#        print 'pp_browse', config.pp_browse
+#        print( 'pp_browse', config.pp_browse )
 #    if config.pp_define != []:
-#        print 'pp_define', config.pp_define
+#        print( 'pp_define', config.pp_define )
 #    if config.warn_unbound_application != WARN_UNBOUND_APPLICATION:
-#        print 'warn_unbound_application', config.warn_unbound_application
+#        print( 'warn_unbound_application', config.warn_unbound_application )
 #    if config.directory != []:
-#        print 'directory', config.directory
+#        print( 'directory', config.directory )
 #    if shell.quiet != QUIET:
-#        print 'quiet', shell.quiet
+#        print( 'quiet', shell.quiet )
 #    if shell.type_output != TYPE_OUTPUT:
-#        print 'type_output', shell.type_output
+#        print( 'type_output', shell.type_output )
 #    if shell.output_dir != '':
-#        print 'output_dir', shell.output_dir
+#        print( 'output_dir', shell.output_dir )
 #    if shell.traceback != TRACEBACK:
-#        print 'traceback', shell.traceback
+#        print( 'traceback', shell.traceback )
 #    if shell.read_only != READ_ONLY:
-#        print 'read_only', shell.read_only
+#        print( 'read_only', shell.read_only )
 
 #   ---------------------------------------------------------------------------
 def _pp():                                                                                                             #pylint: disable=too-many-statements
@@ -400,12 +412,12 @@ def _pp_stream( _stream, fn, fn_o ):
                 os.chmod( fn_o, stat.S_IREAD )
             if isinstance( plain, RESULT ):
 #               -- browse writing
-                with open( fn_o + '.json', 'w' ) as f:
-                    json.dump({
+                with open( fn_o + '.json', mode='w', encoding='utf8' ) as f:
+                    f.write( str( json.dumps({
                       'files': sorted( RESULT.files, key=RESULT.files.get )
                     , 'browse': plain.browse
                     , 'offset': plain.offset
-                    }, f )
+                    })))
         else:
             if plain:
 #               -- plain contains AST
@@ -431,7 +443,7 @@ def _pp_file( fn ):
         return False
 
     if not shell.quiet:
-        print PP_I, PP_FILE % fn
+        print( PP_I, PP_FILE % fn )
 
 #   -- figure out a name for output file
     fn_o = _output_fn( fn )
@@ -439,20 +451,20 @@ def _pp_file( fn ):
     ok, plain, fn_o = _pp_stream( f, fn, fn_o )
     f.close()
 
-    print
+    print()
     if ok:
         if shell.type_output:
-            print plain
+            print( plain )
         if not shell.quiet:
-            print PP_O, PP_FILE % fn_o
-            print OK
+            print( PP_O, PP_FILE % fn_o )
+            print( OK )
     else:
         if plain:
 #           -- plain contains AST
             if shell.type_output:
-                print plain
+                print( plain )
             if not shell.quiet:
-                print PP_O, PP_FILE % fn_o
+                print( PP_O, PP_FILE % fn_o )
     return ok
 
 #   ---------------------------------------------------------------------------
@@ -462,16 +474,16 @@ def _pp_test( text, echo = True ):
         return True
 
     if echo:
-        print PP_I, text
+        print( PP_I, text )
     yushell( text )
     yuinit()
     ok, plain = _pp()
 
-    print
+    print()
     if plain:
-        print PP_O, plain
+        print( PP_O, plain )
     if ok:
-        print OK
+        print( OK )
     return ok
 
 #   ---------------------------------------------------------------------------
@@ -480,11 +492,11 @@ def _pp_text( text, text_source = None ):
     yuinit()
     ok, plain = _pp()
 
-    print
+    print()
     if plain:
-        print plain
+        print( plain )
     if ok:
-        print OK
+        print( OK )
     return ok
 
 #   ---------------------------------------------------------------------------
@@ -501,6 +513,7 @@ def proc_stream( _stream, fn ):
     """
     Stream preprocessing (for Python package).
     """
+#   -- read shebang and magic comment again
     _stream.seek( 0 )
 #   -- figure out a name for output file
     fn_o = _output_fn( fn )
@@ -519,7 +532,7 @@ def proc_stream( _stream, fn ):
                 with open( fn_o, 'r' ) as f:
                     data = f.read()
 
-                # print 'skipped yupp running'
+                # print( 'skipped yupp running' )
                 return ( True, data, fn_o, 1 if 'coding:' in _stream.readline() else 2 )
 
         except:                                                                                                        #pylint: disable=bare-except
@@ -553,9 +566,9 @@ def cli( arglist ):
     _pp_configure( args.__dict__ )
 
     if not shell.quiet:
-        print TITLE
-        if trace.stage > 0:
-            print TR_FILE % trace.file
+        print( TITLE )
+        if trace.stage > 0 and trace.file:
+            print( TR_FILE % ( trace.file ))
 #       -- startup testing
         _pp_test( r"""($($\y:u.\m.\...(m y($\C.\p.(r)e p)($\ro.(ce)s)))so r)""" )
         _pp_test( r"""
@@ -582,7 +595,7 @@ def cli( arglist ):
 
     else:
 #       -- Read-Eval-Print Loop
-        print PROMPT + 'Type "%s" or source code + "%s".' % ( REPL_EXIT, REPL_TEST )
+        print( PROMPT + 'Type "%s" or source code + "%s".' % ( REPL_EXIT, REPL_TEST ))
         test = ''
         while True:
             line = shell_input()

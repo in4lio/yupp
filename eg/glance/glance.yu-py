@@ -3,6 +3,9 @@
 
 ($__TITLE__ 0)
 
+from __future__ import print_function
+from builtins import open
+
 ($import stdlib)
 
 ($dict INI
@@ -17,7 +20,7 @@
 )
 
 import time
-from ConfigParser import ConfigParser
+from configparser import ConfigParser
 
 FILE = ($'($0).ini' ($lower ($__MODULE_NAME__)))
 SEC = 'General'
@@ -61,7 +64,7 @@ def ini_save( fn ):
         ini.set( SEC, ($qs ($i VAR)), ($VAL) )
 
     [ )
-    with open( fn, 'wb' ) as f:
+    with open( fn, mode='w', encoding='utf8' ) as f:
         ini.write( f )
 
 if __name__ == '__main__':
@@ -72,7 +75,7 @@ if __name__ == '__main__':
     ini_step += 1
 
     ($each-INI \i.]
-        print ($'($0) =',,ini_($i VAR)), ini_($i VAR)
+        print( ($'($0) =',,ini_($i VAR)), ini_($i VAR) )
 
     [ )
     ini_save( FILE )

@@ -1,6 +1,5 @@
 *.ast
 *.bak
-*.json*
 *.py[cod]
 *.sublime-workspace
 

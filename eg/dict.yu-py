@@ -2,6 +2,8 @@
 
 ($__TITLE__ 0)
 
+from __future__ import print_function
+
 ($import stdlib)
 
 ($dict VAR
@@ -20,7 +22,7 @@
 
 if __name__ == '__main__':
     ($each-VAR \i.]
-        print ($q,,($i NAME) = ($unq ($i FORMAT))) % ( ($i NAME) )
+        print( ($q,,($i NAME) = ($unq ($i FORMAT))) % ( ($i NAME) ))
 
     [ )
 

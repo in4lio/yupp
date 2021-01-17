@@ -2,6 +2,8 @@
 
 ($__TITLE__ 0)
 
-print ($'«($0)¸·($1)¸·($2)»¶' ($unq 'Liberté') [égalité],,fraternité)
+from __future__ import print_function
 
-# ¡No pasarán! ¢ £ ¥ ± µ
+print( ($'Â«($0)Â¸Â·($1)Â¸Â·($2)Â»Â¶' ($unq 'LibertÃ©') [Ã©galitÃ©],,fraternitÃ©) )
+
+# Â¡No pasarÃ¡n! Â¢ Â£ Â¥ Â± Âµ

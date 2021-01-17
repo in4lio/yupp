@@ -18,7 +18,7 @@
 `($index list x)` | Return the lowest index in the list of the first item whose value is `x`. Return `-1` on failure.
 `($rindex list x)` | Like `index` but find the highest index.
 `($int_ x [base])` | Return an integer object constructed from a number or string `x`, or return `0` if no arguments are given.
-`($isatom x)` | Check the argument is an atom or late-bounded variable.
+`($isatom x)` | Check the argument is an atom or late-bound variable.
 `($isdigit s)` | Check that all characters in the string `s` are digits and there is at least one character.
 `($islist x)` | Check the argument is a list.
 `($lazy par)` | _Experimental_. Allow to get specific item of `__va_args__` or length of `__va_args__` in case `__va_args__` contains lambda.
@@ -119,10 +119,10 @@
 &nbsp;&nbsp; | **Functions and constants imported from Python `string` module**
 `($digits)` | The string `'0123456789'`.
 `($hexdigits)` | The string `'0123456789abcdefABCDEF'`.
-`($letters)` | The concatenation of the strings `lowercase` and `uppercase` described below.
-`($lowercase)` | A string containing all the characters that are considered lowercase letters. On most systems this is the string `'abcdefghijklmnopqrstuvwxyz'`.
+`($ascii_letters)` | The concatenation of the strings `ascii_lowercase` and `ascii_uppercase` described below.
+`($ascii_lowercase)` | A string containing all the characters that are considered lowercase letters. On most systems this is the string `'abcdefghijklmnopqrstuvwxyz'`.
 `($octdigits)` | The string `'01234567'`.
-`($uppercase)` | A string containing all the characters that are considered uppercase letters. On most systems this is the string `'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`.
+`($ascii_uppercase)` | A string containing all the characters that are considered uppercase letters. On most systems this is the string `'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`.
 `($whitespace)` | A string containing all characters that are considered whitespace. On most systems this includes the characters space, tab, linefeed, return, formfeed, and vertical tab.
 `($atof s)` | Convert a string to a floating point number.
 `($atoi s [base])` | Convert string `s` to an integer in the given base. The base defaults to 10. If it is `0`, a default base is chosen depending on the leading characters of the string (after stripping the sign): `0x` or `0X` means `16`, `0` means `8`, anything else means `10`. If base is `16`, a leading `0x` or `0X` is always accepted.

@@ -1,0 +1,6 @@
+*
+!dist
+!MANIFEST.in
+!README.md
+!setup.py
+!yupp.pth

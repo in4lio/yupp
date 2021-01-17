@@ -1,3 +1,4 @@
+from __future__ import print_function
 import codecs
 import os
 import sys
@@ -5,7 +6,6 @@ import sys
 from distutils.util import convert_path
 from fnmatch import fnmatchcase
 from setuptools import setup, find_packages
-from distutils.sysconfig import get_python_lib
 
 def read(fname):
     return codecs.open(os.path.join(os.path.dirname(__file__), fname)).read()
@@ -68,9 +68,9 @@ def find_package_data(
                         or fn.lower() == pattern.lower()):
                         bad_name = True
                         if show_ignored:
-                            print >> sys.stderr, (
+                            print(
                                 "Directory %s ignored by pattern %s"
-                                % (fn, pattern))
+                                % (fn, pattern), file=sys.stderr)
                         break
                 if bad_name:
                     continue
@@ -91,9 +91,9 @@ def find_package_data(
                         or fn.lower() == pattern.lower()):
                         bad_name = True
                         if show_ignored:
-                            print >> sys.stderr, (
+                            print(
                                 "File %s ignored by pattern %s"
-                                % (fn, pattern))
+                                % (fn, pattern), file=sys.stderr)
                         break
                 if bad_name:
                     continue
@@ -110,6 +110,17 @@ AUTHOR = pack.__author__
 AUTHOR_EMAIL = pack.__author_email__
 URL = pack.__url__
 
+ROOT=""
+packages=find_packages(exclude=["eg.*"])
+packages.append(ROOT)
+
+package_data = find_package_data(
+    where=PACKAGE,
+    package=ROOT,
+    only_in_packages=False
+)
+package_data[ROOT].append("yupp.pth")
+
 setup(
     name=NAME,
     version=VERSION,
@@ -119,24 +130,20 @@ setup(
     author_email=AUTHOR_EMAIL,
     license="MIT",
     url=URL,
-    packages=find_packages(exclude=["eg.*", "eg"]),
-    package_data=find_package_data(
-        PACKAGE,
-        only_in_packages=False
-    ),
-    data_files=[("lib/python/site-packages", ["yupp.pth"])],
+    packages=packages,
+    install_requires=[ 'future' ],
+    package_data=package_data,
     entry_points={
         'console_scripts': [
             'yupp = yupp.__main__:main'
         ]
     },
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Environment :: Console",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: Microsoft :: Windows",
-        "Operating System :: POSIX :: Linux",
+        "Operating System :: OS Independent",
         "Programming Language :: Python",
     ],
     platforms='any',

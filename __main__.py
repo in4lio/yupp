@@ -10,12 +10,18 @@ http://github.com/in4lio/yupp/
 __main__.py -- console script of yupp preprocessor
 """
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 import sys
-import yup
+
+from .pp.yup import cli
 
 #   ---------------------------------------------------------------------------
 def main():
-    yup.cli( sys.argv[ 1: ])
+    cli( sys.argv[ 1: ])
 
 #   ---------------------------------------------------------------------------
 if __name__ == '__main__':

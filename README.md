@@ -5,10 +5,10 @@
 ### VERSION
 
 ```
-yupp        1.1c4
-            2020-10-22
+yupp        1.2c1
+            2021-01-15
 
-Python      2.7
+Python      2.7 / 3.6
 ```
 
 ### WHAT IS IT?
@@ -40,7 +40,7 @@ int main( void )
 ($set greeting '!dlrow olleH')
 
 if __name__ == '__main__':
-    print ($reversed greeting)
+    print( ($reversed greeting) )
 ```
 
 ### LICENSE

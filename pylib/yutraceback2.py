@@ -4,13 +4,20 @@ Extract, format and print information about Python stack traces.
 This module contains, compatible with yupp preprocessor, implementation
 of 'print_tb', 'extract_tb' and 'extract_stack' functions, also
 'sys.excepthook' function is replaced here.
-Based on traceback.py @ 102173
+Based on traceback.py @ 2.7
 """
 
 import linecache
 import sys
+
 import traceback
 import functools
+
+def substitution(fn, fn_o, shrink):
+    substitution.files[fn] = (fn_o, shrink)
+
+substitution.files = dict()
+
 
 def _print(file, str='', terminator='\n'):
     file.write(str+terminator)
@@ -35,8 +42,8 @@ def print_tb(tb, limit=None, file=None):
         lineno = tb.tb_lineno
         co = f.f_code
 #       -- filename = co.co_filename
-        if co.co_filename in fn_subst:
-            filename, shrink = fn_subst[co.co_filename]
+        if co.co_filename in substitution.files:
+            filename, shrink = substitution.files[co.co_filename]
         else:
             filename = co.co_filename
             shrink = 0
@@ -74,8 +81,8 @@ def extract_tb(tb, limit = None):
         lineno = tb.tb_lineno
         co = f.f_code
 #       -- filename = co.co_filename
-        if co.co_filename in fn_subst:
-            filename, shrink = fn_subst[co.co_filename]
+        if co.co_filename in substitution.files:
+            filename, shrink = substitution.files[co.co_filename]
         else:
             filename = co.co_filename
             shrink = 0
@@ -116,8 +123,8 @@ def extract_stack(f=None, limit = None):
         lineno = f.f_lineno
         co = f.f_code
 #       -- filename = co.co_filename
-        if co.co_filename in fn_subst:
-            filename, shrink = fn_subst[co.co_filename]
+        if co.co_filename in substitution.files:
+            filename, shrink = substitution.files[co.co_filename]
         else:
             filename = co.co_filename
             shrink = 0
@@ -146,8 +153,6 @@ def excepthook(etype, value, tb):
     else:
         traceback.print_exception(etype, value, tb)
 
-
-fn_subst = dict()
 
 traceback.print_tb = print_tb
 traceback.extract_tb = extract_tb

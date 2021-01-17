@@ -1,10 +1,10 @@
 ## **yupp** Python Package
 
-### How to start using **yupp** with Python 2
+### How to start using **yupp** with Python
 
 `1.` Install Python package:
 
-    pip install yupp
+    python -m pip install yupp
 
 `2.` Start your code in Python with:
 
@@ -16,7 +16,7 @@ for example:
     # test.py
 
     ($set hola 'Hello world!')
-    print ($hola)
+    print( ($hola) )
 
 `3.` Run the script in the usual way:
 
