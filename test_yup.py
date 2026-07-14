@@ -22,6 +22,8 @@ from builtins import str
 import traceback
 from pp.yugen import *                                                                                                    #pylint: disable=wildcard-import,unused-wildcard-import
 
+__test__ = False
+
 _TRACEBACK = True
 _TRACE = TRACE_STAGE_NONE
 

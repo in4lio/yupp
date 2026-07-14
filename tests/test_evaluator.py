@@ -1,0 +1,70 @@
+import hashlib
+
+import pytest
+
+from pp import yugen
+from tests.conftest import parse_source
+from tests.fixtures.legacy_cases import EVALUATOR_AST_SHA256, EVALUATOR_CASES
+
+
+def test_legacy_evaluator_records_exclude_only_the_empty_sentinel():
+    from test_yup import t_eval_kit
+
+    assert len(EVALUATOR_CASES) == 13
+    assert all(actual is original for actual, original in zip(EVALUATOR_CASES, t_eval_kit))
+    assert not t_eval_kit[-1][1].strip()
+
+
+@pytest.mark.parametrize(
+    "trace_stage,source,expected_ast,expected,ast_sha256",
+    [record + (digest,) for record, digest in zip(EVALUATOR_CASES, EVALUATOR_AST_SHA256)],
+    ids=[f"legacy-evaluator-{index:02d}" for index in range(1, 14)],
+)
+def test_legacy_evaluator_result_is_exact(trace_stage, source, expected_ast, expected, ast_sha256):
+    yugen.trace.stage = trace_stage
+    ast = parse_source(source)
+
+    assert ast == expected_ast
+    assert hashlib.sha256(repr(ast).encode()).hexdigest() == ast_sha256
+
+    actual = yugen.yueval(ast, yugen.ENV())
+    if isinstance(actual, str):
+        actual = yugen.replace_steady(yugen.reduce_emptiness(actual))
+    assert actual == expected
+
+
+@pytest.mark.parametrize(
+    "source,error_type,message",
+    [
+        ("($unknown 1)", TypeError, "yueval: no arguments of unbound atom expected"),
+        ("($div 1 0)", ZeroDivisionError, "yueval: python: division by zero"),
+    ],
+)
+def test_evaluator_errors_keep_type_and_diagnostic_prefix(source, error_type, message):
+    ast = parse_source(source)
+    with pytest.raises(error_type) as error:
+        yugen.yueval(ast, yugen.ENV())
+
+    assert str(error.value).startswith(message)
+    assert 'File "<stdin>", line 1' in str(error.value)
+
+
+@pytest.mark.xfail(strict=True, reason="Python 3 migration: atol still calls Python 2 long")
+def test_known_defect_atol_has_integer_contract():
+    assert yugen.builtin["atol"]("10") == 10
+
+
+@pytest.mark.xfail(strict=True, reason="Python 3 migration: maketrans is absent")
+def test_known_defect_maketrans_is_available_to_the_dsl():
+    assert yugen.builtin["maketrans"]("a", "x") == str.maketrans("a", "x")
+
+
+@pytest.mark.xfail(strict=True, reason="Python 3 migration: translate uses the Python 2 call shape")
+def test_known_defect_translate_accepts_a_python3_translation_table():
+    table = str.maketrans("a", "x")
+    assert yugen.builtin["translate"]("abc", table) == "xbc"
+
+
+@pytest.mark.xfail(strict=True, reason="Python 3 migration: escape decoding corrupts non-ASCII text")
+def test_known_defect_unq_preserves_unicode_while_decoding_escapes():
+    assert yugen.builtin["unq"]("é\\n") == "é\n"
