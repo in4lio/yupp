@@ -1,6 +1,8 @@
 import ast
+import base64
 import csv
 import email.parser
+import hashlib
 import os
 from pathlib import Path
 import shutil
@@ -59,6 +61,16 @@ def _console_in(venv):
 
 @pytest.fixture(scope="session")
 def distributions(tmp_path_factory):
+    supplied = os.environ.get("YUPP_DISTRIBUTIONS")
+    if supplied:
+        output = Path(supplied).resolve()
+        assert output.is_dir(), f"YUPP_DISTRIBUTIONS is not a directory: {output}"
+        wheels = tuple(output.glob("*.whl"))
+        sdists = tuple(output.glob("*.tar.gz"))
+        assert len(wheels) == 1, f"expected one wheel in {output}, found {wheels}"
+        assert len(sdists) == 1, f"expected one sdist in {output}, found {sdists}"
+        return wheels[0], sdists[0]
+
     output = tmp_path_factory.mktemp("distributions")
     _run(
         [sys.executable, "-m", "build", "--no-isolation", "--outdir", output, REPO_ROOT],
@@ -74,6 +86,38 @@ def distributions(tmp_path_factory):
 def _wheel_payload(wheel):
     with zipfile.ZipFile(wheel) as archive:
         return {name: archive.read(name) for name in archive.namelist()}
+
+
+def _assert_wheel_record(payload):
+    record_name = next(name for name in payload if name.endswith(".dist-info/RECORD"))
+    record = list(csv.reader(payload[record_name].decode("utf8").splitlines()))
+    recorded_names = [row[0] for row in record]
+    assert set(recorded_names) == set(payload)
+
+    for name, digest, size in record:
+        if name == record_name:
+            assert digest == ""
+            assert size == ""
+            continue
+        expected = base64.urlsafe_b64encode(
+            hashlib.sha256(payload[name]).digest()
+        ).rstrip(b"=").decode("ascii")
+        assert digest == f"sha256={expected}"
+        assert size == str(len(payload[name]))
+    return recorded_names
+
+
+def _normalized_wheel_payload(wheel):
+    payload = _wheel_payload(wheel)
+    _assert_wheel_record(payload)
+    wheel_name = next(name for name in payload if name.endswith(".dist-info/WHEEL"))
+    record_name = next(name for name in payload if name.endswith(".dist-info/RECORD"))
+    payload[wheel_name] = b"\n".join(
+        b"Generator: <normalized>" if line.startswith(b"Generator: ") else line
+        for line in payload[wheel_name].split(b"\n")
+    )
+    del payload[record_name]
+    return payload
 
 
 @pytest.mark.packaging
@@ -105,10 +149,7 @@ def test_metadata_is_static_and_artifacts_are_complete(distributions):
     assert b"Tag: py3-none-any" in payload[f"{dist_info}/WHEEL"]
 
     assert names.count("yupp.pth") == 1
-    record = list(
-        csv.reader(payload[f"{dist_info}/RECORD"].decode("utf8").splitlines())
-    )
-    recorded_names = [row[0] for row in record]
+    recorded_names = _assert_wheel_record(payload)
     assert recorded_names.count("yupp.pth") == 1
     assert set(recorded_names) == set(names)
 
@@ -260,7 +301,7 @@ def test_sdist_rebuild_has_equivalent_wheel_and_installs(tmp_path, distributions
         cwd=project,
     )
     rebuilt_wheel = next(rebuilt.glob("*.whl"))
-    assert _wheel_payload(rebuilt_wheel) == _wheel_payload(wheel)
+    assert _normalized_wheel_payload(rebuilt_wheel) == _normalized_wheel_payload(wheel)
     install = tmp_path / "install"
     install.mkdir()
     _exercise_clean_install(install, rebuilt_wheel)

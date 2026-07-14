@@ -284,3 +284,32 @@ def test_public_cli_and_translate_return_shapes(tmp_path, monkeypatch):
     assert yupp.cli(["-q", "--no-read-only", str(source)]) == 0
     translated = yupp.translate(str(source))
     assert translated == (True, str(tmp_path / "public.c"))
+
+
+def test_proc_file_closes_its_input_stream(monkeypatch):
+    stream = io.StringIO("SOURCE")
+
+    def fake_proc_stream(input_stream, filename):
+        assert input_stream is stream
+        assert not input_stream.closed
+        return (True, "SOURCE\n", filename + ".out", 0)
+
+    monkeypatch.setattr(yup, "open", lambda *_args, **_kwargs: stream, raising=False)
+    monkeypatch.setattr(yup, "proc_stream", fake_proc_stream)
+
+    assert yup.proc_file("source.yu") == (True, "source.yu.out")
+    assert stream.closed
+
+
+def test_proc_file_closes_its_input_stream_after_unexpected_failure(monkeypatch):
+    stream = io.StringIO("SOURCE")
+
+    def fail(_input_stream, _filename):
+        raise RuntimeError("stop")
+
+    monkeypatch.setattr(yup, "open", lambda *_args, **_kwargs: stream, raising=False)
+    monkeypatch.setattr(yup, "proc_stream", fail)
+
+    with pytest.raises(RuntimeError, match="stop"):
+        yup.proc_file("source.yu")
+    assert stream.closed
