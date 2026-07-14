@@ -1,4 +1,7 @@
 from pathlib import Path
+import os
+import subprocess
+import sys
 
 import pytest
 
@@ -6,6 +9,25 @@ from yupp.pp import yugen, yup
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+SOURCE_BOOTSTRAP = (
+    "import runpy, sys, yupp; "
+    "sys.argv[:] = sys.argv[1:]; "
+    "runpy.run_path(sys.argv[0], run_name='__main__')"
+)
+
+
+def run_source(source, *arguments):
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = str(REPO_ROOT / "src")
+    environment["PYTHON_COLORS"] = "0"
+    return subprocess.run(
+        [sys.executable, "-S", "-c", SOURCE_BOOTSTRAP, str(source), *arguments],
+        cwd=source.parent,
+        env=environment,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
 
 
 def parse_source(source, input_file=None, output_file=None):

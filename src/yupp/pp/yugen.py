@@ -2658,10 +2658,6 @@ STEADY_SPACE = '\xFE'
 STEADY_TAB = '\xFF'
 
 #   ---------------------------------------------------------------------------
-def _maketrans( *args ):
-    return str.maketrans( *args )
-
-#   ---------------------------------------------------------------------------
 def _translate( value, table, deletions = '' ):
     """Support native mappings and the legacy DSL deletion/table contract."""
     if table is None:
@@ -2752,7 +2748,7 @@ if 'lower' not in builtin:
         'center': lambda s, width, *args : s.center( width, *args ),
         'zfill': lambda x, width : x.zfill( width ) if isinstance( x, str ) else repr( x ).zfill( width ),
         'expandtabs': lambda s, tabsize=8 : s.expandtabs( tabsize ),
-        'maketrans': _maketrans,
+        'maketrans': str.maketrans,
         'translate': _translate,
         'capitalize': lambda s : s.capitalize(),
         'replace': lambda s, old, new, maxreplace=-1 : s.replace( old, new, maxreplace )

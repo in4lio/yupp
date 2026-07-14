@@ -6,15 +6,8 @@ import sys
 
 import pytest
 
-from tests.conftest import REPO_ROOT
+from tests.conftest import REPO_ROOT, run_source
 from yupp import _codec
-
-
-BOOTSTRAP = (
-    "import runpy, sys, yupp; "
-    "sys.argv[:] = sys.argv[1:]; "
-    "runpy.run_path(sys.argv[0], run_name='__main__')"
-)
 
 
 @pytest.fixture(autouse=True)
@@ -23,20 +16,6 @@ def reset_traceback_hook_after_codec_tests():
     module = sys.modules.get("yupp._traceback")
     if module is not None:
         module._reset_for_tests()
-
-
-def run_source(source, *arguments):
-    environment = os.environ.copy()
-    environment["PYTHONPATH"] = str(REPO_ROOT / "src")
-    environment["PYTHON_COLORS"] = "0"
-    return subprocess.run(
-        [sys.executable, "-S", "-c", BOOTSTRAP, str(source), *arguments],
-        cwd=source.parent,
-        env=environment,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
 
 
 @pytest.mark.parametrize(

@@ -58,7 +58,8 @@ def test_public_api_is_lazy_and_codec_registration_is_idempotent():
     assert process.returncode == 0, process.stderr
 
 
-def test_module_entrypoint_propagates_cli_failure_status(tmp_path):
+@pytest.mark.parametrize("module", ["yupp", "yupp.pp"])
+def test_module_entrypoint_propagates_cli_failure_status(tmp_path, module):
     source = tmp_path / "broken.yu-c"
     source.write_text("($set missing", encoding="utf8")
     environment = os.environ.copy()
@@ -69,34 +70,7 @@ def test_module_entrypoint_propagates_cli_failure_status(tmp_path):
             sys.executable,
             "-S",
             "-m",
-            "yupp",
-            "-q",
-            "--no-read-only",
-            str(source),
-        ],
-        cwd=tmp_path,
-        env=environment,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
-
-    assert process.returncode == 4
-    assert not (tmp_path / "broken.c").exists()
-
-
-def test_pp_module_entrypoint_propagates_cli_failure_status(tmp_path):
-    source = tmp_path / "broken.yu-c"
-    source.write_text("($set missing", encoding="utf8")
-    environment = os.environ.copy()
-    environment["PYTHONPATH"] = str(REPO_ROOT / "src")
-
-    process = subprocess.run(
-        [
-            sys.executable,
-            "-S",
-            "-m",
-            "yupp.pp",
+            module,
             "-q",
             "--no-read-only",
             str(source),
