@@ -2663,7 +2663,7 @@ def _maketrans( *args ):
 
 #   ---------------------------------------------------------------------------
 def _translate( value, table, deletions = '' ):
-    """Support native mappings and the Python 2 deletion/table contract."""
+    """Support native mappings and the legacy DSL deletion/table contract."""
     if table is None:
         translation = {}
     elif isinstance( table, str ):

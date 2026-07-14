@@ -74,7 +74,7 @@ def test_unq_preserves_unicode_while_decoding_escapes(literal, expected):
     assert yugen.builtin["unq"](literal) == expected
 
 
-def test_translate_supports_python2_style_deletions_and_none_table():
+def test_translate_supports_legacy_dsl_deletions_and_none_table():
     table = str.maketrans("a", "x")
 
     assert yugen.builtin["translate"]("abc", table, "b") == "xc"

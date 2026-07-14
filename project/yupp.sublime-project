@@ -18,7 +18,7 @@
 	[
 		{
 			"name": "yupp (develop)",
-			"cmd": ["$project_path/../yup.py", "--pp-browse", "--type-file", "$file"],
+			"cmd": ["python", "-m", "yupp", "--pp-browse", "--type-file", "$file"],
 			"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
 			"working_dir": "$project_path/../",
 			"encoding": "utf8",
@@ -26,7 +26,7 @@
  		},
 		{
 			"name": "yupp (trace)",
-			"cmd": ["$project_path/../yup.py", "--pp-browse", "--type-file", "--trace=2", "$file"],
+			"cmd": ["python", "-m", "yupp", "--pp-browse", "--type-file", "--trace=2", "$file"],
 			"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
 			"working_dir": "$project_path/../",
 			"encoding": "utf8",

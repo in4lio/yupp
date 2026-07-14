@@ -77,7 +77,7 @@ def open_file( fn ):
         l_files = len( file_data[ fn ][ 'files' ])
         dirs = [ os.path.dirname( fn )]
         file_data[ fn ][ 'paths' ] = [ '' ] * l_files
-        for i in xrange( l_files ):
+        for i in range( l_files ):
             search_file( fn, dirs, i )
 
         file_state[ fn ] = STATE_FRUIT

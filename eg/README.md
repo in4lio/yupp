@@ -1,5 +1,10 @@
 ## **yupp** Examples
 
+The Python templates and generated files target CPython 3.11-3.14 and use only
+the Python 3 standard library. Files with a `.yu-*` suffix are preprocessed
+explicitly; `coro.py` and `switch.py` demonstrate the direct-main
+`# coding: yupp` path.
+
 Source code                           | Generated code                     | Language | Description
 :---                                  | :---                               | :---:    | :---
 [[ app ]](app/)                       | –                                  | C        | Template of an application with coroutines
@@ -23,3 +28,16 @@ Source code                           | Generated code                     | Lan
 [unfold.yu-c](unfold.yu-c)            | [unfold.c](unfold.c)               | C        | Using the `unfold` function
 
 Read more – [A glance at the preprocessing](../doc/glance.md)
+
+To regenerate an example, change its source template first and run the current
+engine from this directory, for example:
+
+```console
+yupp -q --no-read-only hello.yu-c
+yupp -q --no-read-only dict.yu-py
+```
+
+Some examples enable browse metadata or timestamped title comments through
+`.yuconfig`; tests normalize only those declared volatile header timestamps
+while comparing the generated content. Configuration files and imported
+Python helpers execute as trusted Python 3 code.

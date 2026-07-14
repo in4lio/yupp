@@ -26,12 +26,12 @@ syntactic categories:
 __The set form__ – `($set <atom> <expr>)` allows to bound an atom (identifier) with a value,
 for example a function of decrement could be defined as `($set dec \val.($sub val 1))`.
 
-Our example begins with importing of [__yupp__ Standard Library](../lib/README.md) using
+Our example begins with importing the [__yupp__ Standard Library](../src/yupp/lib/README.md) using
 __the import form__ – `($import <file>)`.
 
 ![dict definition](pic/glance_01.png)
 
-In particular, [_"stdlib.yu"_](../lib/stdlib.yu) contains __the dict macro__ which allows to
+In particular, [_"stdlib.yu"_](../src/yupp/lib/stdlib.yu) contains __the dict macro__ which allows to
 define a bunch of lists at once, that makes it easy to generate repeating code structures by
 a dictionary. The foregoing application of __the dict macro__ is equal to:
 

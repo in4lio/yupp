@@ -14,9 +14,9 @@
 ($each-CORO \i.]
 	($set C ($i CORO))
 	/** ($q C) coroutine local context. */
-	($extern-init,,($coro-context ($C)),,NULL)
+	($var-init,,($coro-context ($C)),,NULL)
 	/** ($q C) coroutine alive flag. */
-	($extern-init,,int ($C)_alive,,CO_SKIP)
+	($var-init,,int ($C)_alive,,CO_SKIP)
 	/** ($q C) coroutine. */
 	($extern) ($coro-declare ($C));
 	/** Initialize ($q C) coroutine. */
