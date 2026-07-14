@@ -2,6 +2,7 @@
 *.bak
 *.py[cod]
 *.sublime-workspace
+.DS_Store
 
 VERSION
 
