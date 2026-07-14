@@ -111,6 +111,62 @@ def test_incremental_and_stream_decoders_buffer_complete_source(tmp_path, monkey
     assert "print('chunked')" in reader.read()
 
 
+def _stream_reader_with_text(tmp_path, monkeypatch, decoded_text):
+    source = tmp_path / "stream.py"
+    raw = b"# coding: yupp\nprint('source')\n"
+    source.write_bytes(raw)
+    monkeypatch.setattr(sys, "argv", [str(source)])
+    monkeypatch.setattr(
+        _codec,
+        "_preprocess",
+        lambda _text, _filename: (
+            decoded_text,
+            str(tmp_path / "stream.yugen.py"),
+            1,
+        ),
+    )
+    return codecs.getreader("yupp")(io.BytesIO(raw))
+
+
+def test_stream_reader_line_methods_follow_codec_contract(tmp_path, monkeypatch):
+    decoded = "first\nsecond\nthird\n"
+    reader = _stream_reader_with_text(tmp_path, monkeypatch, decoded)
+
+    assert reader.readline(3, keepends=False) == "fir"
+    assert reader.readline(keepends=True) == "st\n"
+    assert reader.readline(keepends=False) == "second"
+
+    reader = _stream_reader_with_text(tmp_path, monkeypatch, decoded)
+    assert reader.readlines(sizehint=1, keepends=True) == [
+        "first\n",
+        "second\n",
+        "third\n",
+    ]
+    reader = _stream_reader_with_text(tmp_path, monkeypatch, decoded)
+    assert reader.readlines(keepends=False) == ["first", "second", "third"]
+
+
+def test_stream_reader_reset_preserves_position(tmp_path, monkeypatch):
+    reader = _stream_reader_with_text(
+        tmp_path, monkeypatch, "first\nsecond\nthird\n"
+    )
+
+    assert reader.readline() == "first\n"
+    reader.reset()
+    assert reader.readline() == "second\n"
+
+
+def test_stream_reader_iteration_and_stop_iteration(tmp_path, monkeypatch):
+    reader = _stream_reader_with_text(
+        tmp_path, monkeypatch, "first\nsecond\nthird\n"
+    )
+
+    assert iter(reader) is reader
+    assert list(reader) == ["first\n", "second\n", "third\n"]
+    with pytest.raises(StopIteration):
+        next(reader)
+
+
 def test_incremental_decoder_rejects_late_mismatch_before_preprocessing(
     tmp_path, monkeypatch
 ):

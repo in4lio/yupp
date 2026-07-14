@@ -107,7 +107,12 @@ def test_python_import_is_staged_for_recursive_self_import(tmp_path):
 
 
 @pytest.mark.integration
-def test_failed_python_import_rolls_back_and_can_be_retried(tmp_path):
+@pytest.mark.parametrize(
+    "has_previous", [False, True], ids=["without-prior-module", "with-prior-module"]
+)
+def test_failed_python_import_rolls_back_and_can_be_retried(
+    tmp_path, has_previous
+):
     module_name = "characterized_failed_import"
     script = tmp_path / f"{module_name}.py"
     script.write_text(
@@ -117,14 +122,21 @@ def test_failed_python_import_rolls_back_and_can_be_retried(tmp_path):
         "explode()\n",
         encoding="utf8",
     )
-    previous = types.ModuleType(module_name)
-    previous.sentinel = object()
-    sys.modules[module_name] = previous
+    previous = None
+    if has_previous:
+        previous = types.ModuleType(module_name)
+        previous.sentinel = object()
+        sys.modules[module_name] = previous
+    else:
+        sys.modules.pop(module_name, None)
     try:
         with pytest.raises(RuntimeError, match="ps_import_python: module exploded") as error:
             parse_source(f'($import "{script}")', str(tmp_path / "main.yu-c"))
 
-        assert sys.modules[module_name] is previous
+        if has_previous:
+            assert sys.modules[module_name] is previous
+        else:
+            assert module_name not in sys.modules
         assert "published_before_failure" not in yugen.builtin
         assert yugen.yushell.script == []
         frames = traceback.extract_tb(error.value.__traceback__)

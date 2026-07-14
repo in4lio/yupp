@@ -98,19 +98,20 @@ def _normalize_newlines(raw):
     return raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
 
 
+def _ensure_terminal_newline(normalized):
+    if normalized and not normalized.endswith(b"\n"):
+        return normalized + b"\n"
+    return normalized
+
+
 def _canonical(raw):
-    canonical = _normalize_newlines(raw)
-    if canonical and not canonical.endswith(b"\n"):
-        canonical += b"\n"
-    return canonical
+    return _ensure_terminal_newline(_normalize_newlines(raw))
 
 
 def _byte_variants(raw):
     """Return exact and CPython-canonicalized forms in stable order."""
     normalized = _normalize_newlines(raw)
-    canonical = normalized
-    if canonical and not canonical.endswith(b"\n"):
-        canonical += b"\n"
+    canonical = _ensure_terminal_newline(normalized)
     return tuple(dict.fromkeys((raw, normalized, canonical)))
 
 
@@ -359,19 +360,22 @@ def stream_decoder_factory(basecodec):
             return self._decoded.read(limit)
 
         def readline(self, size=-1, keepends=True):
-            del keepends
             if size is None:
                 size = -1
-            return self._decoded.readline(size)
+            line = self._decoded.readline(size)
+            if keepends:
+                return line
+            lines = line.splitlines(keepends=False)
+            return lines[0] if lines else line
 
-        def readlines(self, sizehint=-1, keepends=True):
-            del keepends
-            if sizehint is None:
-                sizehint = -1
-            return self._decoded.readlines(sizehint)
+        def readlines(self, sizehint=None, keepends=True):
+            del sizehint
+            return self._decoded.read().splitlines(keepends)
 
         def reset(self):
-            self._decoded.seek(0)
+            # The complete source is decoded eagerly, so there is no buffered
+            # decoder state to clear.  Preserve the current read position.
+            return None
 
         def __iter__(self):
             return self
