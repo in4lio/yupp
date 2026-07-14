@@ -1,0 +1,1 @@
+import os;_p=os.path.join(sitedir,"yupp","_site.py");exec(compile(open(_p,"rb").read(),_p,"exec"),{"__file__":_p,"__name__":"__yupp_site__"})

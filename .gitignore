@@ -4,3 +4,10 @@
 *.sublime-workspace
 
 VERSION
+
+# Python packaging output
+/.build-venv/
+/.venv/
+/build/
+/dist/
+/src/*.egg-info/

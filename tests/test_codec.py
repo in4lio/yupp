@@ -132,6 +132,93 @@ def test_incremental_and_stream_decoders_buffer_complete_source(tmp_path, monkey
     assert "print('chunked')" in reader.read()
 
 
+def test_incremental_decoder_rejects_late_mismatch_before_preprocessing(
+    tmp_path, monkeypatch
+):
+    source = tmp_path / "chunk-mismatch.py"
+    raw = b"# coding: yupp\nprint('expected')\n"
+    source.write_bytes(raw)
+    suffix = raw[raw.index(b"\n") :]
+    called = False
+
+    def fail_if_called(*args, **kwargs):
+        nonlocal called
+        called = True
+        raise AssertionError("preprocessor must not run for a partial match")
+
+    monkeypatch.setattr(sys, "argv", [str(source)])
+    monkeypatch.setattr(_codec, "_preprocess", fail_if_called)
+    decoder = codecs.getincrementaldecoder("yupp")()
+
+    assert decoder.decode(suffix[:7], final=False) == ""
+    with pytest.raises(UnicodeError, match="does not match"):
+        decoder.decode(b"changed\n", final=True)
+    assert called is False
+
+
+def test_incremental_decoder_final_flush_is_idempotent(tmp_path, monkeypatch):
+    source = tmp_path / "final-flush.py"
+    raw = b"# coding: yupp\nprint('once')\n"
+    source.write_bytes(raw)
+    calls = 0
+    original_preprocess = _codec._preprocess
+
+    def count_preprocess(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return original_preprocess(*args, **kwargs)
+
+    monkeypatch.setattr(sys, "argv", [str(source)])
+    monkeypatch.setattr(_codec, "_preprocess", count_preprocess)
+    decoder = codecs.getincrementaldecoder("yupp")()
+
+    assert decoder.decode(raw, final=False) == ""
+    assert "print('once')" in decoder.decode(b"", final=True)
+    assert decoder.decode(b"", final=True) == ""
+    assert calls == 1
+
+    # CPython 3.14 rechecks the already-verified cookie header through the
+    # stateless decoder.  The authorized probe is identity-only and must not
+    # run the preprocessor a second time.
+    header = raw.splitlines(keepends=True)[0]
+    assert codecs.lookup("yupp").decode(header) == (header.decode(), len(header))
+    assert calls == 1
+
+
+def test_header_probe_requires_verified_stream_and_is_bound_to_main_path(
+    tmp_path, monkeypatch
+):
+    source = tmp_path / "authorized.py"
+    raw = b"# coding: yupp\nprint('authorized')\n"
+    source.write_bytes(raw)
+    other = tmp_path / "other.py"
+    other.write_bytes(b"# coding: yupp\nprint('other')\n")
+    header = raw.splitlines(keepends=True)[0]
+    calls = 0
+    original_preprocess = _codec._preprocess
+
+    def count_preprocess(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return original_preprocess(*args, **kwargs)
+
+    monkeypatch.setattr(_codec, "_preprocess", count_preprocess)
+    monkeypatch.setattr(sys, "argv", [str(source)])
+    with pytest.raises(UnicodeError, match="does not match"):
+        codecs.lookup("yupp").decode(header)
+    assert calls == 0
+
+    decoder = codecs.getincrementaldecoder("yupp")()
+    assert decoder.decode(raw, final=False) == ""
+    assert "print('authorized')" in decoder.decode(b"", final=True)
+    assert calls == 1
+
+    monkeypatch.setattr(sys, "argv", [str(other)])
+    with pytest.raises(UnicodeError, match="does not match"):
+        codecs.lookup("yupp").decode(header)
+    assert calls == 1
+
+
 def test_empty_incremental_and_stream_decoder_contracts():
     decoder = codecs.getincrementaldecoder("yupp")()
     assert decoder.decode(b"", final=False) == ""
