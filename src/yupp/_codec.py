@@ -24,24 +24,41 @@ _COOKIE_TEXT_RE = re.compile(
 )
 _SECOND_LINE_ALLOWED_RE = re.compile(rb"^[ \t\f]*(?:[#\r\n]|$)")
 _registered = False
+_authorized_header_probes = {}
 
 
 class YuppCodecError(UnicodeError):
     """A source cannot safely or successfully pass through the yupp codec."""
 
 
-def _cookie(raw):
+def _cookie_details(raw):
     if raw.startswith(codecs.BOM_UTF8):
         raise YuppCodecError("UTF-8 BOM conflicts with the yupp source encoding")
 
     lines = raw.splitlines(keepends=True)
     first = lines[0] if lines else b""
     match = _COOKIE_RE.match(first)
+    cookie_line = 0
     if match is None and len(lines) > 1 and _SECOND_LINE_ALLOWED_RE.match(first):
         match = _COOKIE_RE.match(lines[1])
+        cookie_line = 1
     if match is None:
         raise YuppCodecError("yupp source encoding cookie must be on line 1 or 2")
-    return match.group(1).decode("ascii")
+    cookie_bytes = lines[cookie_line]
+    if cookie_bytes.endswith(b"\r\n"):
+        cookie_content = cookie_bytes[:-2]
+    elif cookie_bytes.endswith((b"\r", b"\n")):
+        cookie_content = cookie_bytes[:-1]
+    else:
+        cookie_content = cookie_bytes
+    prefix_length = sum(len(line) for line in lines[:cookie_line]) + len(
+        cookie_content
+    )
+    return match.group(1).decode("ascii"), prefix_length, cookie_line
+
+
+def _cookie(raw):
+    return _cookie_details(raw)[0]
 
 
 def _base_codec(cookie):
@@ -56,7 +73,7 @@ def _base_codec(cookie):
     return codecs.lookup(base_name)
 
 
-def _verify_file_input(raw, filename):
+def _read_candidate(filename):
     try:
         path = os.fspath(filename)
     except TypeError as error:
@@ -74,6 +91,22 @@ def _verify_file_input(raw, filename):
         raise YuppCodecError(
             "yupp requires a readable direct filesystem main file"
         ) from error
+    return path, candidate
+
+
+def _normalize_newlines(raw):
+    return raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
+def _canonical(raw):
+    canonical = _normalize_newlines(raw)
+    if canonical and not canonical.endswith(b"\n"):
+        canonical += b"\n"
+    return canonical
+
+
+def _verify_file_input(raw, filename):
+    path, candidate = _read_candidate(filename)
     if candidate == raw:
         return path
 
@@ -89,9 +122,7 @@ def _verify_file_input(raw, filename):
         raise YuppCodecError(
             "yupp decoder input does not match the direct filesystem main file"
         ) from error
-    canonical = candidate.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
-    if canonical and not canonical.endswith(b"\n"):
-        canonical += b"\n"
+    canonical = _canonical(candidate)
     if canonical != raw:
         raise YuppCodecError(
             "yupp decoder input does not match the direct filesystem main file"
@@ -99,10 +130,103 @@ def _verify_file_input(raw, filename):
     return path
 
 
+def _decoder_inputs(candidate):
+    """Return valid decoder streams and generated-prefix lines to omit.
+
+    ``tokenize`` consumes the physical encoding-cookie line(s) before it starts
+    an incremental source decoder.  Explicit codec users instead pass the
+    complete file.  Candidate bytes from ``argv[0]`` remain authoritative in
+    both cases; only exact or CPython-canonicalized complete streams/suffixes
+    are accepted.
+    """
+    _, prefix_length, preceding_lines = _cookie_details(candidate)
+    suffix = candidate[prefix_length:]
+    inputs = []
+    for raw, omitted_lines in (
+        (candidate, 0),
+        (_normalize_newlines(candidate), 0),
+        (_canonical(candidate), 0),
+        (suffix, preceding_lines),
+        (_normalize_newlines(suffix), preceding_lines),
+        (_canonical(suffix), preceding_lines),
+    ):
+        if not any(existing == raw for existing, _ in inputs):
+            inputs.append((raw, omitted_lines))
+    return inputs
+
+
+def _header_probe_inputs(candidate):
+    _, _, preceding_lines = _cookie_details(candidate)
+    lines = candidate.splitlines(keepends=True)
+    header = b"".join(lines[: preceding_lines + 1])
+    inputs = []
+    for raw in (header, _normalize_newlines(header), _canonical(header)):
+        if raw not in inputs:
+            inputs.append(raw)
+    return tuple(inputs)
+
+
+def _authorize_header_probes(filename, candidate):
+    _authorized_header_probes[os.path.realpath(filename)] = _header_probe_inputs(
+        candidate
+    )
+
+
+def _decode_authorized_header_probe(raw, basecodec, errors):
+    """Decode CPython 3.14's post-transform cookie probe, if authorized.
+
+    After the incremental decoder has verified and preprocessed the complete
+    main source, CPython 3.14 asks the stateless decoder to decode its cookie
+    header in isolation (twice).  That fragment is returned as plain text and
+    can never trigger preprocessing.  No header fragment is accepted before a
+    complete stream for the same ``argv[0]`` has authorized it.
+    """
+    if not sys.argv:
+        return None
+    try:
+        path = os.path.realpath(os.path.abspath(os.fspath(sys.argv[0])))
+    except (OSError, TypeError, ValueError):
+        return None
+    if raw not in _authorized_header_probes.get(path, ()):
+        return None
+    _, candidate = _read_candidate(path)
+    requested = _base_codec(_cookie(candidate))
+    if requested.name != basecodec.name:
+        raise YuppCodecError(
+            "yupp cookie base encoding does not match the selected codec"
+        )
+    return basecodec.decode(raw, errors)
+
+
+def _match_decoder_input(raw, filename, prefix=False):
+    path, candidate = _read_candidate(filename)
+    try:
+        inputs = _decoder_inputs(candidate)
+    except YuppCodecError as error:
+        raise YuppCodecError(
+            "yupp decoder input does not match the direct filesystem main file"
+        ) from error
+    if prefix:
+        matches = [item for item in inputs if item[0].startswith(raw)]
+    else:
+        matches = [item for item in inputs if item[0] == raw]
+    if not matches:
+        raise YuppCodecError(
+            "yupp decoder input does not match the direct filesystem main file"
+        )
+    return path, candidate, matches
+
+
 def _direct_main_filename(raw):
     if not sys.argv:
         raise YuppCodecError("yupp requires a direct filesystem main file")
     return _verify_file_input(raw, sys.argv[0])
+
+
+def _direct_main_input(raw, prefix=False):
+    if not sys.argv:
+        raise YuppCodecError("yupp requires a direct filesystem main file")
+    return _match_decoder_input(raw, sys.argv[0], prefix=prefix)
 
 
 def _preprocess(text, filename):
@@ -152,6 +276,17 @@ def _decode(raw, filename, errors, requested_base=None):
     return code, consumed
 
 
+def _without_prefix_lines(text, count):
+    if not count:
+        return text
+    return "".join(text.splitlines(keepends=True)[count:])
+
+
+def _decode_candidate(candidate, filename, errors, requested_base, omitted_lines):
+    code, _ = _decode(candidate, filename, errors, requested_base)
+    return _without_prefix_lines(code, omitted_lines)
+
+
 def decode_verified(input_, filename, errors="strict"):
     """Decode bytes after explicitly verifying them against *filename*.
 
@@ -168,22 +303,37 @@ def decoder_factory(basecodec):
         raw = bytes(input_)
         if not raw:
             return "", 0
-        filename = _direct_main_filename(raw)
-        return _decode(raw, filename, errors, basecodec)
+        probe = _decode_authorized_header_probe(raw, basecodec, errors)
+        if probe is not None:
+            return probe
+        filename, candidate, matches = _direct_main_input(raw)
+        code = _decode_candidate(
+            candidate, filename, errors, basecodec, matches[0][1]
+        )
+        return code, len(raw)
 
     return decode
 
 
 def incremental_decoder_factory(basecodec):
-    decode = decoder_factory(basecodec)
-
     class IncrementalDecoder(codecs.BufferedIncrementalDecoder):
         def _buffer_decode(self, input_, errors, final):
+            raw = bytes(input_)
             if not final:
+                if raw:
+                    # Validate the accumulated prefix without preprocessing or
+                    # writing a generated artifact.  BufferedIncrementalDecoder
+                    # retains every byte because the consumed count is zero.
+                    _direct_main_input(raw, prefix=True)
                 return "", 0
-            if not input_:
+            if not raw:
                 return "", 0
-            return decode(input_, errors)
+            filename, candidate, matches = _direct_main_input(raw)
+            code = _decode_candidate(
+                candidate, filename, errors, basecodec, matches[0][1]
+            )
+            _authorize_header_probes(filename, candidate)
+            return code, len(raw)
 
     return IncrementalDecoder
 
