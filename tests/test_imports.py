@@ -1,4 +1,6 @@
 import sys
+import traceback
+import types
 
 import pytest
 
@@ -80,3 +82,72 @@ def test_same_named_python_import_collision_is_last_import_wins(tmp_path):
         assert yugen.yushell.script == [str(first), str(second)]
     finally:
         sys.modules.pop(module_name, None)
+
+
+@pytest.mark.integration
+def test_python_import_is_staged_for_recursive_self_import(tmp_path):
+    module_name = "characterized_recursive_import"
+    script = tmp_path / f"{module_name}.py"
+    script.write_text(
+        "import importlib\n"
+        "import sys\n"
+        "self_module = importlib.import_module(__name__)\n"
+        "identity_preserved = self_module is sys.modules[__name__]\n",
+        encoding="utf8",
+    )
+    try:
+        parse_source(f'($import "{script}")', str(tmp_path / "main.yu-c"))
+
+        module = sys.modules[module_name]
+        assert module.self_module is module
+        assert module.identity_preserved is True
+        assert yugen.builtin["self_module"] is module
+    finally:
+        sys.modules.pop(module_name, None)
+
+
+@pytest.mark.integration
+def test_failed_python_import_rolls_back_and_can_be_retried(tmp_path):
+    module_name = "characterized_failed_import"
+    script = tmp_path / f"{module_name}.py"
+    script.write_text(
+        "published_before_failure = object()\n"
+        "def explode():\n"
+        "    raise RuntimeError('module exploded')\n"
+        "explode()\n",
+        encoding="utf8",
+    )
+    previous = types.ModuleType(module_name)
+    previous.sentinel = object()
+    sys.modules[module_name] = previous
+    try:
+        with pytest.raises(RuntimeError, match="ps_import_python: module exploded") as error:
+            parse_source(f'($import "{script}")', str(tmp_path / "main.yu-c"))
+
+        assert sys.modules[module_name] is previous
+        assert "published_before_failure" not in yugen.builtin
+        assert yugen.yushell.script == []
+        frames = traceback.extract_tb(error.value.__traceback__)
+        assert any(
+            frame.filename == str(script) and frame.name == "explode"
+            for frame in frames
+        )
+
+        script.write_text("retry_value = 73\n", encoding="utf8")
+        parse_source(f'($import "{script}")', str(tmp_path / "retry.yu-c"))
+
+        assert sys.modules[module_name].retry_value == 73
+        assert yugen.builtin["retry_value"] == 73
+        assert yugen.yushell.script == [str(script)]
+    finally:
+        sys.modules.pop(module_name, None)
+
+
+def test_unknown_python_import_keeps_type_and_source_location(tmp_path):
+    missing = tmp_path / "not-there.py"
+
+    with pytest.raises(FileNotFoundError) as error:
+        parse_source(f'($import "{missing}")', str(tmp_path / "main.yu-c"))
+
+    assert str(error.value).startswith("ps_import_python:")
+    assert "not-there.py" in str(error.value)
