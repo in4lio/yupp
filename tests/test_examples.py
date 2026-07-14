@@ -9,6 +9,7 @@ from tests.conftest import REPO_ROOT
 
 
 EXAMPLES = REPO_ROOT / "eg"
+GENERATED_SUFFIXES = {".c", ".cpp", ".h", ".py"}
 
 EXAMPLE_CASES = [
     ("app/co.yu-c", ("app/co.c",)),
@@ -29,6 +30,21 @@ EXAMPLE_CASES = [
     ("ulam.yu-c", ("ulam.c",)),
     ("unfold.yu-c", ("unfold.c",)),
 ]
+
+
+def declared_example_outputs():
+    return {output for _source, outputs in EXAMPLE_CASES for output in outputs}
+
+
+def generated_example_inventory(root):
+    declared_sources = {source for source, _outputs in EXAMPLE_CASES}
+    return {
+        path.relative_to(root).as_posix()
+        for path in root.rglob("*")
+        if path.is_file()
+        and path.suffix in GENERATED_SUFFIXES
+        and path.relative_to(root).as_posix() not in declared_sources
+    }
 
 
 def normalize_declared_timestamp_fragments(content):
@@ -98,30 +114,20 @@ def test_sequential_files_do_not_share_evaluator_bindings(tmp_path, monkeypatch)
 
 
 def test_example_matrix_covers_every_tracked_generated_file():
-    declared_outputs = {
-        output for _source, outputs in EXAMPLE_CASES for output in outputs
-    }
-    assert declared_outputs == {
-        "app/co.c",
-        "app/co.h",
-        "app/main.c",
-        "argv.c",
-        "coding.py",
-        "coro.c",
-        "coro.yugen.py",
-        "dict.c",
-        "dict.py",
-        "glance/glance.cpp",
-        "glance/glance.py",
-        "gpio.c",
-        "hello.c",
-        "passage-a.c",
-        "passage-b.c",
-        "passage-c.c",
-        "switch.yugen.py",
-        "ulam.c",
-        "unfold.c",
-    }
+    assert declared_example_outputs() == generated_example_inventory(EXAMPLES)
+
+
+def test_example_inventory_finds_generated_artifact_omitted_from_cases(
+    tmp_path,
+):
+    workspace = isolated_examples(tmp_path)
+    omitted = workspace / "nested" / "omitted.cpp"
+    omitted.parent.mkdir()
+    omitted.write_text("// generated but undeclared\n", encoding="utf8")
+
+    undeclared = generated_example_inventory(workspace) - declared_example_outputs()
+
+    assert undeclared == {"nested/omitted.cpp"}
 
 
 def test_example_checks_never_target_repository_outputs():

@@ -13,9 +13,14 @@ import sys
 
 def _same_file(left, right):
     try:
+        left = os.fspath(left)
+        right = os.fspath(right)
+    except TypeError:
+        return False
+    try:
         return os.path.samefile(left, right)
-    except (OSError, TypeError, ValueError):
-        return os.path.abspath(os.fspath(left)) == os.path.abspath(os.fspath(right))
+    except (OSError, ValueError):
+        return os.path.abspath(left) == os.path.abspath(right)
 
 
 def _load_installed_package():

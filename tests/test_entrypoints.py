@@ -37,6 +37,28 @@ def test_import_yupp_is_stdlib_only_and_has_no_runtime_side_effects():
     assert process.returncode == 0, process.stderr
 
 
+def test_startup_loader_replaces_namespace_style_existing_module():
+    loader = REPO_ROOT / "src" / "yupp" / "_site.py"
+    process = run_without_site_packages(
+        "import codecs, importlib.util, pathlib, sys, types\n"
+        "existing = types.ModuleType('yupp')\n"
+        "existing.__file__ = None\n"
+        "existing.sentinel = object()\n"
+        "sys.modules['yupp'] = existing\n"
+        f"loader = pathlib.Path({str(loader)!r})\n"
+        "spec = importlib.util.spec_from_file_location('__yupp_site__', loader)\n"
+        "startup = importlib.util.module_from_spec(spec)\n"
+        "spec.loader.exec_module(startup)\n"
+        "loaded = sys.modules['yupp']\n"
+        "assert loaded is not existing\n"
+        "assert pathlib.Path(loaded.__file__).samefile(loader.with_name('__init__.py'))\n"
+        "assert not hasattr(loaded, 'sentinel')\n"
+        "assert codecs.lookup('yupp').name == 'yupp'\n"
+    )
+
+    assert process.returncode == 0, process.stderr
+
+
 def test_public_api_is_lazy_and_codec_registration_is_idempotent():
     process = run_without_site_packages(
         "import codecs, importlib, sys\n"

@@ -130,6 +130,71 @@ def test_dependency_cache_hit_and_source_miss(tmp_path, monkeypatch):
     assert Path(str(output) + ".bak").read_text(encoding="utf8") == "FIRST\n"
 
 
+def _assert_loaded_config_invalidates_cache(tmp_path, monkeypatch, config_name):
+    source = tmp_path / "configured.yu-c"
+    source.write_text("($CACHE_VALUE)", encoding="utf8")
+    config_file = tmp_path / config_name
+    config_file.write_text(
+        "pp_define.append('CACHE_VALUE:first')\n", encoding="utf8"
+    )
+    monkeypatch.chdir(tmp_path)
+
+    with source.open() as stream:
+        first = yup.proc_stream(stream, str(source))
+    output = Path(first[2])
+    assert first[:2] == (True, "first\n")
+
+    config_file.write_text(
+        "pp_define.append('CACHE_VALUE:second')\n", encoding="utf8"
+    )
+    newer = output.stat().st_mtime + 2
+    os.utime(config_file, (newer, newer))
+    with source.open() as stream:
+        second = yup.proc_stream(stream, str(source))
+
+    assert second[:2] == (True, "second\n")
+    assert output.read_text(encoding="utf8") == "second\n"
+    assert Path(str(output) + ".bak").read_text(encoding="utf8") == "first\n"
+
+
+@pytest.mark.integration
+def test_changed_global_configuration_invalidates_cache(tmp_path, monkeypatch):
+    _assert_loaded_config_invalidates_cache(tmp_path, monkeypatch, ".yuconfig")
+
+
+@pytest.mark.integration
+def test_changed_source_configuration_invalidates_cache(tmp_path, monkeypatch):
+    _assert_loaded_config_invalidates_cache(
+        tmp_path, monkeypatch, "configured.yuconfig"
+    )
+
+
+@pytest.mark.integration
+def test_non_ascii_cache_hit_reads_generated_utf8(tmp_path, monkeypatch):
+    source = tmp_path / "unicode-cache.yu-c"
+    source.write_text("café", encoding="utf8")
+    monkeypatch.chdir(tmp_path)
+
+    with source.open() as stream:
+        first = yup.proc_stream(stream, str(source))
+    output = Path(first[2])
+    assert first[:2] == (True, "café\n")
+    older = output.stat().st_mtime - 2
+    os.utime(source, (older, older))
+    real_open = open
+
+    def locale_default_open(filename, mode="r", *args, **kwargs):
+        if os.fspath(filename) == str(output) and mode == "r":
+            kwargs.setdefault("encoding", "cp1252")
+        return real_open(filename, mode, *args, **kwargs)
+
+    monkeypatch.setattr(yup, "open", locale_default_open, raising=False)
+    with source.open() as stream:
+        cached = yup.proc_stream(stream, str(source))
+
+    assert cached[:2] == (True, "café\n")
+
+
 @pytest.mark.integration
 def test_force_configuration_bypasses_fresh_cache(tmp_path, monkeypatch):
     source = tmp_path / "forced.yu-c"
@@ -193,6 +258,31 @@ def test_cli_backup_read_only_and_browse_json(tmp_path, monkeypatch):
     assert browse["files"] == [str(source)]
     assert isinstance(browse["browse"], list)
     assert isinstance(browse["offset"], list)
+
+
+@pytest.mark.integration
+def test_output_write_failure_restores_previous_artifact_and_fails_cli(
+    tmp_path, monkeypatch
+):
+    source = tmp_path / "transaction.yu-c"
+    output = tmp_path / "transaction.c"
+    source.write_text("NEW", encoding="utf8")
+    output.write_text("OLD", encoding="utf8")
+    newer = output.stat().st_mtime + 2
+    os.utime(source, (newer, newer))
+    monkeypatch.chdir(tmp_path)
+
+    def fail_after_partial_write(filename, _text):
+        Path(filename).write_text("PARTIAL", encoding="utf8")
+        raise OSError("simulated disk failure")
+
+    monkeypatch.setattr(yup, "shell_savetofile", fail_after_partial_write)
+
+    status = yup.cli(["-q", "--no-read-only", str(source)])
+
+    assert status == 4
+    assert output.read_text(encoding="utf8") == "OLD"
+    assert not Path(str(output) + ".bak").exists()
 
 
 @pytest.mark.integration

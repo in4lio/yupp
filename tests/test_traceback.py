@@ -1,3 +1,4 @@
+import os
 import sys
 import traceback
 
@@ -33,6 +34,28 @@ def test_runtime_traceback_maps_source_to_generated_file_and_line(tmp_path):
     assert "runtime.yugen.py\", line 3, in fail" in process.stderr
     assert "return 1 / 0" in process.stderr
     assert "ZeroDivisionError" in process.stderr
+
+
+def test_cached_coding_equals_traceback_keeps_first_run_line_delta(tmp_path):
+    source = tmp_path / "equals.py"
+    source.write_bytes(
+        b"# coding=yupp\n"
+        b"def fail():\n"
+        b"    return 1 / 0\n"
+        b"fail()\n"
+    )
+
+    first = run_source(source)
+    generated = tmp_path / "equals.yugen.py"
+    older = generated.stat().st_mtime - 2
+    os.utime(source, (older, older))
+    cached = run_source(source)
+
+    for process in (first, cached):
+        assert process.returncode == 1
+        assert 'equals.yugen.py", line 4, in <module>' in process.stderr
+        assert 'equals.yugen.py", line 3, in fail' in process.stderr
+        assert "ZeroDivisionError" in process.stderr
 
 
 @pytest.mark.skipif(sys.version_info < (3, 11), reason="ExceptionGroup requires Python 3.11")

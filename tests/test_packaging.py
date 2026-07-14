@@ -6,6 +6,7 @@ import hashlib
 import os
 from pathlib import Path
 import shutil
+import stat
 import subprocess
 import sys
 import tarfile
@@ -242,6 +243,20 @@ def _exercise_clean_install(tmp_path, wheel, interpreter=sys.executable):
         process = _run([python, source], cwd=hostile)
         assert process.stdout == expected[name]
         assert not sentinel.exists()
+        if name == "cp1252.py":
+            generated = source.with_name(f"{source.stem}.yugen.py")
+            backup = Path(str(generated) + ".bak")
+            assert not backup.exists()
+            generated_mtime = generated.stat().st_mtime
+            older = generated_mtime - 2
+            os.utime(source, (older, older))
+
+            cached = _run([python, source], cwd=hostile)
+
+            assert cached.stdout == expected[name]
+            assert generated.stat().st_mtime == generated_mtime
+            assert not backup.exists()
+            assert not sentinel.exists()
 
     module = _run([python, "-m", "yupp", "--version"], cwd=hostile)
     console = _run([_console_in(venv), "--version"], cwd=hostile)
@@ -254,18 +269,29 @@ def _exercise_clean_install(tmp_path, wheel, interpreter=sys.executable):
 
     resource_source = hostile / "resource.yu-py"
     resource_source.write_text("($import coroutine-py)\nprint('resources')\n", encoding="utf8")
-    _run(
-        [_console_in(venv), "-q", "--no-read-only", resource_source],
-        cwd=hostile,
-    )
+    _run([_console_in(venv), "-q", resource_source], cwd=hostile)
     generated = hostile / "resource.py"
     assert generated.exists()
-    assert "print('resources')" in generated.read_text(encoding="utf8")
+    first_generated = generated.read_text(encoding="utf8")
+    assert "print('resources')" in first_generated
+    assert not (generated.stat().st_mode & stat.S_IWUSR)
+
+    resource_source.write_text(
+        "($import coroutine-py)\nprint('updated resources')\n", encoding="utf8"
+    )
+    newer = generated.stat().st_mtime + 2
+    os.utime(resource_source, (newer, newer))
+
+    _run([_console_in(venv), "-q", resource_source], cwd=hostile)
+
+    assert "print('updated resources')" in generated.read_text(encoding="utf8")
+    assert Path(str(generated) + ".bak").read_text(encoding="utf8") == first_generated
+    assert not (generated.stat().st_mode & stat.S_IWUSR)
 
     broken = hostile / "broken.yu-py"
     broken.write_text("($set missing", encoding="utf8")
     failure = subprocess.run(
-        [str(_console_in(venv)), "-q", "--no-read-only", str(broken)],
+        [str(_console_in(venv)), "-q", str(broken)],
         cwd=hostile,
         env=_clean_environment(),
         text=True,
@@ -297,7 +323,7 @@ def test_sdist_rebuild_has_equivalent_wheel_and_installs(tmp_path, distributions
     rebuilt = tmp_path / "rebuilt"
     rebuilt.mkdir()
     _run(
-        [sys.executable, "-m", "build", "--no-isolation", "--wheel", "--outdir", rebuilt],
+        [sys.executable, "-m", "build", "--wheel", "--outdir", rebuilt],
         cwd=project,
     )
     rebuilt_wheel = next(rebuilt.glob("*.whl"))

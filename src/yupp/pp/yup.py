@@ -25,7 +25,7 @@ except:
 
 from .yugen import log, trace
 from .yugen import config, feedback, yushell, yuinit, yuparse, yueval, RESULT
-from .yugen import make_ast_readable, reduce_emptiness, replace_steady
+from .yugen import make_ast_readable, reduce_emptiness, replace_steady, re_CODING
 
 from .yulic import *                                                                                                    #pylint: disable=wildcard-import
 from .yuconfig import *                                                                                                 #pylint: disable=wildcard-import,unused-wildcard-import
@@ -170,15 +170,18 @@ def shell_parse_cli_arguments( arglist ):
 
 #   ---------------------------------------------------------------------------
 def _exec_yuconfig_script( fn_cfg, context ):
-    if os.path.isfile( fn_cfg ):
-        try:
-            with tokenize.open( fn_cfg ) as stream:
-                source = stream.read()
-            code = compile( source, fn_cfg, 'exec' )
-            exec( code, context, context )
-        except Exception as e:                                                                                         #pylint: disable=broad-except
-            log.error( 'unable to execute configuration script\n'
-            'File "%s"\n%s: %s', fn_cfg, type( e ).__name__, str( e ))
+    if not os.path.isfile( fn_cfg ):
+        return None
+
+    try:
+        with tokenize.open( fn_cfg ) as stream:
+            source = stream.read()
+        code = compile( source, fn_cfg, 'exec' )
+        exec( code, context, context )
+    except Exception as e:                                                                                             #pylint: disable=broad-except
+        log.error( 'unable to execute configuration script\n'
+        'File "%s"\n%s: %s', fn_cfg, type( e ).__name__, str( e ))
+    return os.path.abspath( fn_cfg )
 
 #   ---------------------------------------------------------------------------
 def shell_parse_yuconfig( fn ):
@@ -187,17 +190,19 @@ def shell_parse_yuconfig( fn ):
     context[ 'directory' ] = []
     context[ 'dependency' ] = []
     context[ 'pp_define' ] = []
-#   -- global configuration
-    _exec_yuconfig_script( '' + E_YUCFG, context )
-#   -- configuration for concrete source file
-    _exec_yuconfig_script( os.path.splitext( fn )[ 0 ] + E_YUCFG, context )
+    config_dependencies = []
+    for fn_cfg in ( '' + E_YUCFG, os.path.splitext( fn )[ 0 ] + E_YUCFG ):
+        loaded = _exec_yuconfig_script( fn_cfg, context )
+        if loaded is not None:
+            config_dependencies.append( loaded )
     cfg = { k: val for k, val in list( context.items()) if isinstance( val, yuconfig_types )}
     if isinstance( context[ 'directory' ], list ):
         cfg[ 'directory' ] = context[ 'directory' ]
     if isinstance( context[ 'dependency' ], list ):
-        cfg[ 'dependency' ] = context[ 'dependency' ]
+        cfg[ 'dependency' ] = list( context[ 'dependency' ])
     if isinstance( context[ 'pp_define' ], list ):
         cfg[ 'pp_define' ] = context[ 'pp_define' ]
+    cfg[ '_config_dependencies' ] = config_dependencies
     return cfg
 
 #   ---------------------------------------------------------------------------
@@ -219,6 +224,22 @@ def shell_backup( fn ):
             os.chmod( fn_bak, stat.S_IWRITE )
             os.remove( fn_bak )
         os.rename( fn, fn_bak )
+        return fn_bak
+    return None
+
+#   ---------------------------------------------------------------------------
+def _restore_output( fn, fn_bak ):
+    try:
+        if os.path.isfile( fn ):
+            try:
+                os.chmod( fn, stat.S_IWRITE )
+            except IOError:
+                pass
+            os.remove( fn )
+        if fn_bak is not None and os.path.isfile( fn_bak ):
+            os.rename( fn_bak, fn )
+    except IOError as e:
+        log.critical( 'unable to restore output file\n%s: %s', type( e ).__name__, str( e ))
 
 #   ---------------------------------------------------------------------------
 def shell_savetofile( fn, text ):
@@ -387,6 +408,8 @@ def _output_fn( fn ):
 def _pp_stream( _stream, fn, fn_o ):
     ok = False
     plain = None
+    output_started = False
+    output_backup = None
     try:
         text = _stream.read()
 #       -- preprocessing
@@ -398,7 +421,8 @@ def _pp_stream( _stream, fn, fn_o ):
             if feedback.output_file:
                 fn_o = feedback.output_file
 #           -- output file backup
-            shell_backup( fn_o )
+            output_backup = shell_backup( fn_o )
+            output_started = True
 #           -- output file writing
             shell_savetofile( fn_o, plain )
             if shell.read_only:
@@ -421,6 +445,9 @@ def _pp_stream( _stream, fn, fn_o ):
 
     except IOError as e:
 #       -- e.g. file operation failure
+        if output_started:
+            _restore_output( fn_o, output_backup )
+        ok = False
         log.critical( FAIL, type( e ).__name__, str( e ))
 
     return ( ok, plain, fn_o )
@@ -502,6 +529,10 @@ def _getmtime( fn ):
         raise
 
 #   ---------------------------------------------------------------------------
+def _cached_header_shrink( _stream ):
+    return 1 if re_CODING.search( _stream.readline()) else 2
+
+#   ---------------------------------------------------------------------------
 def proc_stream( _stream, fn ):
     """
     Stream preprocessing (for Python package).
@@ -516,17 +547,18 @@ def proc_stream( _stream, fn ):
 #   -- check that we can skip re-preprocessing
     if not cfg.get( 'force', False ) and os.path.isfile( fn_o ):
         try:
-            deps = cfg.get( 'dependency', [])
+            deps = list( cfg.get( 'dependency', []))
+            deps.extend( cfg.get( '_config_dependencies', []))
             deps.append( fn )
             t = os.path.getmtime( fn_o )
 #           -- if sources of dependencies are not changed...
             if all( _getmtime( d ) < t for d in deps ):
 #               -- ...just read output file
-                with open( fn_o, 'r' ) as f:
+                with open( fn_o, 'r', encoding='utf8' ) as f:
                     data = f.read()
 
                 # print( 'skipped yupp running' )
-                return ( True, data, fn_o, 1 if 'coding:' in _stream.readline() else 2 )
+                return ( True, data, fn_o, _cached_header_shrink( _stream ))
 
         except:                                                                                                        #pylint: disable=bare-except
 #           -- process input file in the usual way
