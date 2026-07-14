@@ -10,21 +10,6 @@ http://github.com/in4lio/yupp/
 yugen.py -- an implementation of yupp preprocessor in Python
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-from builtins import next
-from builtins import map
-from builtins import str
-from builtins import bytes
-from builtins import zip
-from builtins import range
-from builtins import object
-from builtins import int
-from future.utils import raise_
-from future.utils import native_str
 import sys
 import os
 import tempfile
@@ -32,7 +17,7 @@ import logging
 import inspect
 import copy
 import re
-import imp
+import importlib.util
 import string                                                                                                          #pylint: disable=deprecated-module
 import operator
 import math
@@ -49,6 +34,14 @@ from .yulic import *                                                            
 from .yuconfig import *                                                                                                 #pylint: disable=wildcard-import,unused-wildcard-import
 
 sys.setrecursionlimit( 2 ** 20 )
+
+#   ---------------------------------------------------------------------------
+def _raise_with_traceback( exception_type, value, traceback_ ):
+    """Raise a replacement exception while retaining the original traceback."""
+    exception = value if isinstance( value, exception_type ) else exception_type( value )
+    if exception.__traceback__ is not traceback_:
+        raise exception.with_traceback( traceback_ )
+    raise exception
 
 #   ---------------------------------------------------------------------------
 def config():
@@ -265,10 +258,6 @@ class SOURCE( str ):
         return SOURCE( str.__getitem__( self, a ), self.input_file, self.pos + d )
 
 #   -----------------------------------
-    def __getslice__( self, a, b ):
-        return SOURCE( str.__getslice__( self, a, b ), self.input_file, self.pos + a )
-
-#   -----------------------------------
     def loc( self ):
         return _loc( self.input_file, self.pos ) if self.input_file else _loc_repr( self )
 
@@ -283,7 +272,7 @@ class BASE_STR( SOURCE ):
 
 #   -----------------------------------
     def __eq__( self, other ):
-        return (isinstance( other, str ) or isinstance( other, native_str )) and str.__eq__( self, other )
+        return isinstance( other, str ) and str.__eq__( self, other )
 
 #   -----------------------------------
     def __hash__( self ):
@@ -848,7 +837,7 @@ def _unq( st ):
 
                 return result
 
-            result = codecs.unicode_escape_decode( st )[ 0 ]
+            result = st.encode( 'raw_unicode_escape' ).decode( 'unicode_escape' )
             if isinstance( st, STR ):
                 return STR( result, st.input_file, st.pos )
 
@@ -881,7 +870,7 @@ def _import_source( lib, once ):
             sou = _unify_eol( f.read())
     except:
         e_type, e, tb = sys.exc_info()
-        raise_( e_type, 'ps_import: %s' % ( e ) + lib.loc(), tb )
+        _raise_with_traceback( e_type, 'ps_import: %s' % ( e ) + lib.loc(), tb )
 
     yushell.source[ lib ] = ( lpath, sou )
     return lib
@@ -893,18 +882,33 @@ def _import_python( name, script ):
 #       -- script has already been imported
         return
 
-    lpath = script
+    lpath = str( script )
     if not os.path.isfile( lpath ):
         for d in yushell.directory:
-            lpath = os.path.join( d, script )
+            lpath = os.path.join( d, str( script ))
             if os.path.isfile( lpath ):
                 break
+    lpath = os.path.abspath( lpath )
+    previous = sys.modules.get( name )
+    had_previous = name in sys.modules
     try:
-        mod = imp.load_source( name, str( lpath ))
+        spec = importlib.util.spec_from_file_location( name, lpath )
+        if spec is None or spec.loader is None:
+            raise ImportError( 'unable to create an import specification for %s' % ( lpath ))
+        mod = importlib.util.module_from_spec( spec )
+        sys.modules[ name ] = mod
+        try:
+            spec.loader.exec_module( mod )
+        except BaseException:
+            if had_previous:
+                sys.modules[ name ] = previous
+            else:
+                sys.modules.pop( name, None )
+            raise
         builtin.update( vars( mod ))
     except:
         e_type, e, tb = sys.exc_info()
-        raise_( e_type, 'ps_import_python: %s' % ( e ) + script.loc(), tb )
+        _raise_with_traceback( e_type, 'ps_import_python: %s' % ( e ) + script.loc(), tb )
 
     yushell.script.append( script )
 
@@ -915,7 +919,7 @@ def _import_eval( infix ):
         sou = str( eval( code, dict( globals(), **builtin )))                                                                #pylint: disable=eval-used
     except:
         e_type, e, tb = sys.exc_info()
-        raise_( e_type, 'ps_import_eval: %s' % ( e ) + infix.loc(), tb )
+        _raise_with_traceback( e_type, 'ps_import_eval: %s' % ( e ) + infix.loc(), tb )
 
     yushell.inclusion.append( None )
     _import = str( len( yushell.inclusion ) - 1 )
@@ -969,11 +973,11 @@ def yuparse( input_file ):
 #   ---- Python exception
         arg = e.args[ 0 ] if e.args else None
         if not isinstance( arg, str ) or not arg.startswith( 'ps_' ) and not arg.startswith( 'python' ):
-            raise_( e_type, 'python: %s' % ( e ) + sou.loc(), tb )
+            _raise_with_traceback( e_type, 'python: %s' % ( e ) + sou.loc(), tb )
 
 #   ---- raised exception
         else:
-            raise_( e_type, e, tb )
+            _raise_with_traceback( e_type, e, tb )
 
 #   ---------------------------------------------------------------------------
 def ps_text( sou, depth = 0 ):
@@ -1848,7 +1852,7 @@ def ps_code( sou, depth = 0 ):                                                  
 #   ---- '['
                     pos = _open_sq_bracket( rest )
                     if pos:
-                        log.warn( 'there is no EOL before "["' + sou.loc())
+                        log.warning( 'there is no EOL before "["' + sou.loc())
         else:
             text = ps_text( sou[ 1: ], depth + 1 )
             while True:
@@ -2654,6 +2658,28 @@ STEADY_SPACE = '\xFE'
 STEADY_TAB = '\xFF'
 
 #   ---------------------------------------------------------------------------
+def _maketrans( *args ):
+    return str.maketrans( *args )
+
+#   ---------------------------------------------------------------------------
+def _translate( value, table, deletions = '' ):
+    """Support native mappings and the Python 2 deletion/table contract."""
+    if table is None:
+        translation = {}
+    elif isinstance( table, str ):
+        if len( table ) != 256:
+            raise ValueError( 'translation table must be 256 characters long' )
+        translation = { codepoint: replacement for codepoint, replacement in enumerate( table )}
+    elif deletions:
+        translation = dict( table )
+    else:
+        translation = table
+
+    if deletions:
+        translation.update({ ord( character ): None for character in deletions })
+    return value.translate( translation )
+
+#   ---------------------------------------------------------------------------
 def yushell( text, _input = None, _output = None ):
     yushell.input_file = os.path.basename( _input ) if _input else '<stdin>'
     yushell.output_file = os.path.basename( _output ) if _output else '<stdout>'
@@ -2720,13 +2746,14 @@ if 'lower' not in builtin:
         'rfind': lambda s, *args : s.rfind( *args ),
         'atof': lambda s : float( s ),
         'atoi': lambda s , base=10 : int( s, base ),
-        'atol': lambda s, base=10 : long( s, base ),
+        'atol': lambda s, base=10 : int( s, base ),
         'ljust': lambda s, width, *args : s.ljust( width, *args ),
         'rjust': lambda s, width, *args : s.rjust( width, *args ),
         'center': lambda s, width, *args : s.center( width, *args ),
         'zfill': lambda x, width : x.zfill( width ) if isinstance( x, str ) else repr( x ).zfill( width ),
         'expandtabs': lambda s, tabsize=8 : s.expandtabs( tabsize ),
-        'translate': lambda s, table, deletions="" : s.translate( table, deletions ) if deletions or table is None else s.translate( table + s[ :0 ]),
+        'maketrans': _maketrans,
+        'translate': _translate,
         'capitalize': lambda s : s.capitalize(),
         'replace': lambda s, old, new, maxreplace=-1 : s.replace( old, new, maxreplace )
     })
@@ -2793,7 +2820,7 @@ def _update_builtin_from_config():
             val = pair[ 1 ].strip() if len( pair ) == 2 else ''
             builtin[ atom ] = val if val else True
         else:
-            log.warn( 'atom expected in configuration option "%s"' % ( x ))
+            log.warning( 'atom expected in configuration option "%s"' % ( x ))
 
 #   ---------------------------------------------------------------------------
 builtin_special = dict()
@@ -3151,7 +3178,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                             t.append( yueval( SET_CLOSURE( node, x ), env, depth + 1 ))
                         else:
 #                           -- item is ignored
-                            log.warn( 'useless assign' + x.loc())
+                            log.warning( 'useless assign' + x.loc())
                         break
 
 #   ---- T -- EMBED --> T
@@ -3251,9 +3278,9 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                                 val = node.fn.fn( *node.args )
                             except:
                                 e_type, e, tb = sys.exc_info()
-                                raise_( e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb )
+                                _raise_with_traceback( e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb )
 
-                            return int( val ) if isinstance( val, bool ) else str( val ) if isinstance( val, native_str ) else val
+                            return int( val ) if isinstance( val, bool ) else str( val ) if isinstance( val, str ) else val
 
                         if _detect_deadlock( node.args ):
                             raise TypeError( '%s: irreducible expression' % ( _callee()) + node.loc())
@@ -3267,7 +3294,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         + node.fn.atom.loc())
 
                     val = node.fn.fn
-                    return str( val ) if isinstance( val, native_str ) else val
+                    return str( val ) if isinstance( val, str ) else val
 
 #   ---- APPLY -- int | float (subscripting)
                 elif isinstance( node.fn, int ) or isinstance( node.fn, float ):
@@ -3309,7 +3336,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         var, val = node.named.pop( 0 )
                         if var in node.fn.env:
                             if not isinstance( node.fn.env[ var ], BOUND ):
-                                log.warn( 'parameter "%s" is already assigned with value' % ( str( var )) + var.loc())
+                                log.warning( 'parameter "%s" is already assigned with value' % ( str( var )) + var.loc())
                             val = yueval( val, env, depth + 1 )
                         else:
                             raise TypeError( '%s: function has no parameter "%s"' % ( _callee(), str( var ))
@@ -3319,7 +3346,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     elif node.args:
                         var = node.fn.env.unassigned()
                         if var is NOT_FOUND:
-                            log.warn( 'unused argument(s) %s' % ( repr( node.args )) + node.loc())
+                            log.warning( 'unused argument(s) %s' % ( repr( node.args )) + node.loc())
                             return yueval( node.fn, env, depth + 1 )
 
                         if var == __va_args__:
@@ -3367,7 +3394,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         raise TypeError( '%s: no arguments of unbound atom expected' % ( _callee())
                         + node.fn.loc())
                     if config.warn_unbound_application:
-                        log.warn( 'application of unbound atom "%s"' % ( node.fn ) + node.fn.loc())
+                        log.warning( 'application of unbound atom "%s"' % ( node.fn ) + node.fn.loc())
                     return node.fn
 
 #   ---- APPLY -- str
@@ -3515,7 +3542,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                             if isinstance( val, str ):
                                 yushell.output_file = feedback.output_file = str( _unq( val ))
                             else:
-                                log.warn( 'cannot assign a non-string value to __OUTPUT_FILE__' + node.loc())
+                                log.warning( 'cannot assign a non-string value to __OUTPUT_FILE__' + node.loc())
                             return None
 
                 env_l = ENV( env )
@@ -3534,7 +3561,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                             if len( val ) > i:
                                 env_l[ var ] = val[ i ]
                             else:
-                                log.warn( 'there is nothing to assign to "%s"' % ( str( var )) + node.loc())
+                                log.warning( 'there is nothing to assign to "%s"' % ( str( var )) + node.loc())
                                 env_l[ var ] = None
                     else:
                         for var in node.lval:
@@ -3636,7 +3663,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     tree = parse( node.ast.lstrip(), mode = 'eval' )
                 except:
                     e_type, e, tb = sys.exc_info()
-                    raise_( e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb )
+                    _raise_with_traceback( e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb )
 
                 infix_visitor = INFIX_VISITOR()
                 infix_visitor.visit( tree )
@@ -3662,11 +3689,11 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                 try:
                     code = compile( node.tree, '', 'eval' )
                     val = eval( code, dict( globals(), **builtin ), node.env )                                        #pylint: disable=eval-used
-                    return str( val ) if isinstance( val, native_str ) else val
+                    return str( val ) if isinstance( val, str ) else val
 
                 except:
                     e_type, e, tb = sys.exc_info()
-                    raise_( e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb )
+                    _raise_with_traceback( e_type, '%s: python: %s' % ( _callee(), e ) + node.loc(), tb )
 
 #   ---- EMIT
             elif isinstance( node, EMIT ):
@@ -3740,14 +3767,14 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
         if ( not isinstance( arg, str )
         or not arg.startswith( 'yueval' ) and not arg.startswith( 'python' ) and not arg.startswith( 'ps_' )):
             if isinstance( arg, str ) and arg.startswith( 'maximum recursion depth' ):
-                raise_( e_type, 'yueval: %s' % ( e ), tb )
+                _raise_with_traceback( e_type, 'yueval: %s' % ( e ), tb )
             else:
 #               -- this 'raise' expr. could be cause of new exception when maximum recursion depth is exceeded
-                raise_( e_type, 'python: %s' % ( e ) + node.loc(), tb )
+                _raise_with_traceback( e_type, 'python: %s' % ( e ) + node.loc(), tb )
 
 #   ---- raised exception
         else:
-            raise_( e_type, e, tb )
+            _raise_with_traceback( e_type, e, tb )
 
 #   ---------------------------------------------------------------------------
 def yuinit():

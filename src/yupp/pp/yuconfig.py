@@ -10,8 +10,6 @@ http://github.com/in4lio/yupp/
 yuconfig.py -- configuration of yupp preprocessor
 """
 
-from __future__ import unicode_literals
-
 #   -----------------------------------
 #   PP_SKIP_COMMENTS
 #   -----------------------------------

@@ -5,6 +5,7 @@ from pathlib import Path
 import stat
 import subprocess
 import sys
+import traceback
 
 import pytest
 
@@ -59,6 +60,49 @@ def test_global_and_file_configuration_precedence(tmp_path, monkeypatch):
 
 
 @pytest.mark.integration
+def test_configuration_scripts_share_globals_and_keep_real_filenames(tmp_path, monkeypatch):
+    source = tmp_path / "shared.yu-c"
+    source.write_text("TEXT", encoding="utf8")
+    global_config = tmp_path / ".yuconfig"
+    file_config = tmp_path / "shared.yuconfig"
+    global_config.write_text(
+        "prefix = 'SHARED'\n"
+        "def define(value):\n"
+        "    pp_define.append(prefix + ':' + value)\n",
+        encoding="utf8",
+    )
+    file_config.write_text("define('VALUE')\nraise RuntimeError('stop')\n", encoding="utf8")
+    captured_tracebacks = []
+
+    def capture_error(*_args, **_kwargs):
+        captured_tracebacks.append(sys.exc_info()[2])
+
+    monkeypatch.setattr(yup.log, "error", capture_error)
+    monkeypatch.chdir(tmp_path)
+
+    config = yup.shell_parse_yuconfig(str(source))
+
+    assert config["pp_define"] == ["SHARED:VALUE"]
+    frames = traceback.extract_tb(captured_tracebacks[-1])
+    assert frames[-1].filename == str(file_config)
+
+
+@pytest.mark.integration
+def test_configuration_script_honors_its_python_encoding_cookie(tmp_path, monkeypatch):
+    source = tmp_path / "encoded.yu-c"
+    source.write_text("TEXT", encoding="utf8")
+    config_file = tmp_path / "encoded.yuconfig"
+    config_file.write_bytes(
+        "# coding: latin-1\npp_define.append('café')\n".encode("latin-1")
+    )
+    monkeypatch.chdir(tmp_path)
+
+    config = yup.shell_parse_yuconfig(str(source))
+
+    assert config["pp_define"] == ["café"]
+
+
+@pytest.mark.integration
 def test_dependency_cache_hit_and_source_miss(tmp_path, monkeypatch):
     source = tmp_path / "cache.yu-c"
     source.write_text("FIRST", encoding="utf8")
@@ -92,8 +136,8 @@ def test_force_configuration_bypasses_fresh_cache(tmp_path, monkeypatch):
     output = tmp_path / "forced.c"
     source.write_text("SOURCE", encoding="utf8")
     output.write_text("STALE-CACHE", encoding="utf8")
-    future = source.stat().st_mtime + 10
-    os.utime(output, (future, future))
+    newer = source.stat().st_mtime + 10
+    os.utime(output, (newer, newer))
     (tmp_path / "forced.yuconfig").write_text("force = True\n", encoding="utf8")
     monkeypatch.chdir(tmp_path)
 

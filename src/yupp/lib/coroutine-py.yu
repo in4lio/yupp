@@ -24,7 +24,6 @@
 )
 
 ($import stdlib)
-from future.builtins import next
 
 CO_READY = 0
 CO_WAIT  = 1

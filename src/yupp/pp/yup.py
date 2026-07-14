@@ -10,22 +10,12 @@ http://github.com/in4lio/yupp/
 yup.py -- shell of yupp preprocessor
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-from past.builtins import execfile
-from builtins import input
-from builtins import str
-from builtins import range
-from builtins import open
-
 import os
 import sys
 import re
 import json
 import traceback
+import tokenize
 from argparse import ArgumentParser
 import stat
 try:
@@ -182,7 +172,10 @@ def shell_parse_cli_arguments( arglist ):
 def _exec_yuconfig_script( fn_cfg, context ):
     if os.path.isfile( fn_cfg ):
         try:
-            execfile( fn_cfg, context )
+            with tokenize.open( fn_cfg ) as stream:
+                source = stream.read()
+            code = compile( source, fn_cfg, 'exec' )
+            exec( code, context, context )
         except Exception as e:                                                                                         #pylint: disable=broad-except
             log.error( 'unable to execute configuration script\n'
             'File "%s"\n%s: %s', fn_cfg, type( e ).__name__, str( e ))
@@ -339,7 +332,7 @@ def _pp():                                                                      
             plain = make_ast_readable( plain )
             log.error( 'unable to translate input text into plain text' )
             if yushell.hazard:
-                log.warn( 'the following usage of built-in function(s) can be the reason'
+                log.warning( 'the following usage of built-in function(s) can be the reason'
                 + ''.join( x.loc() for x in yushell.hazard ))
         if trace.enabled:
             trace.info( plain )
@@ -424,7 +417,7 @@ def _pp_stream( _stream, fn, fn_o ):
                 fn_o = os.path.splitext( fn_o )[ 0 ] + E_AST
 #               -- output file writing
                 shell_savetofile( fn_o, plain )
-                log.warn( 'result was saved as AST file' )
+                log.warning( 'result was saved as AST file' )
 
     except IOError as e:
 #       -- e.g. file operation failure
@@ -505,7 +498,7 @@ def _getmtime( fn ):
         return os.path.getmtime( fn )
 
     except Exception as e:
-        log.warn( 'unable to check dependency\n%s: %s', type( e ).__name__, str( e ))
+        log.warning( 'unable to check dependency\n%s: %s', type( e ).__name__, str( e ))
         raise
 
 #   ---------------------------------------------------------------------------

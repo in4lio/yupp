@@ -49,22 +49,51 @@ def test_evaluator_errors_keep_type_and_diagnostic_prefix(source, error_type, me
     assert 'File "<stdin>", line 1' in str(error.value)
 
 
-@pytest.mark.xfail(strict=True, reason="Python 3 migration: atol still calls Python 2 long")
-def test_known_defect_atol_has_integer_contract():
+def test_atol_has_integer_contract():
     assert yugen.builtin["atol"]("10") == 10
 
 
-@pytest.mark.xfail(strict=True, reason="Python 3 migration: maketrans is absent")
-def test_known_defect_maketrans_is_available_to_the_dsl():
+def test_maketrans_is_available_to_the_dsl():
     assert yugen.builtin["maketrans"]("a", "x") == str.maketrans("a", "x")
 
 
-@pytest.mark.xfail(strict=True, reason="Python 3 migration: translate uses the Python 2 call shape")
-def test_known_defect_translate_accepts_a_python3_translation_table():
+def test_translate_accepts_a_python3_translation_table():
     table = str.maketrans("a", "x")
     assert yugen.builtin["translate"]("abc", table) == "xbc"
 
 
-@pytest.mark.xfail(strict=True, reason="Python 3 migration: escape decoding corrupts non-ASCII text")
-def test_known_defect_unq_preserves_unicode_while_decoding_escapes():
-    assert yugen.builtin["unq"]("é\\n") == "é\n"
+@pytest.mark.parametrize(
+    "literal,expected",
+    [
+        ("é\\n", "é\n"),
+        ("😀\\t", "😀\t"),
+        ("'é😀\\n'", "é😀\n"),
+    ],
+)
+def test_unq_preserves_unicode_while_decoding_escapes(literal, expected):
+    assert yugen.builtin["unq"](literal) == expected
+
+
+def test_translate_supports_python2_style_deletions_and_none_table():
+    table = str.maketrans("a", "x")
+
+    assert yugen.builtin["translate"]("abc", table, "b") == "xc"
+    assert yugen.builtin["translate"]("abc", None, "b") == "ac"
+
+
+def test_translate_supports_a_legacy_256_character_table():
+    table = "".join(chr(index) for index in range(256))
+    table = table[: ord("a")] + "x" + table[ord("a") + 1 :]
+
+    assert yugen.builtin["translate"]("abcé😀", table, "b") == "xcé😀"
+
+
+def test_unq_keeps_source_location_on_string_subclasses():
+    literal = yugen.STR("é\\n", "sample.yu", 7)
+
+    actual = yugen.builtin["unq"](literal)
+
+    assert actual == "é\n"
+    assert isinstance(actual, yugen.STR)
+    assert actual.input_file == "sample.yu"
+    assert actual.pos == 7

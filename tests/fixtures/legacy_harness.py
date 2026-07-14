@@ -12,13 +12,6 @@ http://github.com/in4lio/yupp/
 legacy_harness.py -- testkit for yupp preprocessor
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
-from builtins import str
-
 import traceback
 from yupp.pp.yugen import *                                                                                               #pylint: disable=wildcard-import,unused-wildcard-import
 
