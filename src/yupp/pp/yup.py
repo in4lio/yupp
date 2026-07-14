@@ -548,7 +548,11 @@ def proc_file( fn ):
         log.critical( FAIL, type( e ).__name__, str( e ))
         return ( False, None )
 
-    ok, _, fn_o, _ = proc_stream( f, fn )
+    try:
+        ok, _, fn_o, _ = proc_stream( f, fn )
+    finally:
+        f.close()
+
     return ( ok, fn_o )
 
 #   ---------------------------------------------------------------------------
