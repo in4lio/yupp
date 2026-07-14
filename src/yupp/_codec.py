@@ -105,6 +105,15 @@ def _canonical(raw):
     return canonical
 
 
+def _byte_variants(raw):
+    """Return exact and CPython-canonicalized forms in stable order."""
+    normalized = _normalize_newlines(raw)
+    canonical = normalized
+    if canonical and not canonical.endswith(b"\n"):
+        canonical += b"\n"
+    return tuple(dict.fromkeys((raw, normalized, canonical)))
+
+
 def _verify_file_input(raw, filename):
     path, candidate = _read_candidate(filename)
     if candidate == raw:
@@ -142,15 +151,15 @@ def _decoder_inputs(candidate):
     _, prefix_length, preceding_lines = _cookie_details(candidate)
     suffix = candidate[prefix_length:]
     inputs = []
-    for raw, omitted_lines in (
-        (candidate, 0),
-        (_normalize_newlines(candidate), 0),
-        (_canonical(candidate), 0),
-        (suffix, preceding_lines),
-        (_normalize_newlines(suffix), preceding_lines),
-        (_canonical(suffix), preceding_lines),
+    seen = set()
+    for variants, omitted_lines in (
+        (_byte_variants(candidate), 0),
+        (_byte_variants(suffix), preceding_lines),
     ):
-        if not any(existing == raw for existing, _ in inputs):
+        for raw in variants:
+            if raw in seen:
+                continue
+            seen.add(raw)
             inputs.append((raw, omitted_lines))
     return inputs
 
@@ -159,11 +168,7 @@ def _header_probe_inputs(candidate):
     _, _, preceding_lines = _cookie_details(candidate)
     lines = candidate.splitlines(keepends=True)
     header = b"".join(lines[: preceding_lines + 1])
-    inputs = []
-    for raw in (header, _normalize_newlines(header), _canonical(header)):
-        if raw not in inputs:
-            inputs.append(raw)
-    return tuple(inputs)
+    return _byte_variants(header)
 
 
 def _authorize_header_probes(filename, candidate):
@@ -206,21 +211,18 @@ def _match_decoder_input(raw, filename, prefix=False):
         raise YuppCodecError(
             "yupp decoder input does not match the direct filesystem main file"
         ) from error
-    if prefix:
-        matches = [item for item in inputs if item[0].startswith(raw)]
-    else:
-        matches = [item for item in inputs if item[0] == raw]
-    if not matches:
+    matches = (
+        omitted_lines
+        for candidate_input, omitted_lines in inputs
+        if (candidate_input.startswith(raw) if prefix else candidate_input == raw)
+    )
+    try:
+        omitted_lines = next(matches)
+    except StopIteration:
         raise YuppCodecError(
             "yupp decoder input does not match the direct filesystem main file"
-        )
-    return path, candidate, matches
-
-
-def _direct_main_filename(raw):
-    if not sys.argv:
-        raise YuppCodecError("yupp requires a direct filesystem main file")
-    return _verify_file_input(raw, sys.argv[0])
+        ) from None
+    return path, candidate, omitted_lines
 
 
 def _direct_main_input(raw, prefix=False):
@@ -306,9 +308,9 @@ def decoder_factory(basecodec):
         probe = _decode_authorized_header_probe(raw, basecodec, errors)
         if probe is not None:
             return probe
-        filename, candidate, matches = _direct_main_input(raw)
+        filename, candidate, omitted_lines = _direct_main_input(raw)
         code = _decode_candidate(
-            candidate, filename, errors, basecodec, matches[0][1]
+            candidate, filename, errors, basecodec, omitted_lines
         )
         return code, len(raw)
 
@@ -328,9 +330,9 @@ def incremental_decoder_factory(basecodec):
                 return "", 0
             if not raw:
                 return "", 0
-            filename, candidate, matches = _direct_main_input(raw)
+            filename, candidate, omitted_lines = _direct_main_input(raw)
             code = _decode_candidate(
-                candidate, filename, errors, basecodec, matches[0][1]
+                candidate, filename, errors, basecodec, omitted_lines
             )
             _authorize_header_probes(filename, candidate)
             return code, len(raw)
@@ -385,17 +387,15 @@ def stream_decoder_factory(basecodec):
 
 def yupp_search_function(coding):
     lowered = coding.lower()
-    if lowered == _PP_NAME:
-        basecodec = codecs.lookup("utf-8")
-        codec_name = _PP_NAME
-    elif lowered.startswith(_PP_NAME + "."):
-        base_name = coding[len(_PP_NAME) + 1 :]
-        if not base_name:
-            return None
-        basecodec = codecs.lookup(base_name)
-        codec_name = _PP_NAME + "." + basecodec.name
-    else:
+    if lowered != _PP_NAME and not lowered.startswith(_PP_NAME + "."):
         return None
+    try:
+        basecodec = _base_codec(coding)
+    except YuppCodecError:
+        return None
+    codec_name = _PP_NAME
+    if lowered != _PP_NAME:
+        codec_name += "." + basecodec.name
 
     return codecs.CodecInfo(
         name=codec_name,

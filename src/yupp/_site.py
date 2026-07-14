@@ -33,15 +33,14 @@ def _load_installed_package():
     if spec is None or spec.loader is None:
         raise ImportError("cannot create the installed yupp package spec")
     module = importlib.util.module_from_spec(spec)
-    previous = sys.modules.get("yupp")
     sys.modules["yupp"] = module
     try:
         spec.loader.exec_module(module)
     except BaseException:
-        if previous is None:
+        if existing is None:
             sys.modules.pop("yupp", None)
         else:
-            sys.modules["yupp"] = previous
+            sys.modules["yupp"] = existing
         raise
     return module
 

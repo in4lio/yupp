@@ -52,7 +52,7 @@ FORBIDDEN_ACTIVE_PATTERNS = {
 }
 
 
-def active_text_files():
+def _active_text_files():
     paths = list(ACTIVE_FILES)
     for root in ACTIVE_ROOTS:
         paths.extend(path for path in root.rglob("*") if path.is_file())
@@ -71,10 +71,17 @@ def active_text_files():
             continue
 
 
+@pytest.fixture(scope="session")
+def active_text_files():
+    return tuple(_active_text_files())
+
+
 @pytest.mark.parametrize("label,pattern", FORBIDDEN_ACTIVE_PATTERNS.items())
-def test_active_sources_have_no_python2_compatibility_constructs(label, pattern):
+def test_active_sources_have_no_python2_compatibility_constructs(
+    label, pattern, active_text_files
+):
     findings = []
-    for path, text in active_text_files():
+    for path, text in active_text_files:
         for match in pattern.finditer(text):
             line = text.count("\n", 0, match.start()) + 1
             findings.append(f"{path.relative_to(REPO_ROOT)}:{line}")
@@ -93,9 +100,9 @@ def test_canonical_documentation_and_packaging_surfaces_are_unique():
     assert 'readme = { file = "README.md"' in pyproject
 
 
-def test_active_files_do_not_reference_removed_root_entrypoints():
+def test_active_files_do_not_reference_removed_root_entrypoints(active_text_files):
     findings = []
-    for path, text in active_text_files():
+    for path, text in active_text_files:
         if "yup.py" in text or "$(YUPP_HOME)/lib" in text or "../lib/" in text:
             findings.append(str(path.relative_to(REPO_ROOT)))
     assert not findings, f"stale pre-src paths: {', '.join(findings)}"

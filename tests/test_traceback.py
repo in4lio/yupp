@@ -1,19 +1,10 @@
-import os
-import subprocess
 import sys
 import traceback
 
 import pytest
 
-from tests.conftest import REPO_ROOT
+from tests.conftest import run_source
 from yupp import _traceback
-
-
-BOOTSTRAP = (
-    "import runpy, sys, yupp; "
-    "sys.argv[:] = sys.argv[1:]; "
-    "runpy.run_path(sys.argv[0], run_name='__main__')"
-)
 
 
 @pytest.fixture(autouse=True)
@@ -21,20 +12,6 @@ def reset_traceback_state():
     _traceback._reset_for_tests()
     yield
     _traceback._reset_for_tests()
-
-
-def run_source(source):
-    environment = os.environ.copy()
-    environment["PYTHONPATH"] = str(REPO_ROOT / "src")
-    environment["PYTHON_COLORS"] = "0"
-    return subprocess.run(
-        [sys.executable, "-S", "-c", BOOTSTRAP, str(source)],
-        cwd=source.parent,
-        env=environment,
-        text=True,
-        capture_output=True,
-        check=False,
-    )
 
 
 def test_runtime_traceback_maps_source_to_generated_file_and_line(tmp_path):
