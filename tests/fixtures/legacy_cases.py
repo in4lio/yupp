@@ -2,10 +2,10 @@
 
 The objects are deliberately re-exported rather than serialized: this keeps the
 original AST instances and exception classes authoritative while pytest proves
-that the extracted case boundaries still agree with ``test_yup.py``.
+that the extracted case boundaries still agree with the legacy harness.
 """
 
-from test_yup import t_eval_kit, t_parse_kit
+from tests.fixtures.legacy_harness import t_eval_kit, t_parse_kit
 
 
 PARSER_CASES = tuple(t_parse_kit)

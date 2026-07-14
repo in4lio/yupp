@@ -2,13 +2,13 @@ import hashlib
 
 import pytest
 
-from pp import yugen
+from yupp.pp import yugen
 from tests.conftest import parse_source
 from tests.fixtures.legacy_cases import PARSER_AST_SHA256, PARSER_CASES
 
 
 def test_legacy_parser_records_are_the_original_oracle():
-    from test_yup import t_parse_kit
+    from tests.fixtures.legacy_harness import t_parse_kit
 
     assert len(PARSER_CASES) == 8
     assert all(actual is original for actual, original in zip(PARSER_CASES, t_parse_kit))

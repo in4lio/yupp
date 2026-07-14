@@ -9,7 +9,7 @@ http://github.com/in4lio/yupp/
   \/_/\_\/___/\ \_\/\ \_\/
      \/_/      \/_/  \/_/
 
-test_yup.py -- testkit for yupp preprocessor
+legacy_harness.py -- testkit for yupp preprocessor
 """
 
 from __future__ import absolute_import
@@ -20,7 +20,7 @@ from __future__ import unicode_literals
 from builtins import str
 
 import traceback
-from pp.yugen import *                                                                                                    #pylint: disable=wildcard-import,unused-wildcard-import
+from yupp.pp.yugen import *                                                                                               #pylint: disable=wildcard-import,unused-wildcard-import
 
 __test__ = False
 

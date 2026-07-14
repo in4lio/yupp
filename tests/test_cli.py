@@ -8,7 +8,7 @@ import sys
 
 import pytest
 
-from pp import yup
+from yupp.pp import yup
 from tests.conftest import REPO_ROOT
 
 
@@ -212,9 +212,12 @@ def test_cli_import_directory_option_is_used(tmp_path, monkeypatch):
 
 @pytest.mark.integration
 def test_unhandled_program_execution_error_is_process_exit_1():
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = str(REPO_ROOT / "src")
     process = subprocess.run(
-        [sys.executable, "-c", "from pp.yup import cli; cli(None)"],
+        [sys.executable, "-c", "from yupp.pp.yup import cli; cli(None)"],
         cwd=REPO_ROOT,
+        env=environment,
         text=True,
         capture_output=True,
         check=False,
@@ -226,8 +229,9 @@ def test_unhandled_program_execution_error_is_process_exit_1():
 
 @pytest.mark.integration
 def test_public_cli_and_translate_return_shapes(tmp_path, monkeypatch):
-    monkeypatch.syspath_prepend(str(REPO_ROOT.parent))
     import yupp
+
+    assert Path(yupp.__file__).resolve().is_relative_to(REPO_ROOT / "src" / "yupp")
 
     source = tmp_path / "public.yu-c"
     source.write_text("PUBLIC", encoding="utf8")

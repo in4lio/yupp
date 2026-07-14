@@ -2,13 +2,13 @@ import hashlib
 
 import pytest
 
-from pp import yugen
+from yupp.pp import yugen
 from tests.conftest import parse_source
 from tests.fixtures.legacy_cases import EVALUATOR_AST_SHA256, EVALUATOR_CASES
 
 
 def test_legacy_evaluator_records_exclude_only_the_empty_sentinel():
-    from test_yup import t_eval_kit
+    from tests.fixtures.legacy_harness import t_eval_kit
 
     assert len(EVALUATOR_CASES) == 13
     assert all(actual is original for actual, original in zip(EVALUATOR_CASES, t_eval_kit))

@@ -2,7 +2,7 @@ import sys
 
 import pytest
 
-from pp import yugen
+from yupp.pp import yugen
 from tests.conftest import evaluate_source, parse_source
 
 
