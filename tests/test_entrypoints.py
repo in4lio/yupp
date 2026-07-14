@@ -2,6 +2,8 @@ import os
 import subprocess
 import sys
 
+import pytest
+
 from tests.conftest import REPO_ROOT
 
 
@@ -81,3 +83,77 @@ def test_module_entrypoint_propagates_cli_failure_status(tmp_path):
 
     assert process.returncode == 4
     assert not (tmp_path / "broken.c").exists()
+
+
+def test_pp_module_entrypoint_propagates_cli_failure_status(tmp_path):
+    source = tmp_path / "broken.yu-c"
+    source.write_text("($set missing", encoding="utf8")
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = str(REPO_ROOT / "src")
+
+    process = subprocess.run(
+        [
+            sys.executable,
+            "-S",
+            "-m",
+            "yupp.pp",
+            "-q",
+            "--no-read-only",
+            str(source),
+        ],
+        cwd=tmp_path,
+        env=environment,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert process.returncode == 4
+    assert not (tmp_path / "broken.c").exists()
+
+
+def test_module_entrypoints_keep_zero_two_and_four_per_failure_statuses(tmp_path):
+    good = tmp_path / "good.yu-c"
+    good.write_text("OK\n", encoding="utf8")
+    bad_one = tmp_path / "bad-one.yu-c"
+    bad_one.write_text("($set missing", encoding="utf8")
+    bad_two = tmp_path / "bad-two.yu-c"
+    bad_two.write_text("($set also-missing", encoding="utf8")
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = str(REPO_ROOT / "src")
+
+    def run(module, *arguments):
+        return subprocess.run(
+            [sys.executable, "-S", "-m", module, *arguments],
+            cwd=tmp_path,
+            env=environment,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+    for module in ("yupp", "yupp.pp"):
+        success = run(module, "-q", "--no-read-only", str(good))
+        usage = run(module, "--definitely-not-an-option")
+        failures = run(
+            module,
+            "-q",
+            "--no-read-only",
+            str(bad_one),
+            str(bad_two),
+        )
+
+        assert success.returncode == 0, success.stderr
+        assert usage.returncode == 2
+        assert failures.returncode == 8
+
+
+@pytest.mark.parametrize("module_name", ["yupp.__main__", "yupp.pp.__main__"])
+def test_module_entrypoint_propagates_program_execution_status_one(
+    module_name, monkeypatch
+):
+    module = __import__(module_name, fromlist=["main"])
+    monkeypatch.setattr(module, "cli", lambda arguments: 1)
+    monkeypatch.setattr(sys, "argv", [module_name])
+
+    assert module.main() == 1
