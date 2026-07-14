@@ -4,7 +4,7 @@ import shutil
 
 import pytest
 
-from pp import yup
+from yupp.pp import yup
 from tests.conftest import REPO_ROOT
 
 
