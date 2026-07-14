@@ -7,7 +7,7 @@ http://github.com/in4lio/yupp/
   \/_/\_\/___/\ \_\/\ \_\/
      \/_/      \/_/  \/_/
 
-yup.py -- shell of yupp preprocessor
+yupp -- command-line shell of the yupp preprocessor
 """
 
 import os
@@ -90,7 +90,7 @@ def shell():
 
 shell()
 
-SYSTEM_EXIT_HELP = 'Moreover, you can pass the arguments through a response file: `yup.py @FILE`.' \
+SYSTEM_EXIT_HELP = 'Moreover, you can pass the arguments through a response file: `yupp @FILE`.' \
 ' The preprocessor exit status is a number of unsuccessfully processed files multiplied by 4' \
 ' or an error of command line arguments (2) or a program execution error (1)' \
 ' or zero in case of successful execution.'

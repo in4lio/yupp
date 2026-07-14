@@ -44,7 +44,7 @@ SKIP_PP = 0
 # SKIP_PP = 1
 
 ifeq ($(SKIP_PP),0)
-PP = python -u $(YUPP_HOME)/yup.py
+PP = python -u -m yupp
 else
 PP = @echo makefile: warning: preprocessing step is skipped,
 endif
@@ -74,7 +74,7 @@ D_CXX = $(D_C)
 D_ASM = $(D_SOU)
 
 # -- include directories
-D_H = $(D_C) $(YUPP_HOME)/lib
+D_H = $(D_C) $(YUPP_HOME)/src/yupp/lib
 
 # -- binary file directory
 D_BIN = .

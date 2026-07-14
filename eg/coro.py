@@ -3,8 +3,6 @@
 
 ($__TITLE__ 0)
 
-from __future__ import print_function
-
 ($import coroutine-py)
 
 c = False

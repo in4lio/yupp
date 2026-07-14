@@ -8,7 +8,7 @@
 `($__TITLE__ dt)` | Insert comment with info about the file, without creation time if `dt == 0`.
 `($car list)` | Head of a list.
 `($cdr list)` | Tail of a list.
-`($chr x)` | Return a string of one character whose ASCII code is the integer `x`.
+`($chr x)` | Return the one-character string whose Unicode code point is the integer `x`.
 `($cmp x y)` | Compare the two objects `x` and `y` and return an integer according to the outcome. The return value is negative if `x < y`, zero if `x == y` and strictly positive if `x > y`.
 `($crc32 s)` | Compute the CRC-32 of a string.
 `($dec x)` | Decrement `x - 1`.
@@ -125,8 +125,8 @@
 `($ascii_uppercase)` | A string containing all the characters that are considered uppercase letters. On most systems this is the string `'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`.
 `($whitespace)` | A string containing all characters that are considered whitespace. On most systems this includes the characters space, tab, linefeed, return, formfeed, and vertical tab.
 `($atof s)` | Convert a string to a floating point number.
-`($atoi s [base])` | Convert string `s` to an integer in the given base. The base defaults to 10. If it is `0`, a default base is chosen depending on the leading characters of the string (after stripping the sign): `0x` or `0X` means `16`, `0` means `8`, anything else means `10`. If base is `16`, a leading `0x` or `0X` is always accepted.
-`($atol s [base])` | Convert string `s` to a long integer in the given base. The base argument has the same meaning as for `atoi`. A trailing `l` or `L` is not allowed, except if the base is `0`.
+`($atoi s [base])` | Convert string `s` to a Python 3 integer in the given base. The base defaults to 10. Base `0` recognizes Python prefixes such as `0b`, `0o`, and `0x`.
+`($atol s [base])` | Convert string `s` to a Python 3 integer in the given base. The historical macro name is retained for source compatibility; Python 3 integers have arbitrary precision.
 `($capitalize word)` | Capitalize the first character of the argument.
 `($capwords s)` | Split the argument into words using `split`, capitalize each word using `capitalize`, and join the capitalized words using `join`. Note that this replaces runs of whitespace characters by a single space, and removes leading and trailing whitespace.
 `($expandtabs s tabsize)` | Expand tabs in a string, i.e. replace them by one or more spaces, depending on the current column and the given tab size. The column number is reset to zero after each newline occurring in the string. This doesn't understand other non-printing characters or escape sequences.

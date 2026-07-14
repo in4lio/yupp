@@ -5,7 +5,7 @@ CONFIG += console
 DESTDIR = ./
 OBJECTS_DIR = ./
 
-PP = python -u ../../yup.py
+PP = python -u -m yupp
 PP_FLAGS = -q --pp-browse -Wno-unbound
 PP_SOURCES = glance.yu-cpp
 
