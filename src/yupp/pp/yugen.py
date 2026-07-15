@@ -593,10 +593,22 @@ class APPLY( BASE_OBJECT_LOCATED ):
         self.fn = fn
         self.args = args
         self.named = named
-        self._order = tuple( order ) if order is not None else tuple(
-            [( False, i ) for i in range( len( args ))]
-            + [( True, i ) for i in range( len( named ))]
-        )
+        self._order = tuple( order ) if order is not None else self._default_order()
+        self._next_operand = 0
+        self._callee_reduced = False
+
+#   -----------------------------------
+    def _default_order( self ):
+        return tuple( [( False, i ) for i in range( len( self.args ))]
+        + [( True, i ) for i in range( len( self.named ))] )
+
+#   -----------------------------------
+    def restart_reduction( self ):
+        positional = sorted( pos for named, pos in self._order if not named )
+        named = sorted( pos for is_named, pos in self._order if is_named )
+        if ( positional != list( range( len( self.args )))
+        or named != list( range( len( self.named )))):
+            self._order = self._default_order()
         self._next_operand = 0
         self._callee_reduced = False
 
@@ -2605,11 +2617,10 @@ class EVAL_CONTINUATION( object ):
         seen = set()
         frame = env
         while frame is not None:
-            for key in frame.order:
+            for key, value in frame.xlocal():
                 if key in seen:
                     continue
                 seen.add( key )
-                value = frame.__getitem__( key )
                 if isinstance( value, list ):
                     self.effects.append(( key, copy.deepcopy( value )))
             frame = frame.parent
@@ -2746,8 +2757,7 @@ class ENV( dict ):
     def predeclare( self, key ):
         if self.__contains__( key ):
             raise ValueError( 'recursive binding is already declared' )
-        self.order.append( key )
-        dict.__setitem__( self, key, BINDING_CELL())
+        self[ key ] = BINDING_CELL()
 
 #   -----------------------------------
     def publish( self, key, value ):
@@ -3094,19 +3104,24 @@ def _materialize_deferred_leg( node, env ):
     return node
 
 #   ---------------------------------------------------------------------------
+def _continuation_children( node ):
+    if isinstance( node, list ):
+        return node
+    if isinstance( node, TEXT ):
+        return ( node.ast, )
+    if isinstance( node, ( EMBED, TRIM, EVAL )):
+        return ( node.ast, )
+    return ()
+
+#   ---------------------------------------------------------------------------
 def _continuation_of( node ):
     continuation = getattr( node, '_continuation', None )
     if continuation is not None:
         return continuation
-    if isinstance( node, list ):
-        for value in node:
-            continuation = _continuation_of( value )
-            if continuation is not None:
-                return continuation
-    elif isinstance( node, TEXT ):
-        return _continuation_of( node.ast )
-    elif isinstance( node, EMBED ) or isinstance( node, TRIM ) or isinstance( node, EVAL ):
-        return _continuation_of( node.ast )
+    for value in _continuation_children( node ):
+        continuation = _continuation_of( value )
+        if continuation is not None:
+            return continuation
     return None
 
 #   ---------------------------------------------------------------------------
@@ -3114,26 +3129,16 @@ def _attach_continuation( node, continuation ):
     if hasattr( node, '__dict__' ) and _is_residual( node ):
         node._continuation = continuation
         return
-    if isinstance( node, list ):
-        for value in node:
-            if _is_residual( value ):
-                _attach_continuation( value, continuation )
-    elif isinstance( node, TEXT ):
-        _attach_continuation( node.ast, continuation )
-    elif isinstance( node, EMBED ) or isinstance( node, TRIM ) or isinstance( node, EVAL ):
-        _attach_continuation( node.ast, continuation )
+    for value in _continuation_children( node ):
+        if _is_residual( value ):
+            _attach_continuation( value, continuation )
 
 #   ---------------------------------------------------------------------------
 def _clear_continuation( node ):
     if hasattr( node, '_continuation' ):
         del node._continuation
-    if isinstance( node, list ):
-        for value in node:
-            _clear_continuation( value )
-    elif isinstance( node, TEXT ):
-        _clear_continuation( node.ast )
-    elif isinstance( node, EMBED ) or isinstance( node, TRIM ) or isinstance( node, EVAL ):
-        _clear_continuation( node.ast )
+    for value in _continuation_children( node ):
+        _clear_continuation( value )
 
 #   ---------------------------------------------------------------------------
 def _detect_deadlock( node ):                                                                                          #pylint: disable=too-many-return-statements
@@ -3345,14 +3350,7 @@ def _restart_template_applications( node ):
         for _, value in node.named:
             _restart_template_applications( value )
 
-        positional = sorted( pos for named, pos in node._order if not named )
-        named = sorted( pos for is_named, pos in node._order if is_named )
-        if ( positional != list( range( len( node.args )))
-        or named != list( range( len( node.named )))):
-            node._order = tuple( [( False, i ) for i in range( len( node.args ))]
-            + [( True, i ) for i in range( len( node.named ))] )
-        node._next_operand = 0
-        node._callee_reduced = False
+        node.restart_reduction()
         return
 
     if isinstance( node, list ):
