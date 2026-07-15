@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "yupp"
-version = "1.2c1"
+version = "2.0rc1"
 description = "yet another lexical preprocessor"
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.11"

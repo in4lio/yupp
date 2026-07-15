@@ -2,7 +2,7 @@
 
 # yupp
 
-`yupp` 1.2c1 is a lexical macro preprocessor for C, C++, Python, and
+`yupp` 2.0rc1 is a lexical macro preprocessor for C, C++, Python, and
 other text-based languages. It embeds a small, fully parenthesized macro
 language into ordinary source files and emits readable generated text.
 
