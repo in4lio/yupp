@@ -123,6 +123,9 @@ A function (lambda) parameter with a default value
 
     ($set if \cond.\then:[].\else:[].($then ? cond | else))
 
+Defaults are evaluated once when the lambda is defined. A later caller does
+not change the regular names used by a default.
+
 A named argument – `($<function> \<atom> <argument>)`:
 
     ($if { four != 4 } \else OK)
@@ -254,6 +257,36 @@ Standard Library can be used in preprocessor expressions –
 The special `($import <expr>)` form is provided to include macros and
 functions from [yupp Standard Library](../src/yupp/lib/README.md)
 or other libraries.
+
+### EVALUATION AND SCOPE
+
+Lambda functions use lexical scope: a regular free name is resolved in the
+lambda's invocation frame and the environment where the lambda was defined,
+not in the environment of a later caller. Each invocation and partial
+application has independent parameter state.
+
+Caller-context behavior is explicit:
+
+- `&name` reads a late-bound name from the application or resumption that first
+  demands it;
+- macros evaluate arguments and expanded forms in their invocation context;
+- `EVAL` (`$$`) evaluates its input and parsed form in the context where that
+  operation begins.
+
+Applications evaluate their callee first and operands in written order. They
+stop at the first unresolved operand. Conditionals do not evaluate either
+branch while the condition is unresolved and evaluate only the selected branch
+after it resolves. Evaluating a parsed AST, closure, or residual does not mutate
+the supplied value.
+
+For migration from accidental dynamic lambda lookup, use an explicit argument
+or `&name`. `-Wdynamic-scope` enables a runtime warning for executed
+caller-only regular references; `-Wno-dynamic-scope` disables it, and
+`warn_dynamic_scope = True` enables it from a trusted `.yuconfig`. The warning
+does not substitute the caller value and cannot inspect unexecuted paths. There
+is no legacy scope mode. See [Evaluator semantics and
+migration](yueval-migration.md) for residual/effect rules, examples, the
+compatibility table, and scaling evidence.
 
 ### USAGE
 
