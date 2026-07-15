@@ -532,3 +532,212 @@ def test_macro_reached_inside_resumed_eval_uses_resumption_caller():
     resume = yugen.ENV(macro_env, [(value, yugen.INT(2))])
 
     assert yugen.yueval(in_progress, resume) == yugen.LIST([9, 2])
+
+
+def _caller_only_lambda(filename="migration.yu", application_body=False):
+    from tests.conftest import parse_source
+
+    parsed = parse_source("($ \\ignored.($caller_only) 0)", filename).ast[0].fn
+    body = parsed.l_form if application_body else parsed.l_form.fn
+    return yugen.LAMBDA(parsed.bound, body)
+
+
+def _migration_warnings(records):
+    return [
+        message
+        for name, level, message in records
+        if name == "log" and level == "WARNING" and "dynamic scope" in message
+    ]
+
+
+def test_dynamic_scope_migration_warning_is_opt_in_and_never_substitutes_caller_value():
+    caller_only = yugen.ATOM("caller_only")
+    caller = yugen.ENV(None, [(caller_only, yugen.INT(7))])
+
+    yugen.config.warn_dynamic_scope = False
+    disabled = yugen.yueval(_caller_only_lambda(), yugen.ENV())
+    with capture_evaluator_logs() as disabled_records:
+        disabled_result = yugen.yueval(_apply(disabled, yugen.INT(0)), caller)
+
+    yugen.config.warn_dynamic_scope = True
+    enabled = yugen.yueval(_caller_only_lambda(), yugen.ENV())
+    with capture_evaluator_logs() as enabled_records:
+        enabled_result = yugen.yueval(_apply(enabled, yugen.INT(0)), caller)
+
+    assert disabled_result == enabled_result == caller_only
+    assert _migration_warnings(disabled_records) == []
+    assert len(_migration_warnings(enabled_records)) == 1
+    warning = _migration_warnings(enabled_records)[0]
+    assert "executed path" in warning
+    assert "explicit argument" in warning
+    assert "late binding" in warning
+    assert 'File "migration.yu", line 1' in warning
+
+
+def test_dynamic_scope_migration_warning_is_once_per_site_per_evaluation():
+    yugen.config.warn_dynamic_scope = True
+    caller_only = yugen.ATOM("caller_only")
+    caller = yugen.ENV(None, [(caller_only, yugen.INT(7))])
+    closure = yugen.yueval(_caller_only_lambda(), yugen.ENV())
+
+    with capture_evaluator_logs() as one_evaluation:
+        result = yugen.yueval(
+            yugen.LIST([
+                _apply(closure, yugen.INT(0)),
+                _apply(closure, yugen.INT(1)),
+            ]),
+            caller,
+        )
+    with capture_evaluator_logs() as separate_evaluations:
+        yugen.yueval(_apply(closure, yugen.INT(2)), caller)
+        yugen.yueval(_apply(closure, yugen.INT(3)), caller)
+
+    assert result == yugen.LIST([caller_only, caller_only])
+    assert len(_migration_warnings(one_evaluation)) == 1
+    assert len(_migration_warnings(separate_evaluations)) == 2
+
+
+def test_dynamic_scope_migration_warning_reports_distinct_source_sites():
+    from tests.conftest import parse_source
+
+    yugen.config.warn_dynamic_scope = True
+    parsed = parse_source(
+        "($ \\ignored.($caller_only) 0)($ \\ignored.($caller_only) 0)",
+        "migration-sites.yu",
+    )
+    closures = []
+    for application in parsed.ast:
+        source_lambda = application.fn
+        closures.append(
+            yugen.yueval(
+                yugen.LAMBDA(source_lambda.bound, source_lambda.l_form.fn),
+                yugen.ENV(),
+            )
+        )
+    caller_only = yugen.ATOM("caller_only")
+    caller = yugen.ENV(None, [(caller_only, yugen.INT(7))])
+
+    with capture_evaluator_logs() as records:
+        result = yugen.yueval(
+            yugen.LIST([_apply(closure, yugen.INT(0)) for closure in closures]),
+            caller,
+        )
+
+    assert result == yugen.LIST([caller_only, caller_only])
+    assert len(_migration_warnings(records)) == 2
+
+
+def test_dynamic_scope_migration_warning_survives_residual_and_is_shared_by_forks():
+    yugen.config.warn_dynamic_scope = True
+    caller_only = yugen.ATOM("caller_only")
+    gate = yugen.ATOM("gate")
+    definition = yugen.ENV()
+    definition.predeclare(gate)
+    parsed = _caller_only_lambda("migration-residual.yu")
+    closure = yugen.yueval(
+        yugen.LAMBDA(
+            parsed.bound,
+            yugen.COND(yugen.VAR([], gate), parsed.l_form, yugen.INT(0)),
+        ),
+        definition,
+    )
+    caller = yugen.ENV(None, [(caller_only, yugen.INT(7))])
+    residual = yugen.yueval(_apply(closure, yugen.INT(0)), caller)
+    definition.publish(gate, yugen.INT(1))
+
+    with capture_evaluator_logs() as records:
+        first = yugen.yueval(residual, caller)
+        second = yugen.yueval(residual, caller)
+
+    assert first == second == caller_only
+    assert len(_migration_warnings(records)) == 1
+
+
+def test_explicit_late_binding_does_not_emit_a_migration_warning():
+    yugen.config.warn_dynamic_scope = True
+    caller_only = yugen.ATOM("caller_only")
+    closure = yugen.yueval(
+        _lambda(["ignored"], yugen.VAR(yugen.LATE_BOUND(), caller_only)),
+        yugen.ENV(),
+    )
+
+    with capture_evaluator_logs() as records:
+        result = yugen.yueval(
+            _apply(closure, yugen.INT(0)),
+            yugen.ENV(None, [(caller_only, yugen.INT(7))]),
+        )
+
+    assert result == 7
+    assert _migration_warnings(records) == []
+
+
+def test_dynamic_scope_and_unbound_application_warnings_remain_independent():
+    yugen.config.warn_dynamic_scope = True
+    yugen.config.warn_unbound_application = True
+    caller_only = yugen.ATOM("caller_only")
+    closure = yugen.yueval(
+        _caller_only_lambda("migration-unbound.yu", application_body=True),
+        yugen.ENV(),
+    )
+
+    with capture_evaluator_logs() as records:
+        result = yugen.yueval(
+            _apply(closure, yugen.INT(0)),
+            yugen.ENV(None, [(caller_only, yugen.INT(7))]),
+        )
+
+    warnings = [message for name, level, message in records if name == "log" and level == "WARNING"]
+    assert result == caller_only
+    assert len(_migration_warnings(records)) == 1
+    assert any('application of unbound atom "caller_only"' in message for message in warnings)
+
+
+@pytest.mark.parametrize(
+    "kind,source,filename,provenance",
+    [
+        (
+            "macro",
+            "($macro maker () ($set generated \\ignored.($caller_only))0)($maker)",
+            "migration-macro.yu",
+            'Macro "maker", line 1',
+        ),
+        (
+            "eval",
+            '($$ "($set generated \\\\ignored.($caller_only))0")',
+            "migration-eval.yu",
+            'Macro "<string>", line 1',
+        ),
+    ],
+)
+def test_dynamic_scope_migration_warning_keeps_macro_and_eval_provenance(
+    kind, source, filename, provenance
+):
+    from tests.conftest import parse_source
+
+    yugen.config.warn_dynamic_scope = True
+    ast = parse_source(source, filename)
+    env = yugen.ENV()
+    if kind == "macro":
+        env = yugen.yueval(ast.ast[0], env)
+        embedded = yugen.yueval(ast.ast[1], env)
+    else:
+        embedded = yugen.yueval(ast.ast[0], env)
+    assignment = next(node for node in embedded.ast if isinstance(node, yugen.SET))
+    parsed_lambda = assignment.ast
+    closure = yugen.yueval(
+        yugen.LAMBDA(parsed_lambda.bound, parsed_lambda.l_form.fn),
+        yugen.ENV(),
+    )
+    caller_only = yugen.ATOM("caller_only")
+
+    with capture_evaluator_logs() as records:
+        result = yugen.yueval(
+            _apply(closure, yugen.INT(0)),
+            yugen.ENV(None, [(caller_only, yugen.INT(7))]),
+        )
+
+    assert result == caller_only
+    warning = _migration_warnings(records)
+    assert len(warning) == 1
+    assert f'File "{filename}", line 1' in warning[0]
+    assert provenance in warning[0]

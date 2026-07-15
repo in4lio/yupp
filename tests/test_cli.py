@@ -34,6 +34,35 @@ def test_output_name_uses_only_basename_in_output_directory(tmp_path):
     assert yup._output_fn("nested/source.yu-c") == str(tmp_path / "generated" / "source.c")
 
 
+def test_dynamic_scope_migration_warning_cli_is_opt_in():
+    defaults = yup.shell_parse_cli_arguments([])
+    enabled = yup.shell_parse_cli_arguments(["-Wdynamic-scope"])
+    disabled = yup.shell_parse_cli_arguments(
+        ["-Wdynamic-scope", "-Wno-dynamic-scope"]
+    )
+
+    assert defaults.warn_dynamic_scope is False
+    assert enabled.warn_dynamic_scope is True
+    assert disabled.warn_dynamic_scope is False
+
+
+def test_dynamic_scope_migration_warning_can_be_enabled_in_yuconfig(
+    tmp_path, monkeypatch
+):
+    source = tmp_path / "migration.yu-c"
+    source.write_text("TEXT", encoding="utf8")
+    (tmp_path / "migration.yuconfig").write_text(
+        "warn_dynamic_scope = True\n", encoding="utf8"
+    )
+    monkeypatch.chdir(tmp_path)
+
+    config = yup.shell_parse_yuconfig(str(source))
+    yup._pp_configure(config)
+
+    assert config["warn_dynamic_scope"] is True
+    assert yup.config.warn_dynamic_scope is True
+
+
 @pytest.mark.integration
 def test_global_and_file_configuration_precedence(tmp_path, monkeypatch):
     source = tmp_path / "unit.yu-c"

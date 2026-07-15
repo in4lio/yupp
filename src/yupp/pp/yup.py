@@ -129,6 +129,10 @@ def shell_parse_cli_arguments( arglist ):
     , dest = 'warn_unbound_application' )
     argp.add_argument( '-Wunbound', '--warn-unbound-application', action = 'store_true'
     , dest = 'warn_unbound_application', help = WARN_UNBOUND_APPLICATION_HELP )
+    argp.add_argument( '-Wno-dynamic-scope', '--warn-no-dynamic-scope', action = 'store_false'
+    , dest = 'warn_dynamic_scope' )
+    argp.add_argument( '-Wdynamic-scope', '--warn-dynamic-scope', action = 'store_true'
+    , dest = 'warn_dynamic_scope', help = WARN_DYNAMIC_SCOPE_HELP )
 #   -- debug options
     argp.add_argument( '-l', '--log', metavar = 'LEVEL', type = int, dest = 'log_level'
     , default = ( LOG_LEVEL ), choices = list( range( 1, 6 ))
@@ -154,6 +158,7 @@ def shell_parse_cli_arguments( arglist ):
     , pp_browse = PP_BROWSE
     , pp_define = []
     , warn_unbound_application = WARN_UNBOUND_APPLICATION
+    , warn_dynamic_scope = WARN_DYNAMIC_SCOPE
     )
     if ( len( arglist ) == 1 ) and arglist[ 0 ].startswith( '@' ):
 #       -- get arguments from response file
@@ -263,6 +268,7 @@ def _pp_configure( cfg ):
     config.pp_browse = cfg.get( 'pp_browse', PP_BROWSE )
     config.pp_define = cfg.get( 'pp_define', [])
     config.warn_unbound_application = cfg.get( 'warn_unbound_application', WARN_UNBOUND_APPLICATION )
+    config.warn_dynamic_scope = cfg.get( 'warn_dynamic_scope', WARN_DYNAMIC_SCOPE )
     config.directory = cfg.get( 'directory', [])
     shell.quiet = cfg.get( 'quiet', QUIET )
     shell.type_output = cfg.get( 'type_output', TYPE_OUTPUT )
