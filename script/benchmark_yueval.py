@@ -72,6 +72,7 @@ def structural_baseline(definitions, calls, demand_ancestor=False):
         "captured_ancestor_bindings_enumerated": 0,
         "env_deepcopy_calls": 0,
         "env_bindings_copied": 0,
+        "closure_deepcopy_calls": 0,
         "lookup_calls": 0,
         "lookup_frame_visits": 0,
         "call_target_lookup_frame_visits": 0,
@@ -84,6 +85,7 @@ def structural_baseline(definitions, calls, demand_ancestor=False):
         frame = frame.parent
     original_init = yugen.ENV.__init__
     original_deepcopy = yugen.ENV.__deepcopy__
+    original_closure_deepcopy = yugen.L_CLOSURE.__deepcopy__
     original_lookup = yugen.ENV.lookup
     original_xlocal = yugen.ENV.xlocal
 
@@ -98,6 +100,10 @@ def structural_baseline(definitions, calls, demand_ancestor=False):
         if id(current) in captured_frames:
             counters["captured_ancestor_copy_attempts"] += 1
         return original_deepcopy(current, memo)
+
+    def counted_closure_deepcopy(current, memo=None):
+        counters["closure_deepcopy_calls"] += 1
+        return original_closure_deepcopy(current, memo)
 
     def counted_lookup(current, reg, var):
         counters["lookup_calls"] += 1
@@ -123,6 +129,9 @@ def structural_baseline(definitions, calls, demand_ancestor=False):
     with ExitStack() as stack:
         stack.enter_context(patch.object(yugen.ENV, "__init__", counted_init))
         stack.enter_context(patch.object(yugen.ENV, "__deepcopy__", counted_deepcopy))
+        stack.enter_context(
+            patch.object(yugen.L_CLOSURE, "__deepcopy__", counted_closure_deepcopy)
+        )
         stack.enter_context(patch.object(yugen.ENV, "lookup", counted_lookup))
         stack.enter_context(patch.object(yugen.ENV, "xlocal", counted_xlocal))
         result = yugen.yueval(workload, env)
