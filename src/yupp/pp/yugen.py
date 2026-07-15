@@ -24,6 +24,7 @@ import math
 import datetime
 import zlib
 import codecs
+from contextvars import ContextVar
 from textwrap import dedent
 from ast import NodeVisitor
 from ast import parse
@@ -511,6 +512,8 @@ class EVAL( BASE_OBJECT, CAPTION ):
     def __deepcopy__( self, memo = None ):
         result = EVAL( copy.deepcopy( self.ast, memo ), self.decl, self.call )
         result._operation_env = self._operation_env
+        if hasattr( self, '_continuation' ):
+            result._continuation = self._continuation
         return result
 
 #   ---------------------------------------------------------------------------
@@ -596,6 +599,10 @@ class APPLY( BASE_OBJECT_LOCATED ):
         self._order = tuple( order ) if order is not None else self._default_order()
         self._next_operand = 0
         self._callee_reduced = False
+        self._closure_prepared = False
+        self._next_argument = 0
+        self._next_named_argument = 0
+        self._positional_parameters = None
 
 #   -----------------------------------
     def _default_order( self ):
@@ -611,6 +618,10 @@ class APPLY( BASE_OBJECT_LOCATED ):
             self._order = self._default_order()
         self._next_operand = 0
         self._callee_reduced = False
+        self._closure_prepared = False
+        self._next_argument = 0
+        self._next_named_argument = 0
+        self._positional_parameters = None
 
 #   -----------------------------------
     def __repr__( self ):
@@ -2288,6 +2299,11 @@ class L_CLOSURE( LAMBDA_CLOSURE ):
                                                                                late
     """
 #   -----------------------------------
+    def __init__( self, l_form, env, late = None, default = None ):
+        LAMBDA_CLOSURE.__init__( self, l_form, env, late, default )
+        self._next_parameter = 0
+
+#   -----------------------------------
     def __deepcopy__( self, memo = None ):
         memo = {} if memo is None else memo
         found = memo.get( id( self ))
@@ -2296,9 +2312,10 @@ class L_CLOSURE( LAMBDA_CLOSURE ):
 
         parent = memo.get( id( self.env.parent ), self.env.parent )
         env = ENV( parent )
-        env._template_reduction = self.env._template_reduction
-        env._caller = None
-        env._resumption_caller = None
+        env._context = self.env._context.fork()
+        env._context.caller = None
+        env._context.resumption_caller = None
+        env._context.diagnostic_caller = None
         result = L_CLOSURE( None, env, self.late, self.default )
         memo[ id( self )] = result
         memo[ id( self.env )] = env
@@ -2306,13 +2323,22 @@ class L_CLOSURE( LAMBDA_CLOSURE ):
             env[ key ] = copy.deepcopy( value, memo )
         result.l_form = copy.deepcopy( self.l_form, memo )
         result.call = self.call
+        result._next_parameter = self._next_parameter
         return result
 
 #   -----------------------------------
     def bind( self, var, value ):
-        result = copy.deepcopy( self )
-        result.env[ var ] = value
-        return result
+        dict.__setitem__( self.env, var, value )
+        return self
+
+#   -----------------------------------
+    def unassigned( self ):
+        while self._next_parameter < len( self.env.order ):
+            var = self.env.order[ self._next_parameter ]
+            if isinstance( self.env[ var ], BOUND ):
+                return var
+            self._next_parameter += 1
+        return NOT_FOUND
 
 #   ---------------------------------------------------------------------------
 class M_CLOSURE( LAMBDA_CLOSURE ):
@@ -2613,23 +2639,13 @@ class EVAL_CONTINUATION( object ):
 #   -----------------------------------
     def __init__( self, env ):
         self.env = env
-        self.effects = []
-        seen = set()
-        frame = env
-        while frame is not None:
-            for key, value in frame.xlocal():
-                if key in seen:
-                    continue
-                seen.add( key )
-                if isinstance( value, list ):
-                    self.effects.append(( key, copy.deepcopy( value )))
-            frame = frame.parent
 
 #   -----------------------------------
     def fork_env( self, caller = None ):
-        result = ENV( self.env, [( key, copy.deepcopy( value )) for key, value in self.effects] )
-        result._caller = caller
-        result._resumption_caller = caller
+        result = ENV( self.env )
+        result._context.caller = caller
+        result._context.resumption_caller = caller
+        result._context.continuation_root = result
         return result
 
 #   -----------------------------------
@@ -2667,6 +2683,23 @@ class _MIGRATION_DIAGNOSTICS( object ):
         % ( str( atom ), str( atom ), atom.loc()))
 
 #   ---------------------------------------------------------------------------
+class _EVALUATION_CONTEXT( object ):
+    """Private non-lexical state carried through one reducer branch."""
+#   -----------------------------------
+    def __init__( self, source = None ):
+        self.template_reduction = ( False if source is None
+        else source.template_reduction )
+        self.caller = None if source is None else source.caller
+        self.resumption_caller = None if source is None else source.resumption_caller
+        self.diagnostic_caller = None if source is None else source.diagnostic_caller
+        self.diagnostics = None if source is None else source.diagnostics
+        self.continuation_root = None if source is None else source.continuation_root
+
+#   -----------------------------------
+    def fork( self ):
+        return _EVALUATION_CONTEXT( self )
+
+#   ---------------------------------------------------------------------------
 class ENV( dict ):
     """
     Environment.
@@ -2677,17 +2710,15 @@ class ENV( dict ):
         dict.__init__( self )
         self.parent = parent
         self.order = []
-        self._template_reduction = getattr( parent, '_template_reduction', False )
-        self._caller = getattr( parent, '_caller', None )
-        self._resumption_caller = getattr( parent, '_resumption_caller', None )
-        self._diagnostics = getattr( parent, '_diagnostics', None )
+        self._context = ( parent._context.fork()
+        if parent is not None else _EVALUATION_CONTEXT() )
         if local:
             for key, value in local:
                 self.__setitem__( key, value )
 
 #   -----------------------------------
     def __setitem__( self, key, value ):
-        if key in self.order:
+        if dict.__contains__( self, key ):
             self.order.remove( key )
         self.order.append( key )
 
@@ -2738,20 +2769,20 @@ class ENV( dict ):
     def lookup_dynamic( self, reg, var ):
         if self.__contains__( var ):
             return self.__getitem__( var )
-        if self._caller is not None:
-            return self._caller.lookup( reg, var )
-        if self._template_reduction:
+        if self._context.caller is not None:
+            return self._context.caller.lookup( reg, var )
+        if self._context.template_reduction:
             return NOT_FOUND
         return self.lookup( reg, var )
 
 #   -----------------------------------
     def report_dynamic_scope( self, node ):
-        caller_value = ( NOT_FOUND if self._caller is None
-        else self._caller.lookup( node.reg, node.atom ))
-        if ( self._diagnostics is None or caller_value is NOT_FOUND
+        caller_value = ( NOT_FOUND if self._context.diagnostic_caller is None
+        else self._context.diagnostic_caller.lookup( node.reg, node.atom ))
+        if ( self._context.diagnostics is None or caller_value is NOT_FOUND
         or isinstance( caller_value, BOUND )):
             return
-        self._diagnostics.report_dynamic_scope( node )
+        self._context.diagnostics.report_dynamic_scope( node )
 
 #   -----------------------------------
     def predeclare( self, key ):
@@ -2764,7 +2795,32 @@ class ENV( dict ):
         cell = dict.__getitem__( self, key )
         if not isinstance( cell, BINDING_CELL ):
             raise ValueError( 'binding is not recursive' )
-        cell.publish( value )
+        dict.__setitem__( self, key, value )
+
+#   -----------------------------------
+    def value_for_update( self, reg, var ):
+        """Copy an inherited checkpoint value on its branch's first mutation."""
+        del reg
+        root = self._context.continuation_root
+        if root is None:
+            return self.lookup( [], var )
+
+        frame = self
+        owner = self
+        while ( frame is not None
+        and frame._context.continuation_root is root ):
+            if frame.__contains__( var ):
+                return frame.__getitem__( var )
+            owner = frame
+            frame = frame.parent
+
+        while frame is not None:
+            if frame.__contains__( var ):
+                value = copy.deepcopy( frame.__getitem__( var ))
+                owner[ var ] = value
+                return value
+            frame = frame.parent
+        return NOT_FOUND
 
 #   -----------------------------------
     def update_variable( self, reg, var, value ):                                                                      #pylint: disable=unused-argument
@@ -2801,10 +2857,7 @@ class ENV( dict ):
 #   -----------------------------------
     def __deepcopy__( self, memo = None ):
         result = ENV( self.parent, [( key, copy.deepcopy( self.__getitem__( key ), memo )) for key in self.order ])
-        result._template_reduction = self._template_reduction
-        result._caller = self._caller
-        result._resumption_caller = self._resumption_caller
-        result._diagnostics = self._diagnostics
+        result._context = self._context.fork()
         return result
 
 #   -----------------------------------
@@ -2824,8 +2877,8 @@ class ENV( dict ):
 
 #   ---------------------------------------------------------------------------
 def _dynamic_caller( env ):
-    return ( env._resumption_caller
-    if env._resumption_caller is not None else env )
+    return ( env._context.resumption_caller
+    if env._context.resumption_caller is not None else env )
 
 #   ---------------------------------------------------------------------------
 def _operation_scope( operation_env, active_env ):
@@ -2835,7 +2888,18 @@ def _operation_scope( operation_env, active_env ):
         return operation_env
 
     result = ENV( operation_env )
-    result._resumption_caller = caller
+    operation_context = result._context
+    result._context = active_env._context.fork()
+    result._context.caller = operation_context.caller
+    result._context.diagnostic_caller = operation_context.diagnostic_caller
+    result._context.resumption_caller = caller
+    return result
+
+#   ---------------------------------------------------------------------------
+def _prepare_lambda_call( closure, env, already_private = False ):
+    """Return one invocation-owned closure with the active reduction mode."""
+    result = closure if already_private else copy.deepcopy( closure )
+    result.env._context.template_reduction = env._context.template_reduction
     return result
 
 #   ---------------------------------------------------------------------------
@@ -3115,19 +3179,13 @@ def _continuation_children( node ):
 
 #   ---------------------------------------------------------------------------
 def _continuation_of( node ):
-    continuation = getattr( node, '_continuation', None )
-    if continuation is not None:
-        return continuation
-    for value in _continuation_children( node ):
-        continuation = _continuation_of( value )
-        if continuation is not None:
-            return continuation
-    return None
+    return getattr( node, '_continuation', None )
 
 #   ---------------------------------------------------------------------------
 def _attach_continuation( node, continuation ):
     if hasattr( node, '__dict__' ) and _is_residual( node ):
-        node._continuation = continuation
+        if _continuation_of( node ) is None:
+            node._continuation = continuation
         return
     for value in _continuation_children( node ):
         if _is_residual( value ):
@@ -3137,8 +3195,6 @@ def _attach_continuation( node, continuation ):
 def _clear_continuation( node ):
     if hasattr( node, '_continuation' ):
         del node._continuation
-    for value in _continuation_children( node ):
-        _clear_continuation( value )
 
 #   ---------------------------------------------------------------------------
 def _detect_deadlock( node ):                                                                                          #pylint: disable=too-many-return-statements
@@ -3368,7 +3424,7 @@ def _restart_template_applications( node ):
         _restart_template_applications( node.ast )
         _restart_template_applications( node.form )
     elif isinstance( node, SET_CLOSURE ):
-        node.env._template_reduction = False
+        node.env._context.template_reduction = False
         _restart_template_applications( node.form )
     elif isinstance( node, M_CLOSURE ):
         node._operation_env = None
@@ -3411,25 +3467,35 @@ def trace__eval_out_( node, depth ):
 
 #   ---------------------------------------------------------------------------
 def echo__eval_( fn ):
+    active = ContextVar( 'yueval_active', default = 0 )
+
     def wrapped( node, env = ENV(), depth = 0 ):
-        continuation = _continuation_of( node ) if depth == 0 else None
-        if depth == 0:
+        entry_depth = active.get()
+        external = entry_depth == 0 or depth == 0
+        continuation = _continuation_of( node )
+        if external:
             node = copy.deepcopy( node )
-        if continuation is not None and not env._template_reduction:
+        if continuation is not None and not env._context.template_reduction:
             _clear_continuation( node )
             env = continuation.fork_env( env )
-        elif depth == 0:
-            env._diagnostics = ( _MIGRATION_DIAGNOSTICS()
+        elif external:
+            env._context = _EVALUATION_CONTEXT()
+            env._context.diagnostics = ( _MIGRATION_DIAGNOSTICS()
             if config.warn_dynamic_scope else None )
         if depth > trace.deepest:
             trace.deepest = depth
         trace__eval_in_( node, env, depth )
-        result = fn( node, env, depth )
-        if ( depth == 0 and _is_residual( result ) and not env._template_reduction
-        and _continuation_of( result ) is None ):
-            _attach_continuation( result, EVAL_CONTINUATION( env ))
-        trace__eval_out_( result, depth )
-        return result
+        token = active.set( entry_depth + 1 )
+        try:
+            result = fn( node, env, depth )
+            if ( external and _is_residual( result )
+            and not env._context.template_reduction
+            and _continuation_of( result ) is None ):
+                _attach_continuation( result, EVAL_CONTINUATION( env ))
+            trace__eval_out_( result, depth )
+            return result
+        finally:
+            active.reset( token )
 
     return wrapped
 
@@ -3444,8 +3510,10 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
         return 'yueval'
 
 #   ---------------
-#   TODO: This is an experimental release of the eval-apply cycle, it's slightly theoretically incorrect and unstable,
-#   you may run into problems using a recursion or to face with a wrong scope of a name binding.
+#   Lambda calls use lexical frames.  Explicit late binding, macros, and EVAL
+#   receive caller context through the private evaluation context; residuals
+#   carry branch-local continuation state while this reducer mutates private
+#   AST copies only.
                                                                                                                        #pylint: disable=too-many-nested-blocks
     try:
         tr = False
@@ -3560,13 +3628,23 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                 _call = node.fn.atom if isinstance( node.fn, VAR ) else None
 
                 if not node._callee_reduced:
+                    callee_was_variable = isinstance( node.fn, VAR )
                     node.fn = yueval( node.fn, env, depth + 1 )
                     node._callee_reduced = not _is_residual( node.fn )
                     if not node._callee_reduced:
                         return node
+                    if isinstance( node.fn, L_CLOSURE ):
+                        node.fn = _prepare_lambda_call(
+                            node.fn, env, already_private = callee_was_variable
+                        )
+                        node._closure_prepared = True
                     if ( isinstance( node.fn, M_CLOSURE )
-                    and node.fn._operation_env is None and not env._template_reduction ):
+                    and node.fn._operation_env is None and not env._context.template_reduction ):
                         node.fn._operation_env = _dynamic_caller( env )
+
+                elif isinstance( node.fn, L_CLOSURE ) and not node._closure_prepared:
+                    node.fn = _prepare_lambda_call( node.fn, env )
+                    node._closure_prepared = True
 
 #               -- template reduction may have visited operands while their
 #                  parameters were still BOUND.  The stored body must demand
@@ -3574,6 +3652,12 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #               -- preserve the combined written order of positional and
 #                  named operands.  A residual keeps prior values and leaves
 #                  all later source forms untouched.
+                if ( isinstance( node.fn, L_CLOSURE )
+                and node._positional_parameters is None ):
+                    named_parameters = set( var for var, _ in node.named )
+                    node._positional_parameters = [var for var, value in node.fn.env.xlocal()
+                    if isinstance( value, BOUND ) and var not in named_parameters]
+                positional_parameters = node._positional_parameters
                 while node._next_operand < len( node._order ):
                     named, pos = node._order[ node._next_operand ]
                     operand_env = ( _operation_scope( node.fn._operation_env, env )
@@ -3588,9 +3672,6 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         node.named[ pos ] = ( var, value )
                     else:
                         if isinstance( node.fn, L_CLOSURE ):
-                            named_parameters = set( var for var, _ in node.named )
-                            positional_parameters = [var for var, value in node.fn.env.xlocal()
-                            if isinstance( value, BOUND ) and var not in named_parameters]
                             deferred = ( pos < len( positional_parameters )
                             and positional_parameters[ pos ] in node.fn.late )
                         value = ( node.args[ pos ] if deferred
@@ -3598,7 +3679,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         node.args[ pos ] = value
 
                     if _is_residual( value ) and not deferred:
-                        template_special = ( env._template_reduction
+                        template_special = ( env._context.template_reduction
                         and isinstance( node.fn, L_CLOSURE )
                         and ( bool( node.fn.late )
                         or isinstance( node.fn.l_form, APPLY )
@@ -3614,7 +3695,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #                  runtime value.  Normalize it only after ordinary reduction;
 #                  template reduction may still contain BOUND operands whose
 #                  original indices are needed by the invocation.
-                if not env._template_reduction:
+                if not env._context.template_reduction:
                     args = LIST()
                     for value in node.args:
                         if isinstance( value, EMBED ):
@@ -3737,8 +3818,11 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #   ---- APPLY -- L_CLOSURE
                 elif isinstance( node.fn, L_CLOSURE ):
                     fn = node.fn
-                    if node.named:
-                        var, val = node.named.pop( 0 )
+                    has_named = node._next_named_argument < len( node.named )
+                    has_args = node._next_argument < len( node.args )
+                    if has_named:
+                        var, val = node.named[ node._next_named_argument ]
+                        node._next_named_argument += 1
                         if var not in fn.env:
                             raise TypeError( '%s: function has no parameter "%s"' % ( _callee(), str( var ))
                             + var.loc())
@@ -3750,18 +3834,18 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                             val = yueval( val, env, depth + 1 )
                         fn = fn.bind( var, val )
 
-                    elif node.args:
-                        var = fn.env.unassigned()
+                    elif has_args:
+                        var = fn.unassigned()
                         if var is NOT_FOUND:
-                            log.warning( 'unused argument(s) %s' % ( repr( node.args )) + node.loc())
+                            remaining = node.args[ node._next_argument: ]
+                            log.warning( 'unused argument(s) %s' % ( repr( remaining )) + node.loc())
                             return yueval( fn, env, depth + 1 )
                         if var == __va_args__:
-                            val = LIST( node.args )
-                            node.args = []
-                        elif var in fn.late:
-                            val, node.args = node.args[ 0 ], node.args[ 1: ]
+                            val = LIST( node.args[ node._next_argument: ] )
+                            node._next_argument = len( node.args )
                         else:
-                            val, node.args = _list_eval_1( node.args, env, depth + 1 )
+                            val = node.args[ node._next_argument ]
+                            node._next_argument += 1
                         if val is NOT_FOUND:
                             node.fn = fn
                             return node
@@ -3770,7 +3854,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         fn = fn.bind( var, val )
 
                     else:
-                        var = fn.env.unassigned()
+                        var = fn.unassigned()
                         if var is not NOT_FOUND:
                             if var not in fn.default:
                                 return fn
@@ -3784,22 +3868,29 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                                 val = copy.deepcopy( val )
                             fn = fn.bind( var, val )
 
-                    var = fn.env.unassigned()
+                    has_named = node._next_named_argument < len( node.named )
+                    has_args = node._next_argument < len( node.args )
+                    var = fn.unassigned()
                     if var is not NOT_FOUND:
-                        if not node.named and not node.args and var not in fn.default:
+                        if not has_named and not has_args and var not in fn.default:
                             return fn
                         node.fn = fn
                         continue
 
-                    fn.env._caller = _dynamic_caller( env )
-                    fn.env._resumption_caller = None
-                    fn.env._diagnostics = env._diagnostics
-                    if node.named or node.args:
-                        node.fn = yueval( copy.deepcopy( fn.l_form ), fn.env, depth + 1 )
+                    fn.env._context.caller = _dynamic_caller( env )
+                    fn.env._context.resumption_caller = None
+                    fn.env._context.diagnostic_caller = _dynamic_caller( env )
+                    fn.env._context.diagnostics = env._context.diagnostics
+                    if has_named or has_args:
+                        node.named = node.named[ node._next_named_argument: ]
+                        node.args = node.args[ node._next_argument: ]
+                        node._next_named_argument = 0
+                        node._next_argument = 0
+                        node.fn = yueval( fn.l_form, fn.env, depth + 1 )
                         continue
 
                     env = fn.env
-                    node = copy.deepcopy( fn.l_form )
+                    node = fn.l_form
                     # fall through -- yueval( node )
 
 #   ---- APPLY -- M_CLOSURE
@@ -3955,7 +4046,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #                           -- irreducible
                             return node
 
-                        if ( env._template_reduction
+                        if ( env._context.template_reduction
                         and config.warn_dynamic_scope ):
                             return node
 
@@ -3981,7 +4072,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #               -- A nested lambda belongs to the eventual invocation frame,
 #                  not to the BOUND frame used only to simplify its enclosing
 #                  callable template.
-                if env._template_reduction:
+                if env._context.template_reduction:
                     return node
 
 #   ---- LAMBDA -- VAR
@@ -4013,8 +4104,9 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     env_l[ var ] = BOUND()
 #               -- eval L_CLOSURE
                 closure = L_CLOSURE( node.l_form, ENV( env, list( env_l.xlocal())), d_late, d_default )
-                closure.env._caller = None
-                closure.env._resumption_caller = None
+                closure.env._context.caller = None
+                closure.env._context.resumption_caller = None
+                closure.env._context.diagnostic_caller = None
 #               -- Preserve the legacy lazy-function contract by reducing a
 #                  private body copy while parameters are unassigned.  LET owns
 #                  an intermediate binding frame, so it starts after invocation
@@ -4022,7 +4114,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                 if ( closure.env.unassigned() is not NOT_FOUND
                 and not _contains_effect( closure.l_form )):
                     template_env = copy.deepcopy( closure.env )
-                    template_env._template_reduction = True
+                    template_env._context.template_reduction = True
                     closure.l_form = yueval( copy.deepcopy( closure.l_form ), template_env, depth + 1 )
                     _restart_template_applications( closure.l_form )
                 return closure
@@ -4158,7 +4250,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                 if not _is_term( node.cond ):
 #                   -- irreducible
                     residual = COND_CLOSURE( node.cond, node.leg_1, node.leg_0 )
-                    if not env._template_reduction:
+                    if not env._context.template_reduction:
                         _attach_continuation( residual, EVAL_CONTINUATION( env ))
                     return residual
 
@@ -4173,7 +4265,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #                      selected leg is demanded after the condition resolves.
                     node.leg_1 = _materialize_deferred_leg( node.leg_1, env )
                     node.leg_0 = _materialize_deferred_leg( node.leg_0, env )
-                    if not env._template_reduction:
+                    if not env._context.template_reduction:
                         _attach_continuation( node, EVAL_CONTINUATION( env ))
                     return node
 
@@ -4234,6 +4326,9 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                 if isinstance( val, BOUND ):
 #                   -- irreducible
                     return node
+
+                if isinstance( val, list ) or node.ast:
+                    val = env.value_for_update( node.var.reg, node.var.atom )
 
                 if isinstance( val, list ):
                     if len( val ):

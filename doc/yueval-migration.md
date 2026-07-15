@@ -123,15 +123,17 @@ The original evaluator copied captured environments during call setup. Its
 measured copied-binding series was `675, 2600, 10200, 40400, 160800`, classified
 as definitions-by-calls growth. The current evaluator reports zero environment
 deep copies, zero copied bindings, and zero captured-ancestor enumeration at
-every size.
+every size. For the benchmark's ordinary variable-dispatched calls it also
+reports exactly one closure copy and one call frame per invocation. A separate
+20-parameter regression confirms that closure copies do not grow per argument.
 
 | Definitions / calls | Old seconds | Current seconds | Current call frames | Target + demanded lookup visits |
 |---:|---:|---:|---:|---:|
-| 25 | 0.00247 | 0.00131 | 50 | 25 + 25 |
-| 50 | 0.01119 | 0.00255 | 100 | 50 + 50 |
-| 100 | 0.06355 | 0.00519 | 200 | 100 + 100 |
-| 200 | 0.41222 | 0.01025 | 400 | 200 + 200 |
-| 400 | 2.89138 | 0.02071 | 800 | 400 + 400 |
+| 25 | 0.00247 | 0.00091 | 25 | 25 + 25 |
+| 50 | 0.01119 | 0.00180 | 50 | 50 + 50 |
+| 100 | 0.06355 | 0.00357 | 100 | 100 + 100 |
+| 200 | 0.41222 | 0.00781 | 200 | 200 + 200 |
+| 400 | 2.89138 | 0.01492 | 400 | 400 + 400 |
 
 Elapsed time is illustrative and is not a cross-platform CI threshold. The
 blocking evidence is structural: call-state creation performs constant work
