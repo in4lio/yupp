@@ -56,6 +56,7 @@ int main(void)
 ```
 
 See the [language guide](doc/README.md), [built-in functions](doc/builtin.md),
+[language evolution note](doc/language-evolution.md),
 [evaluator migration guide](doc/yueval-migration.md), and
 [tracked examples](eg/README.md).
 
