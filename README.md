@@ -56,7 +56,8 @@ int main(void)
 ```
 
 See the [language guide](doc/README.md), [built-in functions](doc/builtin.md),
-and [tracked examples](eg/README.md).
+[evaluator migration guide](doc/yueval-migration.md), and
+[tracked examples](eg/README.md).
 
 ## Direct Python scripts
 
@@ -107,6 +108,14 @@ When upgrading from the Python 2-compatible release:
 - keep legacy macro-language integer suffixes such as `10L` if needed: they
   remain part of the yupp language even though Python source no longer accepts
   them.
+
+The evaluator now gives lambdas lexical scope and evaluates only the selected
+conditional branch. Macros, `EVAL` (`$$`), and `&name` remain explicit
+caller-context features. Projects that may rely on accidental caller lookup
+can run `yupp -Wdynamic-scope ...`; the warning checks executed paths without
+substituting caller values. See [Evaluator semantics and
+migration](doc/yueval-migration.md) for the full contract, examples, and
+compatibility table. There is no legacy dynamic-scope mode.
 
 ## Development
 

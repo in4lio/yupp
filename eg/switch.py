@@ -55,16 +55,16 @@ def main():
         print( val, )
 
         ($pattern-switch (`val) ]
-            ($p-case,,($p-val) < 0)
+            ($p-case,,($&p-val) < 0)
                 print( '< 0' )
                 # -- check the next condition
 
-            ($p-case,,0 <= ($p-val) <= 2)
+            ($p-case,,0 <= ($&p-val) <= 2)
                 print( 'in [0..2]' )
                 # -- do not check the next condition
                 break
 
-            ($p-case,,($p-val) > 2)
+            ($p-case,,($&p-val) > 2)
                 print( '> 2' )
         [ )
 

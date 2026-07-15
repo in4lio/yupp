@@ -3605,7 +3605,9 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         and ( bool( node.fn.late )
                         or isinstance( node.fn.l_form, APPLY )
                         and isinstance( node.fn.l_form.fn, COND_CLOSURE )))
-                        if not template_special:
+                        inspectable_special = ( isinstance( node.fn, BUILTIN_SPECIAL )
+                        and node.fn.atom in [ 'lazy', 'repr', 'isatom' ] )
+                        if not template_special and not inspectable_special:
                             return node
 
                     node._next_operand += 1

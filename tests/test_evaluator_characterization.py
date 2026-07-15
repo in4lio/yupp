@@ -81,6 +81,12 @@ def test_emit_source_observation_is_ordered_and_exhausts_list():
     assert value == "1,2,3,\n"
 
 
+def test_isatom_can_inspect_an_unresolved_implicit_late_name():
+    _, value = evaluate_source("($isatom unresolved-name)")
+
+    assert value == "1\n"
+
+
 def test_non_recursive_closure_repr_equality_and_copy_contract():
     atom = yugen.ATOM("x")
     closure = yugen.yueval(
