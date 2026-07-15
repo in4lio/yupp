@@ -161,8 +161,7 @@ def test_deferred_regular_reference_stays_in_lexical_closure_u2():
     assert isinstance(result, yugen.COND_CLOSURE)
 
 
-def test_unresolved_conditional_speculatively_commits_emit_in_current_baseline():
-    # This records the speculative-branch defect; U7 replaces the assertion.
+def test_unresolved_conditional_does_not_speculatively_commit_emit():
     name_items = yugen.ATOM("items")
     items = yugen.LIST([yugen.INT(1), yugen.INT(2)])
     env = yugen.ENV(None, [(name_items, items)])
@@ -175,5 +174,5 @@ def test_unresolved_conditional_speculatively_commits_emit_in_current_baseline()
     result = yugen.yueval(residual, env)
 
     assert isinstance(result, yugen.COND_CLOSURE)
-    assert result.leg_1 == 1
-    assert items == yugen.LIST([yugen.INT(2)])
+    assert isinstance(result.leg_1, yugen.EMIT)
+    assert items == yugen.LIST([yugen.INT(1), yugen.INT(2)])

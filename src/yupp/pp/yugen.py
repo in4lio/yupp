@@ -2577,6 +2577,34 @@ class DEFAULT_RESIDUAL( object ):
         return '%s(%s)' % ( self.__class__.__name__, repr( self.ast ))
 
 #   ---------------------------------------------------------------------------
+class EVAL_CONTINUATION( object ):
+    """Immutable checkpoint context shared by independently resumed copies."""
+#   -----------------------------------
+    def __init__( self, env ):
+        self.env = env
+        self.effects = []
+        seen = set()
+        frame = env
+        while frame is not None:
+            for key in frame.order:
+                if key in seen:
+                    continue
+                seen.add( key )
+                value = frame.__getitem__( key )
+                if isinstance( value, list ):
+                    self.effects.append(( key, copy.deepcopy( value )))
+            frame = frame.parent
+
+#   -----------------------------------
+    def fork_env( self ):
+        return ENV( self.env, [( key, copy.deepcopy( value )) for key, value in self.effects] )
+
+#   -----------------------------------
+    def __deepcopy__( self, memo = None ):
+        del memo
+        return self
+
+#   ---------------------------------------------------------------------------
 class ENV( dict ):
     """
     Environment.
@@ -2962,7 +2990,58 @@ def _is_residual( node ):
         return any( _is_residual( item ) for item in node )
 
     return isinstance( node, ( VAR, APPLY, LAMBDA, EVAL, INFIX, INFIX_CLOSURE
-    , COND, COND_CLOSURE, SET_CLOSURE ))
+    , COND, COND_CLOSURE, SET, LET, SET_CLOSURE, EMIT ))
+
+#   ---------------------------------------------------------------------------
+def _materialize_deferred_leg( node, env ):
+    """Substitute a bound branch variable without reducing the branch form."""
+    if isinstance( node, VAR ) and not isinstance( node.reg, LATE_BOUND ):
+        value = env.lookup( node.reg, node.atom )
+        if value is not NOT_FOUND and not isinstance( value, BOUND ):
+            return copy.deepcopy( value )
+    return node
+
+#   ---------------------------------------------------------------------------
+def _continuation_of( node ):
+    continuation = getattr( node, '_continuation', None )
+    if continuation is not None:
+        return continuation
+    if isinstance( node, list ):
+        for value in node:
+            continuation = _continuation_of( value )
+            if continuation is not None:
+                return continuation
+    elif isinstance( node, TEXT ):
+        return _continuation_of( node.ast )
+    elif isinstance( node, EMBED ) or isinstance( node, TRIM ) or isinstance( node, EVAL ):
+        return _continuation_of( node.ast )
+    return None
+
+#   ---------------------------------------------------------------------------
+def _attach_continuation( node, continuation ):
+    if hasattr( node, '__dict__' ) and _is_residual( node ):
+        node._continuation = continuation
+        return
+    if isinstance( node, list ):
+        for value in node:
+            if _is_residual( value ):
+                _attach_continuation( value, continuation )
+    elif isinstance( node, TEXT ):
+        _attach_continuation( node.ast, continuation )
+    elif isinstance( node, EMBED ) or isinstance( node, TRIM ) or isinstance( node, EVAL ):
+        _attach_continuation( node.ast, continuation )
+
+#   ---------------------------------------------------------------------------
+def _clear_continuation( node ):
+    if hasattr( node, '_continuation' ):
+        del node._continuation
+    if isinstance( node, list ):
+        for value in node:
+            _clear_continuation( value )
+    elif isinstance( node, TEXT ):
+        _clear_continuation( node.ast )
+    elif isinstance( node, EMBED ) or isinstance( node, TRIM ) or isinstance( node, EVAL ):
+        _clear_continuation( node.ast )
 
 #   ---------------------------------------------------------------------------
 def _detect_deadlock( node ):                                                                                          #pylint: disable=too-many-return-statements
@@ -3238,12 +3317,19 @@ def trace__eval_out_( node, depth ):
 #   ---------------------------------------------------------------------------
 def echo__eval_( fn ):
     def wrapped( node, env = ENV(), depth = 0 ):
+        continuation = _continuation_of( node ) if depth == 0 else None
         if depth == 0:
             node = copy.deepcopy( node )
+        if continuation is not None and not env._template_reduction:
+            _clear_continuation( node )
+            env = continuation.fork_env()
         if depth > trace.deepest:
             trace.deepest = depth
         trace__eval_in_( node, env, depth )
         result = fn( node, env, depth )
+        if ( depth == 0 and _is_residual( result ) and not env._template_reduction
+        and _continuation_of( result ) is None ):
+            _attach_continuation( result, EVAL_CONTINUATION( env ))
         trace__eval_out_( result, depth )
         return result
 
@@ -3937,7 +4023,10 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                 node.cond = yueval( node.cond, env, depth + 1 )
                 if not _is_term( node.cond ):
 #                   -- irreducible
-                    return COND_CLOSURE( node.cond, node.leg_1, node.leg_0 )
+                    residual = COND_CLOSURE( node.cond, node.leg_1, node.leg_0 )
+                    if not env._template_reduction:
+                        _attach_continuation( residual, EVAL_CONTINUATION( env ))
+                    return residual
 
                 node = node.leg_1 if node.cond else node.leg_0
                 # fall through -- yueval( node )
@@ -3946,11 +4035,12 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
             elif isinstance( node, COND_CLOSURE ):
                 node.cond = yueval( node.cond, env, depth + 1 )
                 if not _is_term( node.cond ):
-#                   -- FIXME !? potential problem of infinite recursion...
-#                   -- also it makes impossible to perform operations with side effect such as raising an exception
-                    node.leg_1 = yueval( node.leg_1, env, depth + 1 )
-                    node.leg_0 = yueval( node.leg_0, env, depth + 1 )
-#                   -- irreducible
+#                   -- untouched branches are part of the checkpoint.  Only the
+#                      selected leg is demanded after the condition resolves.
+                    node.leg_1 = _materialize_deferred_leg( node.leg_1, env )
+                    node.leg_0 = _materialize_deferred_leg( node.leg_0, env )
+                    if not env._template_reduction:
+                        _attach_continuation( node, EVAL_CONTINUATION( env ))
                     return node
 
                 node = yueval( node.leg_1 if node.cond else node.leg_0, env, depth + 1 )
