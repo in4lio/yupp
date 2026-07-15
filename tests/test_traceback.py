@@ -184,3 +184,33 @@ def test_evaluator_residual_keeps_source_location_across_resumptions():
     assert 'File "residual.yu", line 1' in message
     assert "($div gate_1 gate_2)" in message
     assert "^" in message
+
+
+@pytest.mark.parametrize(
+    "source,filename,provenance",
+    [
+        (
+            "($macro fail () ($div 1 0))($fail)",
+            "macro-error.yu",
+            'Macro "fail", line 1',
+        ),
+        (
+            '($$ "($$ \\"($div 1 0)\\")")',
+            "eval-error.yu",
+            'Macro "<string>", line 1',
+        ),
+    ],
+)
+def test_dynamic_operation_errors_keep_declaration_and_inclusion_provenance(
+    source, filename, provenance
+):
+    ast = parse_source(source, filename)
+
+    with pytest.raises(ZeroDivisionError) as error:
+        yugen.yueval(ast, yugen.ENV())
+
+    message = str(error.value)
+    assert message.startswith("yueval: python: division by zero")
+    assert f'File "{filename}", line 1' in message
+    assert provenance in message
+    assert "($div 1 0)" in message
