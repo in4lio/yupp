@@ -202,3 +202,79 @@ def test_recursive_trace_and_top_level_environments_remain_isolated():
     assert yugen.yueval(_var("top_level_only")) == local_name
     assert yugen.yueval(_var("top_level_only"), explicit) == 2
     assert yugen.yueval(_var("top_level_only")) == local_name
+
+
+def test_application_evaluates_callee_and_mixed_operands_in_written_order(monkeypatch):
+    events = []
+    target = yugen.yueval(_lambda(["a", "b", "c", "d"], yugen.LIST([
+        _var("a"), _var("b"), _var("c"), _var("d"),
+    ])), yugen.ENV())
+
+    def callee():
+        events.append("callee")
+        return target
+
+    def mark(value):
+        events.append(str(value))
+        return value
+
+    monkeypatch.setitem(yugen.builtin, "ordered_callee", callee)
+    monkeypatch.setitem(yugen.builtin, "ordered_mark", mark)
+    from tests.conftest import parse_source
+    ast = parse_source(
+        '($($ordered_callee) ($ordered_mark "p1") '
+        '\\b ($ordered_mark "n1") ($ordered_mark "p2") '
+        '\\d ($ordered_mark "n2"))'
+    )
+
+    assert yugen.yueval(ast, yugen.ENV()) == '"p1""n1""p2""n2"'
+    assert events == ["callee", '"p1"', '"n1"', '"p2"', '"n2"']
+
+
+def test_application_stops_at_first_residual_without_touching_later_operand(monkeypatch):
+    events = []
+
+    def mark(value):
+        events.append(str(value))
+        return value
+
+    def explode():
+        raise AssertionError("later operand was evaluated")
+
+    monkeypatch.setitem(yugen.builtin, "ordered_mark", mark)
+    monkeypatch.setitem(yugen.builtin, "ordered_explode", explode)
+    residual = yugen.APPLY(
+        _var("list"),
+        [
+            _apply(_var("ordered_mark"), yugen.STR("first")),
+            yugen.VAR(yugen.LATE_BOUND(), yugen.ATOM("missing")),
+            _apply(_var("ordered_explode")),
+        ],
+        [],
+    )
+
+    result = yugen.yueval(residual, yugen.ENV())
+
+    assert isinstance(result, yugen.APPLY)
+    assert result.args[0] == "first"
+    assert isinstance(result.args[1], yugen.VAR)
+    assert isinstance(result.args[2], yugen.APPLY)
+    assert events == ["first"]
+
+
+def test_residual_default_is_demanded_in_definition_environment():
+    captured = yugen.ATOM("captured_default")
+    parameter = yugen.ATOM("value")
+    definition = yugen.ENV()
+    definition.predeclare(captured)
+    closure = yugen.yueval(
+        yugen.LAMBDA(
+            [([], parameter, yugen.VAR([], captured))],
+            yugen.VAR([], parameter),
+        ),
+        definition,
+    )
+    definition.publish(captured, yugen.INT(7))
+    caller = yugen.ENV(None, [(captured, yugen.INT(99))])
+
+    assert yugen.yueval(yugen.APPLY(closure, [], []), caller) == 7

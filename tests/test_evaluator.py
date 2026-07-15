@@ -49,6 +49,15 @@ def test_evaluator_errors_keep_type_and_diagnostic_prefix(source, error_type, me
     assert 'File "<stdin>", line 1' in str(error.value)
 
 
+def test_evaluator_reuses_explicit_environment_ast_without_mutation():
+    ast = parse_source("($add 1 2)")
+    before = repr(ast)
+
+    assert yugen.yueval(ast, yugen.ENV()) == "3"
+    assert yugen.yueval(ast, yugen.ENV()) == "3"
+    assert repr(ast) == before
+
+
 def test_atol_has_integer_contract():
     assert yugen.builtin["atol"]("10") == 10
 
