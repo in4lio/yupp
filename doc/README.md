@@ -18,6 +18,10 @@ Embedding of preprocessor expressions into source code occurs by using
 Please find a commented example of **yupp** using –
 ["A glance at the preprocessing"](glance.md).
 
+The [language evolution note](language-evolution.md) records the design
+principles, current pressure points, and possible directions beyond the 2.0
+semantic contract.
+
 ### SYNTAX
 
 The main syntactic categories of the macro language are **a list**,
