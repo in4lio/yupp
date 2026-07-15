@@ -2238,7 +2238,6 @@ class LAMBDA_CLOSURE( BASE_OBJECT ):
     def __init__( self, l_form, env, late = None, default = None ):
         self.l_form = l_form
         self.env = env
-        self.env.parent = None
         self.late = late or {}
         self.default = default or {}
         self.call = None
@@ -2259,8 +2258,29 @@ class L_CLOSURE( LAMBDA_CLOSURE ):
     AST: L_CLOSURE( form, ENV, { var: [( late, BOUND )] }, { var: form } ) <-- LAMBDA
                                                                                late
     """
-#   ---------------
-    pass
+#   -----------------------------------
+    def __deepcopy__( self, memo = None ):
+        memo = {} if memo is None else memo
+        found = memo.get( id( self ))
+        if found is not None:
+            return found
+
+        parent = memo.get( id( self.env.parent ), self.env.parent )
+        env = ENV( parent )
+        result = L_CLOSURE( None, env, self.late, self.default )
+        memo[ id( self )] = result
+        memo[ id( self.env )] = env
+        for key, value in self.env.xlocal():
+            env[ key ] = copy.deepcopy( value, memo )
+        result.l_form = copy.deepcopy( self.l_form, memo )
+        result.call = self.call
+        return result
+
+#   -----------------------------------
+    def bind( self, var, value ):
+        result = copy.deepcopy( self )
+        result.env[ var ] = value
+        return result
 
 #   ---------------------------------------------------------------------------
 class M_CLOSURE( LAMBDA_CLOSURE ):
@@ -2508,6 +2528,29 @@ class NOT_FOUND( object ):
     pass
 
 #   ---------------------------------------------------------------------------
+class BINDING_CELL( object ):
+    """Write-once slot used while publishing a recursive binding group."""
+#   -----------------------------------
+    def __init__( self ):
+        self.value = NOT_FOUND
+
+#   -----------------------------------
+    def publish( self, value ):
+        if self.value is not NOT_FOUND:
+            raise ValueError( 'recursive binding is already initialized' )
+        self.value = value
+
+#   -----------------------------------
+    def get( self ):
+        return BOUND() if self.value is NOT_FOUND else self.value
+
+#   -----------------------------------
+    def __repr__( self ):
+        if self.value is NOT_FOUND:
+            return 'BINDING_CELL(<uninitialized>)'
+        return 'BINDING_CELL(<%s>)' % ( self.value.__class__.__name__ )
+
+#   ---------------------------------------------------------------------------
 class ENV( dict ):
     """
     Environment.
@@ -2532,7 +2575,8 @@ class ENV( dict ):
 
 #   -----------------------------------
     def __getitem__( self, key ):
-        return dict.__getitem__( self, key )
+        value = dict.__getitem__( self, key )
+        return value.get() if isinstance( value, BINDING_CELL ) else value
 
 #   -----------------------------------
     def __contains__( self, key ):
@@ -2571,6 +2615,20 @@ class ENV( dict ):
         return NOT_FOUND
 
 #   -----------------------------------
+    def predeclare( self, key ):
+        if self.__contains__( key ):
+            raise ValueError( 'recursive binding is already declared' )
+        self.order.append( key )
+        dict.__setitem__( self, key, BINDING_CELL())
+
+#   -----------------------------------
+    def publish( self, key, value ):
+        cell = dict.__getitem__( self, key )
+        if not isinstance( cell, BINDING_CELL ):
+            raise ValueError( 'binding is not recursive' )
+        cell.publish( value )
+
+#   -----------------------------------
     def update_variable( self, reg, var, value ):                                                                      #pylint: disable=unused-argument
         del reg
         env = self
@@ -2597,13 +2655,14 @@ class ENV( dict ):
 
 #   -----------------------------------
     def __eq__( self, other ):
+        if self is other:
+            return True
         return ( isinstance( other, self.__class__ ) and ( dict.__eq__( self, other ))
-        and ( self.parent == other.parent ) and ( self.order == other.order ))
+        and ( self.parent is other.parent ) and ( self.order == other.order ))
 
 #   -----------------------------------
     def __deepcopy__( self, memo = None ):
-        return ENV( copy.deepcopy( self.parent, memo )
-        , [( key, copy.deepcopy( self.__getitem__( key ), memo )) for key in self.order ])
+        return ENV( self.parent, [( key, copy.deepcopy( self.__getitem__( key ), memo )) for key in self.order ])
 
 #   -----------------------------------
 #   -- debug message
@@ -3322,10 +3381,62 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     node = node.fn
                     # fall through -- yueval( node )
 
-#   ---- APPLY -- L_CLOSURE -- e.g. APPLY( form, arg0, arg1 )
-#                           --> yueval( apply( yueval( apply( yueval( form ) yueval( arg0 ))) yueval( arg1 )))
+#   ---- APPLY -- L_CLOSURE
+                elif isinstance( node.fn, L_CLOSURE ):
+                    fn = node.fn
+                    if node.named:
+                        var, val = node.named.pop( 0 )
+                        if var not in fn.env:
+                            raise TypeError( '%s: function has no parameter "%s"' % ( _callee(), str( var ))
+                            + var.loc())
+                        if not isinstance( fn.env[ var ], BOUND ):
+                            log.warning( 'parameter "%s" is already assigned with value' % ( str( var )) + var.loc())
+                        val = yueval( val, env, depth + 1 )
+                        if var in fn.late:
+                            val = L_CLOSURE( val, ENV( env, fn.late[ var ]))
+                        fn = fn.bind( var, val )
+
+                    elif node.args:
+                        var = fn.env.unassigned()
+                        if var is NOT_FOUND:
+                            log.warning( 'unused argument(s) %s' % ( repr( node.args )) + node.loc())
+                            return yueval( fn, env, depth + 1 )
+                        if var == __va_args__:
+                            val = LIST( node.args )
+                            node.args = []
+                        else:
+                            val, node.args = _list_eval_1( node.args, env, depth + 1 )
+                        if val is NOT_FOUND:
+                            node.fn = fn
+                            return node
+                        if var in fn.late:
+                            val = L_CLOSURE( val, ENV( env, fn.late[ var ]))
+                        fn = fn.bind( var, val )
+
+                    else:
+                        var = fn.env.unassigned()
+                        if var is not NOT_FOUND:
+                            if var not in fn.default:
+                                return fn
+                            fn = fn.bind( var, copy.deepcopy( fn.default[ var ]))
+
+                    var = fn.env.unassigned()
+                    if var is not NOT_FOUND:
+                        if not node.named and not node.args and var not in fn.default:
+                            return fn
+                        node.fn = fn
+                        continue
+
+                    if node.named or node.args:
+                        node.fn = yueval( copy.deepcopy( fn.l_form ), fn.env, depth + 1 )
+                        continue
+
+                    env = fn.env
+                    node = copy.deepcopy( fn.l_form )
+                    # fall through -- yueval( node )
+
 #   ---- APPLY -- M_CLOSURE
-                elif isinstance( node.fn, LAMBDA_CLOSURE ):
+                elif isinstance( node.fn, M_CLOSURE ):
                     node.fn.call = _call
 #                   -- apply named arguments
                     if node.named:
@@ -3512,20 +3623,19 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         var = __va_args__
                     env_l[ var ] = BOUND()
 #               -- eval L_CLOSURE
-                node = L_CLOSURE( node.l_form, env_l, d_late, d_default )
-                # fall through -- yueval( node )
+                closure = L_CLOSURE( node.l_form, ENV( env, list( env_l.xlocal())), d_late, d_default )
+#               -- Preserve the legacy lazy-function contract by reducing a
+#                  private body copy while parameters are unassigned.  LET owns
+#                  an intermediate binding frame, so it starts after invocation
+#                  instead of capturing that transient definition-time frame.
+                if ( closure.env.unassigned() is not NOT_FOUND
+                and not isinstance( closure.l_form, LET )):
+                    closure.l_form = yueval( copy.deepcopy( closure.l_form ), closure.env, depth + 1 )
+                return closure
 
 #   ---- L_CLOSURE
             elif isinstance( node, L_CLOSURE ):
-                node.env.parent = env
-                if node.env.unassigned() is not NOT_FOUND:
-                    node.l_form = yueval( node.l_form, node.env, depth + 1 )
-#                   -- irreducible
-                    return node
-
-                env = node.env
-                node = node.l_form
-                # fall through -- yueval( node )
+                return node
 
 #   ---- SET | LET
             elif isinstance( node, SET ) or isinstance( node, LET ):
@@ -3543,25 +3653,39 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
                 env_l = ENV( env )
                 if isinstance( node.lval, ATOM ):
-                    env_l[ node.lval ] = BOUND()
+                    env_l.predeclare( node.lval )
                 else:
-                    for i, var in enumerate( node.lval ):
-                        env_l[ var ] = BOUND()
+                    for var in node.lval:
+                        env_l.predeclare( var )
 #               -- circular reference
-                val = yueval( node.ast, env_l, depth + 1 )
-                if isinstance( node.lval, ATOM ):
-                    env_l[ node.lval ] = val
+                published = False
+                if isinstance( node.lval, list ) and isinstance( node.ast, list ):
+                    val = LIST()
+                    for i, item in enumerate( node.ast ):
+                        item = yueval( item, env_l, depth + 1 )
+                        val.append( item )
+                        if i < len( node.lval ):
+                            env_l.publish( node.lval[ i ], item )
+                    for var in node.lval[ len( val ): ]:
+                        log.warning( 'there is nothing to assign to "%s"' % ( str( var )) + node.loc())
+                        env_l.publish( var, None )
+                    published = True
                 else:
+                    val = yueval( node.ast, env_l, depth + 1 )
+
+                if isinstance( node.lval, ATOM ):
+                    env_l.publish( node.lval, val )
+                elif not published:
                     if isinstance( val, list ):
                         for i, var in enumerate( node.lval ):
                             if len( val ) > i:
-                                env_l[ var ] = val[ i ]
+                                env_l.publish( var, val[ i ])
                             else:
                                 log.warning( 'there is nothing to assign to "%s"' % ( str( var )) + node.loc())
-                                env_l[ var ] = None
+                                env_l.publish( var, None )
                     else:
                         for var in node.lval:
-                            env_l[ var ] = val
+                            env_l.publish( var, val )
 
 #   ---- SET --> ENV
                 if isinstance( node, SET ):

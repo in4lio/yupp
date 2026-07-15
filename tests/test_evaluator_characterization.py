@@ -137,8 +137,7 @@ def test_repeated_omitted_environment_calls_reuse_mutated_ast_baseline():
     assert "BUILTIN(ATOM('add'))" in after_first
 
 
-def test_deferred_regular_reference_uses_resumption_caller_in_current_baseline():
-    # This records the hybrid-scope defect; U2 replaces the asserted result.
+def test_deferred_regular_reference_stays_in_lexical_closure_u2():
     name_x = yugen.ATOM("x")
     name_condition = yugen.ATOM("condition")
     definition_env = yugen.ENV(None, [(name_x, yugen.INT(1))])
@@ -160,8 +159,9 @@ def test_deferred_regular_reference_uses_resumption_caller_in_current_baseline()
 
     result = yugen.yueval(yugen.APPLY(deferred, [], []), caller_env)
 
-    assert isinstance(deferred, yugen.COND_CLOSURE)
-    assert result == 2
+    assert isinstance(deferred, yugen.L_CLOSURE)
+    assert deferred.env.parent is definition_env
+    assert isinstance(result, yugen.COND_CLOSURE)
 
 
 def test_unresolved_conditional_speculatively_commits_emit_in_current_baseline():
