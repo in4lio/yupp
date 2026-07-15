@@ -1,5 +1,8 @@
-from pathlib import Path
+from contextlib import contextmanager
+from dataclasses import dataclass
+import logging
 import os
+from pathlib import Path
 import subprocess
 import sys
 
@@ -14,6 +17,24 @@ SOURCE_BOOTSTRAP = (
     "sys.argv[:] = sys.argv[1:]; "
     "runpy.run_path(sys.argv[0], run_name='__main__')"
 )
+
+
+@dataclass(frozen=True)
+class EvaluationRecord:
+    """Public-observation snapshot around one legacy evaluator call."""
+
+    value: object
+    ast_repr_before: str
+    ast_repr_after: str
+
+
+class _RecordHandler(logging.Handler):
+    def __init__(self, records):
+        super().__init__()
+        self.records = records
+
+    def emit(self, record):
+        self.records.append((record.name, record.levelname, record.getMessage()))
 
 
 def run_source(source, *arguments):
@@ -36,12 +57,40 @@ def parse_source(source, input_file=None, output_file=None):
     return yugen.yuparse(yugen.yushell.input_file)
 
 
+def normalize_evaluator_value(value):
+    if isinstance(value, str):
+        return yugen.replace_steady(yugen.reduce_emptiness(value))
+    return value
+
+
+def evaluate_ast(ast, env=None):
+    """Evaluate with an explicit fresh top-level environment and record AST drift."""
+    ast_repr_before = repr(ast)
+    value = yugen.yueval(ast, yugen.ENV() if env is None else env)
+    return EvaluationRecord(
+        normalize_evaluator_value(value),
+        ast_repr_before,
+        repr(ast),
+    )
+
+
 def evaluate_source(source, input_file=None, output_file=None):
     ast = parse_source(source, input_file, output_file)
-    value = yugen.yueval(ast, yugen.ENV())
-    if isinstance(value, str):
-        value = yugen.replace_steady(yugen.reduce_emptiness(value))
-    return ast, value
+    return ast, evaluate_ast(ast).value
+
+
+@contextmanager
+def capture_evaluator_logs():
+    """Collect legacy ``log`` and ``trace`` records without private evaluator hooks."""
+    records = []
+    handler = _RecordHandler(records)
+    for logger in (yugen.log, yugen.trace):
+        logger.addHandler(handler)
+    try:
+        yield records
+    finally:
+        for logger in (yugen.log, yugen.trace):
+            logger.removeHandler(handler)
 
 
 @pytest.fixture(autouse=True)
@@ -54,6 +103,12 @@ def restore_runtime_configuration():
     }
     builtin_snapshot = dict(yugen.builtin)
     shell_snapshot = dict(vars(yup.shell))
+    trace_snapshot = {
+        "stage": yugen.trace.stage,
+        "enabled": yugen.trace.enabled,
+        "level": yugen.trace.level,
+        "deepest": yugen.trace.deepest,
+    }
     yield
     for name, value in config_snapshot.items():
         setattr(yugen.config, name, value)
@@ -63,4 +118,8 @@ def restore_runtime_configuration():
         delattr(yup.shell, name)
     for name, value in shell_snapshot.items():
         setattr(yup.shell, name, value)
+    yugen.trace.stage = trace_snapshot["stage"]
+    yugen.trace.enabled = trace_snapshot["enabled"]
+    yugen.trace.setLevel(trace_snapshot["level"])
+    yugen.trace.deepest = trace_snapshot["deepest"]
     yugen.RESULT.clean()
