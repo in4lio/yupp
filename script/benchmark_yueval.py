@@ -19,7 +19,7 @@ from yupp.pp import yugen  # noqa: E402
 BASELINE_SIZES = (25, 50, 100, 200, 400)
 
 
-def build_call_workload(definitions, calls):
+def build_call_workload(definitions, calls, demand_ancestor=False):
     """Build a parameter-only closure behind unrelated bindings."""
     env = yugen.ENV(
         None,
@@ -30,8 +30,17 @@ def build_call_workload(definitions, calls):
     )
     parameter = yugen.ATOM("parameter")
     function_name = yugen.ATOM("identity")
+    body = (
+        yugen.LET(
+            yugen.ATOM("lookup_probe"),
+            yugen.INT(0),
+            yugen.VAR([], yugen.ATOM("unrelated_0")),
+        )
+        if demand_ancestor
+        else yugen.VAR([], parameter)
+    )
     closure = yugen.yueval(
-        yugen.LAMBDA([([], parameter, None)], yugen.VAR([], parameter)),
+        yugen.LAMBDA([([], parameter, None)], body),
         env,
     )
     env[function_name] = closure
@@ -45,23 +54,49 @@ def build_call_workload(definitions, calls):
             for index in range(calls)
         ]
     )
-    return workload, env
+    expected = (
+        yugen.LIST([yugen.INT(0) for _ in range(calls)])
+        if demand_ancestor
+        else yugen.LIST([yugen.INT(index) for index in range(calls)])
+    )
+    return workload, env, function_name, expected
 
 
-def structural_baseline(definitions, calls):
-    workload, env = build_call_workload(definitions, calls)
+def structural_baseline(definitions, calls, demand_ancestor=False):
+    workload, env, function_name, expected = build_call_workload(
+        definitions, calls, demand_ancestor=demand_ancestor
+    )
     counters = {
+        "call_frames_created": 0,
+        "captured_ancestor_copy_attempts": 0,
+        "captured_ancestor_bindings_enumerated": 0,
         "env_deepcopy_calls": 0,
         "env_bindings_copied": 0,
         "lookup_calls": 0,
         "lookup_frame_visits": 0,
+        "call_target_lookup_frame_visits": 0,
+        "demanded_name_lookup_frame_visits": 0,
     }
+    captured_frames = set()
+    frame = env
+    while frame is not None:
+        captured_frames.add(id(frame))
+        frame = frame.parent
+    original_init = yugen.ENV.__init__
     original_deepcopy = yugen.ENV.__deepcopy__
     original_lookup = yugen.ENV.lookup
+    original_xlocal = yugen.ENV.xlocal
+
+    def counted_init(current, parent=None, local=None):
+        if parent is not None:
+            counters["call_frames_created"] += 1
+        original_init(current, parent, local)
 
     def counted_deepcopy(current, memo=None):
         counters["env_deepcopy_calls"] += 1
         counters["env_bindings_copied"] += len(current)
+        if id(current) in captured_frames:
+            counters["captured_ancestor_copy_attempts"] += 1
         return original_deepcopy(current, memo)
 
     def counted_lookup(current, reg, var):
@@ -69,37 +104,54 @@ def structural_baseline(definitions, calls):
         frame = current
         while frame is not None:
             counters["lookup_frame_visits"] += 1
+            counter = (
+                "call_target_lookup_frame_visits"
+                if var == function_name
+                else "demanded_name_lookup_frame_visits"
+            )
+            counters[counter] += 1
             if frame.__contains__(var):
                 break
             frame = frame.parent
         return original_lookup(current, reg, var)
 
+    def counted_xlocal(current):
+        if id(current) in captured_frames:
+            counters["captured_ancestor_bindings_enumerated"] += len(current)
+        return original_xlocal(current)
+
     with ExitStack() as stack:
+        stack.enter_context(patch.object(yugen.ENV, "__init__", counted_init))
         stack.enter_context(patch.object(yugen.ENV, "__deepcopy__", counted_deepcopy))
         stack.enter_context(patch.object(yugen.ENV, "lookup", counted_lookup))
+        stack.enter_context(patch.object(yugen.ENV, "xlocal", counted_xlocal))
         result = yugen.yueval(workload, env)
 
-    assert result == yugen.LIST([yugen.INT(index) for index in range(calls)])
+    assert result == expected
     return counters
 
 
-def timed_baseline(definitions, calls):
-    workload, env = build_call_workload(definitions, calls)
+def timed_baseline(definitions, calls, demand_ancestor=False):
+    workload, env, _, expected = build_call_workload(
+        definitions, calls, demand_ancestor=demand_ancestor
+    )
     started = perf_counter()
     result = yugen.yueval(workload, env)
     seconds = perf_counter() - started
-    assert result == yugen.LIST([yugen.INT(index) for index in range(calls)])
+    assert result == expected
     return seconds
 
 
-def measure_case(definitions, calls, include_timing=True):
+def measure_case(definitions, calls, include_timing=True, demand_ancestor=False):
     measurement = {
         "definitions": definitions,
         "calls": calls,
-        **structural_baseline(definitions, calls),
+        **structural_baseline(definitions, calls, demand_ancestor=demand_ancestor),
     }
     if include_timing:
-        measurement["seconds"] = timed_baseline(definitions, calls)
+        measurement["seconds"] = timed_baseline(
+            definitions, calls, demand_ancestor=demand_ancestor
+        )
     return measurement
 
 
