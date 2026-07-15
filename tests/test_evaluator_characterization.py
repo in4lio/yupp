@@ -134,7 +134,7 @@ def test_repeated_omitted_environment_calls_leave_ast_unchanged():
     assert repr(ast) == before
 
 
-def test_deferred_regular_reference_stays_in_lexical_closure_u2():
+def test_late_condition_uses_caller_while_selected_regular_reference_stays_lexical_u4():
     name_x = yugen.ATOM("x")
     name_condition = yugen.ATOM("condition")
     definition_env = yugen.ENV(None, [(name_x, yugen.INT(1))])
@@ -158,7 +158,7 @@ def test_deferred_regular_reference_stays_in_lexical_closure_u2():
 
     assert isinstance(deferred, yugen.L_CLOSURE)
     assert deferred.env.parent is definition_env
-    assert isinstance(result, yugen.COND_CLOSURE)
+    assert result == 1
 
 
 def test_unresolved_conditional_does_not_speculatively_commit_emit():

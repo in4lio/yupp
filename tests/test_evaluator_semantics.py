@@ -354,3 +354,181 @@ def test_residual_chain_commits_effects_once_and_checkpoint_forks_are_independen
     assert yugen.yueval(first, yugen.ENV()) == yugen.LIST([1, 10, 2, 20, 3])
     assert items == yugen.LIST([yugen.INT(2), yugen.INT(3)])
     assert repr(source) == before
+
+
+def test_late_reference_uses_application_caller_while_regular_name_stays_lexical():
+    regular = yugen.ATOM("regular")
+    dynamic = yugen.ATOM("dynamic")
+    definition = yugen.ENV(None, [(regular, yugen.INT(1)), (dynamic, yugen.INT(10))])
+    caller = yugen.ENV(None, [(regular, yugen.INT(2)), (dynamic, yugen.INT(3))])
+    closure = yugen.yueval(
+        _lambda(
+            ["ignored"],
+            yugen.LIST([yugen.VAR([], regular), yugen.VAR(yugen.LATE_BOUND(), dynamic)]),
+        ),
+        definition,
+    )
+
+    assert yugen.yueval(_apply(closure, yugen.INT(0)), caller) == yugen.LIST([1, 3])
+
+
+def test_partial_application_uses_only_completing_caller_for_new_late_demand():
+    dynamic = yugen.ATOM("dynamic")
+    closure = yugen.yueval(
+        _lambda(["first", "second"], yugen.VAR(yugen.LATE_BOUND(), dynamic)),
+        yugen.ENV(None, [(dynamic, yugen.INT(0))]),
+    )
+    first_caller = yugen.ENV(None, [(dynamic, yugen.INT(1))])
+    completing_caller = yugen.ENV(None, [(dynamic, yugen.INT(2))])
+
+    partial = yugen.yueval(_apply(closure, yugen.INT(10)), first_caller)
+
+    assert yugen.yueval(_apply(partial, yugen.INT(20)), completing_caller) == 2
+
+
+def test_resumed_branch_keeps_regular_lexical_value_and_uses_resumption_caller_for_late_name():
+    condition = yugen.ATOM("condition")
+    regular = yugen.ATOM("regular")
+    dynamic = yugen.ATOM("dynamic")
+    definition = yugen.ENV(None, [(regular, yugen.INT(1)), (dynamic, yugen.INT(10))])
+    definition.predeclare(condition)
+    closure = yugen.yueval(
+        _lambda(
+            [],
+            yugen.COND(
+                yugen.VAR([], condition),
+                yugen.LIST([yugen.VAR([], regular), yugen.VAR(yugen.LATE_BOUND(), dynamic)]),
+                yugen.INT(0),
+            ),
+        ),
+        definition,
+    )
+    residual = yugen.yueval(_apply(closure), yugen.ENV())
+    definition.publish(condition, yugen.INT(1))
+    resume_caller = yugen.ENV(None, [(regular, yugen.INT(99)), (dynamic, yugen.INT(7))])
+
+    assert yugen.yueval(residual, resume_caller) == yugen.LIST([1, 7])
+
+
+def test_eval_started_before_suspension_retains_caller_but_new_eval_uses_resume_caller():
+    from tests.conftest import parse_source
+
+    gate = yugen.ATOM("gate")
+    value = yugen.ATOM("value")
+    original = yugen.ENV(None, [(value, yugen.INT(1))])
+    original.predeclare(gate)
+    started = parse_source("($$ gate)").ast[0]
+    in_progress = yugen.yueval(started, original)
+    original.publish(gate, yugen.STR("($list value)"))
+    resume = yugen.ENV(None, [(value, yugen.INT(2))])
+
+    assert yugen.yueval(in_progress, resume) == yugen.LIST([1])
+
+    gate_2 = yugen.ATOM("gate_2")
+    lexical = yugen.ENV(None, [(value, yugen.INT(1))])
+    lexical.predeclare(gate_2)
+    deferred = yugen.COND(
+        yugen.VAR([], gate_2),
+        parse_source('($$ "($list value)")').ast[0],
+        yugen.INT(0),
+    )
+    checkpoint = yugen.yueval(deferred, lexical)
+    lexical.publish(gate_2, yugen.INT(1))
+
+    assert yugen.yueval(checkpoint, resume) == yugen.LIST([2])
+
+
+def test_macro_started_before_suspension_retains_caller_but_new_macro_uses_resume_caller():
+    from tests.conftest import parse_source
+
+    parse_source("macro context")
+    macro_name = yugen.ATOM("context_macro")
+    parameter = yugen.ATOM("parameter")
+    macro_env = yugen.yueval(
+        yugen.MACRO(macro_name, [parameter], "($list ($parameter) value)"),
+        yugen.ENV(),
+    )
+    gate = yugen.ATOM("gate")
+    value = yugen.ATOM("value")
+    original = yugen.ENV(macro_env, [(value, yugen.INT(1))])
+    original.predeclare(gate)
+    in_progress = yugen.yueval(
+        _apply(yugen.VAR([], macro_name), yugen.VAR([], gate)), original
+    )
+    original.publish(gate, yugen.INT(7))
+    resume = yugen.ENV(None, [(value, yugen.INT(2))])
+
+    assert yugen.yueval(in_progress, resume) == yugen.LIST([7, 1])
+
+    gate_2 = yugen.ATOM("gate_2")
+    lexical = yugen.ENV(macro_env, [(value, yugen.INT(1))])
+    lexical.predeclare(gate_2)
+    checkpoint = yugen.yueval(
+        yugen.COND(
+            yugen.VAR([], gate_2),
+            _apply(yugen.VAR([], macro_name), yugen.INT(8)),
+            yugen.INT(0),
+        ),
+        lexical,
+    )
+    lexical.publish(gate_2, yugen.INT(1))
+
+    assert yugen.yueval(checkpoint, resume) == yugen.LIST([8, 2])
+
+
+def test_macro_and_eval_use_the_enclosing_lambda_invocation_frame():
+    from tests.conftest import parse_source
+
+    parse_source("dynamic operation context")
+    value = yugen.ATOM("value")
+    macro_name = yugen.ATOM("read_value")
+    macro_env = yugen.yueval(
+        yugen.MACRO(macro_name, [], "($list value)"),
+        yugen.ENV(),
+    )
+    definition = yugen.ENV(macro_env, [(value, yugen.INT(1))])
+    macro_closure = yugen.yueval(
+        _lambda(["value"], _apply(yugen.VAR([], macro_name))),
+        definition,
+    )
+    eval_closure = yugen.yueval(
+        _lambda(["value"], parse_source('($$ "($list value)")').ast[0]),
+        definition,
+    )
+
+    assert yugen.yueval(_apply(macro_closure, yugen.INT(2)), yugen.ENV()) == yugen.LIST([2])
+    assert yugen.yueval(_apply(eval_closure, yugen.INT(3)), yugen.ENV()) == yugen.LIST([3])
+
+
+def test_eval_reached_inside_resumed_eval_uses_resumption_caller():
+    from tests.conftest import parse_source
+
+    gate = yugen.ATOM("gate")
+    value = yugen.ATOM("value")
+    original = yugen.ENV(None, [(value, yugen.INT(1))])
+    original.predeclare(gate)
+    in_progress = yugen.yueval(parse_source("($$ gate)").ast[0], original)
+    original.publish(gate, yugen.STR('($$ "($list value)")'))
+    resume = yugen.ENV(None, [(value, yugen.INT(2))])
+
+    assert yugen.yueval(in_progress, resume) == yugen.LIST([2])
+
+
+def test_macro_reached_inside_resumed_eval_uses_resumption_caller():
+    from tests.conftest import parse_source
+
+    gate = yugen.ATOM("gate")
+    value = yugen.ATOM("value")
+    macro_name = yugen.ATOM("nested_context")
+    parameter = yugen.ATOM("parameter")
+    macro_env = yugen.yueval(
+        yugen.MACRO(macro_name, [parameter], "($list ($parameter) value)"),
+        yugen.ENV(),
+    )
+    original = yugen.ENV(macro_env, [(value, yugen.INT(1))])
+    original.predeclare(gate)
+    in_progress = yugen.yueval(parse_source("($$ gate)").ast[0], original)
+    original.publish(gate, yugen.STR("($nested_context 9)"))
+    resume = yugen.ENV(macro_env, [(value, yugen.INT(2))])
+
+    assert yugen.yueval(in_progress, resume) == yugen.LIST([9, 2])
