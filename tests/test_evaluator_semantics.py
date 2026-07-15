@@ -1,6 +1,6 @@
 import pytest
 
-from tests.conftest import capture_evaluator_logs
+from tests.conftest import capture_evaluator_logs, parse_source
 from yupp.pp import yugen
 
 
@@ -220,7 +220,6 @@ def test_application_evaluates_callee_and_mixed_operands_in_written_order(monkey
 
     monkeypatch.setitem(yugen.builtin, "ordered_callee", callee)
     monkeypatch.setitem(yugen.builtin, "ordered_mark", mark)
-    from tests.conftest import parse_source
     ast = parse_source(
         '($($ordered_callee) ($ordered_mark "p1") '
         '\\b ($ordered_mark "n1") ($ordered_mark "p2") '
@@ -411,8 +410,6 @@ def test_resumed_branch_keeps_regular_lexical_value_and_uses_resumption_caller_f
 
 
 def test_eval_started_before_suspension_retains_caller_but_new_eval_uses_resume_caller():
-    from tests.conftest import parse_source
-
     gate = yugen.ATOM("gate")
     value = yugen.ATOM("value")
     original = yugen.ENV(None, [(value, yugen.INT(1))])
@@ -439,8 +436,6 @@ def test_eval_started_before_suspension_retains_caller_but_new_eval_uses_resume_
 
 
 def test_macro_started_before_suspension_retains_caller_but_new_macro_uses_resume_caller():
-    from tests.conftest import parse_source
-
     parse_source("macro context")
     macro_name = yugen.ATOM("context_macro")
     parameter = yugen.ATOM("parameter")
@@ -477,8 +472,6 @@ def test_macro_started_before_suspension_retains_caller_but_new_macro_uses_resum
 
 
 def test_macro_and_eval_use_the_enclosing_lambda_invocation_frame():
-    from tests.conftest import parse_source
-
     parse_source("dynamic operation context")
     value = yugen.ATOM("value")
     macro_name = yugen.ATOM("read_value")
@@ -501,8 +494,6 @@ def test_macro_and_eval_use_the_enclosing_lambda_invocation_frame():
 
 
 def test_eval_reached_inside_resumed_eval_uses_resumption_caller():
-    from tests.conftest import parse_source
-
     gate = yugen.ATOM("gate")
     value = yugen.ATOM("value")
     original = yugen.ENV(None, [(value, yugen.INT(1))])
@@ -515,8 +506,6 @@ def test_eval_reached_inside_resumed_eval_uses_resumption_caller():
 
 
 def test_macro_reached_inside_resumed_eval_uses_resumption_caller():
-    from tests.conftest import parse_source
-
     gate = yugen.ATOM("gate")
     value = yugen.ATOM("value")
     macro_name = yugen.ATOM("nested_context")
@@ -535,8 +524,6 @@ def test_macro_reached_inside_resumed_eval_uses_resumption_caller():
 
 
 def _caller_only_lambda(filename="migration.yu", application_body=False):
-    from tests.conftest import parse_source
-
     parsed = parse_source("($ \\ignored.($caller_only) 0)", filename).ast[0].fn
     body = parsed.l_form if application_body else parsed.l_form.fn
     return yugen.LAMBDA(parsed.bound, body)
@@ -598,8 +585,6 @@ def test_dynamic_scope_migration_warning_is_once_per_site_per_evaluation():
 
 
 def test_dynamic_scope_migration_warning_reports_distinct_source_sites():
-    from tests.conftest import parse_source
-
     yugen.config.warn_dynamic_scope = True
     parsed = parse_source(
         "($ \\ignored.($caller_only) 0)($ \\ignored.($caller_only) 0)",
@@ -712,8 +697,6 @@ def test_dynamic_scope_and_unbound_application_warnings_remain_independent():
 def test_dynamic_scope_migration_warning_keeps_macro_and_eval_provenance(
     kind, source, filename, provenance
 ):
-    from tests.conftest import parse_source
-
     yugen.config.warn_dynamic_scope = True
     ast = parse_source(source, filename)
     env = yugen.ENV()
