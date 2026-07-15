@@ -580,11 +580,17 @@ class APPLY( BASE_OBJECT_LOCATED ):
     AST: APPLY( form, [ form ], [ ( ATOM, form ) ]) <-- ($ ___ )
     """
 #   -----------------------------------
-    def __init__( self, fn, args, named, input_file = None, pos = 0 ):                                                 #pylint: disable=too-many-arguments
+    def __init__( self, fn, args, named, input_file = None, pos = 0, order = None ):                                   #pylint: disable=too-many-arguments
         BASE_OBJECT_LOCATED.__init__( self, input_file, pos )
         self.fn = fn
         self.args = args
         self.named = named
+        self._order = tuple( order ) if order is not None else tuple(
+            [( False, i ) for i in range( len( args ))]
+            + [( True, i ) for i in range( len( named ))]
+        )
+        self._next_operand = 0
+        self._callee_reduced = False
 
 #   -----------------------------------
     def __repr__( self ):
@@ -1349,6 +1355,7 @@ def ps_application( sou, depth = 0 ):
     fn = ( func.atom if isinstance( func, VAR ) else None )
     named = []
     args = []
+    order = []
 #   ---- {
     while True:
 #   ---- gap
@@ -1379,6 +1386,7 @@ def ps_application( sou, depth = 0 ):
                 if form is None:
                     raise SyntaxError( '%s: form expected' % ( callee()) + sou.loc())
 
+                order.append(( True, len( named )))
                 named.append(( name, form ))
             else:
 #   ---- }0... tag -- name
@@ -1392,6 +1400,7 @@ def ps_application( sou, depth = 0 ):
 #   ---- argument -- form
             ( sou, form ) = ps_form( sou, depth + 1 )
             if form is not None:
+                order.append(( False, len( args )))
                 args.append( EMBED( form ) if embed else form )
             else:
 #   ---- }0...
@@ -1405,7 +1414,7 @@ def ps_application( sou, depth = 0 ):
     if sou[ :1 ] != ')':
         raise SyntaxError( '%s: ")" expected' % ( callee()) + sou.loc())
 
-    _apply = APPLY( func, args, named, sou.input_file, pos )
+    _apply = APPLY( func, args, named, sou.input_file, pos, order )
     return ( sou[ 1: ], EVAL( _apply, SOURCE( '<string>', sou.input_file, pos + 1 )) if _eval else _apply )
 
 #   ---------------------------------------------------------------------------
@@ -2267,6 +2276,7 @@ class L_CLOSURE( LAMBDA_CLOSURE ):
 
         parent = memo.get( id( self.env.parent ), self.env.parent )
         env = ENV( parent )
+        env._template_reduction = self.env._template_reduction
         result = L_CLOSURE( None, env, self.late, self.default )
         memo[ id( self )] = result
         memo[ id( self.env )] = env
@@ -2551,6 +2561,22 @@ class BINDING_CELL( object ):
         return 'BINDING_CELL(<%s>)' % ( self.value.__class__.__name__ )
 
 #   ---------------------------------------------------------------------------
+class DEFAULT_RESIDUAL( object ):
+    """Default expression suspended in its lexical definition environment."""
+#   -----------------------------------
+    def __init__( self, ast, env ):
+        self.ast = ast
+        self.env = env
+
+#   -----------------------------------
+    def __deepcopy__( self, memo = None ):
+        return DEFAULT_RESIDUAL( copy.deepcopy( self.ast, memo ), self.env )
+
+#   -----------------------------------
+    def __repr__( self ):
+        return '%s(%s)' % ( self.__class__.__name__, repr( self.ast ))
+
+#   ---------------------------------------------------------------------------
 class ENV( dict ):
     """
     Environment.
@@ -2561,6 +2587,7 @@ class ENV( dict ):
         dict.__init__( self )
         self.parent = parent
         self.order = []
+        self._template_reduction = getattr( parent, '_template_reduction', False )
         if local:
             for key, value in local:
                 self.__setitem__( key, value )
@@ -2662,7 +2689,9 @@ class ENV( dict ):
 
 #   -----------------------------------
     def __deepcopy__( self, memo = None ):
-        return ENV( self.parent, [( key, copy.deepcopy( self.__getitem__( key ), memo )) for key in self.order ])
+        result = ENV( self.parent, [( key, copy.deepcopy( self.__getitem__( key ), memo )) for key in self.order ])
+        result._template_reduction = self._template_reduction
+        return result
 
 #   -----------------------------------
 #   -- debug message
@@ -2924,6 +2953,18 @@ def _is_term( node ):                                                           
     return False
 
 #   ---------------------------------------------------------------------------
+def _is_residual( node ):
+    """Whether evaluation returned suspended work instead of a runtime value."""
+    if isinstance( node, EMBED ) or isinstance( node, TRIM ):
+        return _is_residual( node.ast )
+
+    if isinstance( node, list ):
+        return any( _is_residual( item ) for item in node )
+
+    return isinstance( node, ( VAR, APPLY, LAMBDA, EVAL, INFIX, INFIX_CLOSURE
+    , COND, COND_CLOSURE, SET_CLOSURE ))
+
+#   ---------------------------------------------------------------------------
 def _detect_deadlock( node ):                                                                                          #pylint: disable=too-many-return-statements
     """
     Initial, simplistic release of irreducible expressions detection.
@@ -3124,6 +3165,66 @@ def _list_eval_1( args, env, depth = 0 ):
     return ( arg, args[ 1: ])
 
 #   ---------------------------------------------------------------------------
+def _restart_template_applications( node ):
+    """Remove reducer cursors from a private, definition-time body reduction."""
+    if isinstance( node, APPLY ):
+        _restart_template_applications( node.fn )
+        for value in node.args:
+            _restart_template_applications( value )
+        for _, value in node.named:
+            _restart_template_applications( value )
+
+        positional = sorted( pos for named, pos in node._order if not named )
+        named = sorted( pos for is_named, pos in node._order if is_named )
+        if ( positional != list( range( len( node.args )))
+        or named != list( range( len( node.named )))):
+            node._order = tuple( [( False, i ) for i in range( len( node.args ))]
+            + [( True, i ) for i in range( len( node.named ))] )
+        node._next_operand = 0
+        node._callee_reduced = False
+        return
+
+    if isinstance( node, list ):
+        for value in node:
+            _restart_template_applications( value )
+        return
+
+    if isinstance( node, COND ) or isinstance( node, COND_CLOSURE ):
+        _restart_template_applications( node.cond )
+        _restart_template_applications( node.leg_1 )
+        _restart_template_applications( node.leg_0 )
+    elif isinstance( node, SET ):
+        _restart_template_applications( node.ast )
+    elif isinstance( node, LET ):
+        _restart_template_applications( node.ast )
+        _restart_template_applications( node.form )
+    elif isinstance( node, SET_CLOSURE ):
+        node.env._template_reduction = False
+        _restart_template_applications( node.form )
+    elif isinstance( node, EVAL ) or isinstance( node, EMBED ) or isinstance( node, TRIM ):
+        _restart_template_applications( node.ast )
+
+#   ---------------------------------------------------------------------------
+def _contains_effect( node ):
+    """Whether definition-time body reduction could commit a source effect."""
+    if isinstance( node, ( SET, LET, EMIT )):
+        return True
+    if isinstance( node, APPLY ):
+        return ( _contains_effect( node.fn )
+        or any( _contains_effect( value ) for value in node.args )
+        or any( _contains_effect( value ) for _, value in node.named ))
+    if isinstance( node, list ):
+        return any( _contains_effect( value ) for value in node )
+    if isinstance( node, COND ) or isinstance( node, COND_CLOSURE ):
+        return ( _contains_effect( node.cond ) or _contains_effect( node.leg_1 )
+        or _contains_effect( node.leg_0 ))
+    if isinstance( node, TEXT ):
+        return _contains_effect( node.ast )
+    if isinstance( node, EVAL ) or isinstance( node, EMBED ) or isinstance( node, TRIM ):
+        return _contains_effect( node.ast )
+    return False
+
+#   ---------------------------------------------------------------------------
 def trace__eval_in_( node, env, depth ):
     if trace.enabled:
         trace.info( TR_EVAL_INPUT % ( depth, _ast_pretty( repr( node ))))
@@ -3137,6 +3238,8 @@ def trace__eval_out_( node, depth ):
 #   ---------------------------------------------------------------------------
 def echo__eval_( fn ):
     def wrapped( node, env = ENV(), depth = 0 ):
+        if depth == 0:
+            node = copy.deepcopy( node )
         if depth > trace.deepest:
             trace.deepest = depth
         trace__eval_in_( node, env, depth )
@@ -3272,8 +3375,66 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
             elif isinstance( node, APPLY ):
                 _call = node.fn.atom if isinstance( node.fn, VAR ) else None
 
-                node.fn = yueval( node.fn, env, depth + 1 )
-                node.args = yueval( node.args, env, depth + 1 )
+                if not node._callee_reduced:
+                    node.fn = yueval( node.fn, env, depth + 1 )
+                    node._callee_reduced = not _is_residual( node.fn )
+                    if not node._callee_reduced:
+                        return node
+
+#               -- template reduction may have visited operands while their
+#                  parameters were still BOUND.  The stored body must demand
+#                  those residuals again in the invocation frame.
+#               -- preserve the combined written order of positional and
+#                  named operands.  A residual keeps prior values and leaves
+#                  all later source forms untouched.
+                while node._next_operand < len( node._order ):
+                    named, pos = node._order[ node._next_operand ]
+                    deferred = False
+                    if named:
+                        var, operand = node.named[ pos ]
+                        deferred = ( isinstance( node.fn, L_CLOSURE )
+                        and var in node.fn.late )
+                        value = operand if deferred else yueval( operand, env, depth + 1 )
+                        node.named[ pos ] = ( var, value )
+                    else:
+                        if isinstance( node.fn, L_CLOSURE ):
+                            named_parameters = set( var for var, _ in node.named )
+                            positional_parameters = [var for var, value in node.fn.env.xlocal()
+                            if isinstance( value, BOUND ) and var not in named_parameters]
+                            deferred = ( pos < len( positional_parameters )
+                            and positional_parameters[ pos ] in node.fn.late )
+                        value = ( node.args[ pos ] if deferred
+                        else yueval( node.args[ pos ], env, depth + 1 ))
+                        node.args[ pos ] = value
+
+                    if _is_residual( value ) and not deferred:
+                        template_special = ( env._template_reduction
+                        and isinstance( node.fn, L_CLOSURE )
+                        and ( bool( node.fn.late )
+                        or isinstance( node.fn.l_form, APPLY )
+                        and isinstance( node.fn.l_form.fn, COND_CLOSURE )))
+                        if not template_special:
+                            return node
+
+                    node._next_operand += 1
+
+#               -- positional embedding is argument-list syntax rather than a
+#                  runtime value.  Normalize it only after ordinary reduction;
+#                  template reduction may still contain BOUND operands whose
+#                  original indices are needed by the invocation.
+                if not env._template_reduction:
+                    args = LIST()
+                    for value in node.args:
+                        if isinstance( value, EMBED ):
+                            if isinstance( value.ast, list ):
+                                args.extend( value.ast )
+                            elif not _is_residual( value.ast ):
+                                args.append( value.ast )
+                            else:
+                                args.append( value )
+                        else:
+                            args.append( value )
+                    node.args = args
 
 #   ---- APPLY -- BUILTIN
                 if isinstance( node.fn, BUILTIN ):
@@ -3391,9 +3552,10 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                             + var.loc())
                         if not isinstance( fn.env[ var ], BOUND ):
                             log.warning( 'parameter "%s" is already assigned with value' % ( str( var )) + var.loc())
-                        val = yueval( val, env, depth + 1 )
                         if var in fn.late:
                             val = L_CLOSURE( val, ENV( env, fn.late[ var ]))
+                        else:
+                            val = yueval( val, env, depth + 1 )
                         fn = fn.bind( var, val )
 
                     elif node.args:
@@ -3404,6 +3566,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         if var == __va_args__:
                             val = LIST( node.args )
                             node.args = []
+                        elif var in fn.late:
+                            val, node.args = node.args[ 0 ], node.args[ 1: ]
                         else:
                             val, node.args = _list_eval_1( node.args, env, depth + 1 )
                         if val is NOT_FOUND:
@@ -3418,7 +3582,15 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                         if var is not NOT_FOUND:
                             if var not in fn.default:
                                 return fn
-                            fn = fn.bind( var, copy.deepcopy( fn.default[ var ]))
+                            val = fn.default[ var ]
+                            if isinstance( val, DEFAULT_RESIDUAL ):
+                                val = yueval( copy.deepcopy( val.ast ), val.env, depth + 1 )
+                                if _is_residual( val ):
+                                    node.fn = fn
+                                    return node
+                            else:
+                                val = copy.deepcopy( val )
+                            fn = fn.bind( var, val )
 
                     var = fn.env.unassigned()
                     if var is not NOT_FOUND:
@@ -3493,6 +3665,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #   ---- APPLY -- LAZY
                 elif isinstance( node.fn, LAZY ):
                     node.fn = node.fn.ast
+                    node._callee_reduced = False
                     # fall through -- yueval( node )
 
 #   ---- APPLY -- ATOM
@@ -3597,6 +3770,12 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
 #   ---- LAMBDA --> L_CLOSURE
             elif isinstance( node, LAMBDA ):
+#               -- A nested lambda belongs to the eventual invocation frame,
+#                  not to the BOUND frame used only to simplify its enclosing
+#                  callable template.
+                if env._template_reduction:
+                    return node
+
 #   ---- LAMBDA -- VAR
                 if isinstance( node.bound, VAR ):
                     val = env.lookup( node.bound.reg, node.bound.atom )
@@ -3618,7 +3797,9 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     if late:
                         d_late[ var ] = [( key, BOUND()) for key in late ]
                     if default is not None:
-                        d_default[ var ] = yueval( default, env, depth + 1 )
+                        value = yueval( default, env, depth + 1 )
+                        d_default[ var ] = ( DEFAULT_RESIDUAL( value, env )
+                        if _is_residual( value ) else value )
                     if var == ATOM( '...' ):
                         var = __va_args__
                     env_l[ var ] = BOUND()
@@ -3629,8 +3810,11 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #                  an intermediate binding frame, so it starts after invocation
 #                  instead of capturing that transient definition-time frame.
                 if ( closure.env.unassigned() is not NOT_FOUND
-                and not isinstance( closure.l_form, LET )):
-                    closure.l_form = yueval( copy.deepcopy( closure.l_form ), closure.env, depth + 1 )
+                and not _contains_effect( closure.l_form )):
+                    template_env = copy.deepcopy( closure.env )
+                    template_env._template_reduction = True
+                    closure.l_form = yueval( copy.deepcopy( closure.l_form ), template_env, depth + 1 )
+                    _restart_template_applications( closure.l_form )
                 return closure
 
 #   ---- L_CLOSURE

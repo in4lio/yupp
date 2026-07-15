@@ -123,18 +123,15 @@ def test_source_error_keeps_filename_line_and_diagnostic_prefix():
     assert 'File "characterization.yu", line 1' in message
 
 
-def test_repeated_omitted_environment_calls_reuse_mutated_ast_baseline():
+def test_repeated_omitted_environment_calls_leave_ast_unchanged():
     ast = parse_source("($add 1 2)")
     before = repr(ast)
 
     first = normalize_evaluator_value(yugen.yueval(ast))
-    after_first = repr(ast)
     second = normalize_evaluator_value(yugen.yueval(ast))
 
     assert first == second == "3\n"
-    assert before != after_first
-    assert repr(ast) == after_first
-    assert "BUILTIN(ATOM('add'))" in after_first
+    assert repr(ast) == before
 
 
 def test_deferred_regular_reference_stays_in_lexical_closure_u2():

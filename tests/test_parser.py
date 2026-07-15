@@ -49,3 +49,12 @@ def test_parser_error_type_and_location_are_stable():
         "    ($set a\n"
         "           ^"
     )
+
+
+def test_apply_retains_private_written_order_without_changing_repr_or_equality():
+    ast = parse_source("($target 1 \\named 2 3)").ast[0]
+    compatible = yugen.APPLY(ast.fn, list(ast.args), list(ast.named), ast.input_file, ast.pos)
+
+    assert ast._order == ((False, 0), (True, 0), (False, 1))
+    assert ast == compatible
+    assert repr(ast) == repr(compatible)
