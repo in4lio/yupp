@@ -142,7 +142,7 @@ def test_metadata_is_static_and_artifacts_are_complete(distributions):
     dist_info = next(name.split("/", 1)[0] for name in names if name.endswith("/METADATA"))
     metadata = email.parser.BytesParser().parsebytes(payload[f"{dist_info}/METADATA"])
     assert metadata["Name"] == "yupp"
-    assert metadata["Version"] == "1.2rc1"
+    assert metadata["Version"] == "2.0rc1"
     assert metadata["Requires-Python"] == ">=3.11"
     assert metadata.get_all("Requires-Dist") is None
     assert b"yupp = yupp.__main__:main" in payload[f"{dist_info}/entry_points.txt"]
@@ -260,8 +260,8 @@ def _exercise_clean_install(tmp_path, wheel, interpreter=sys.executable):
 
     module = _run([python, "-m", "yupp", "--version"], cwd=hostile)
     console = _run([_console_in(venv), "--version"], cwd=hostile)
-    assert module.stdout.strip() == "yupp 1.2c1"
-    assert console.stdout.strip() == "yupp 1.2c1"
+    assert module.stdout.strip() == "yupp 2.0rc1"
+    assert console.stdout.strip() == "yupp 2.0rc1"
     _run(
         [python, "-c", "import yupp; assert callable(yupp.cli) and callable(yupp.translate)"],
         cwd=hostile,

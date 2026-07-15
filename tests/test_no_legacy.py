@@ -151,7 +151,7 @@ def test_documented_module_version_command_runs():
     )
 
     assert process.returncode == 0, process.stderr
-    assert process.stdout.strip() == "yupp 1.2c1"
+    assert process.stdout.strip() == "yupp 2.0rc1"
 
 
 def test_bundled_editor_python_surface_is_python3():
@@ -182,11 +182,11 @@ def test_bundled_editor_python_surface_is_python3():
     ]
 
 
-def test_prerelease_identity_is_unchanged_in_source_and_metadata():
+def test_prerelease_identity_matches_source_and_metadata():
     metadata = (REPO_ROOT / "src" / "yupp" / "_metadata.py").read_text(
         encoding="utf8"
     )
     pyproject = (REPO_ROOT / "pyproject.toml").read_text(encoding="utf8")
 
-    assert "VERSION = '1.2c1'" in metadata
-    assert 'version = "1.2c1"' in pyproject
+    assert "VERSION = '2.0rc1'" in metadata
+    assert 'version = "2.0rc1"' in pyproject

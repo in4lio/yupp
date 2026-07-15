@@ -31,7 +31,7 @@ def test_import_yupp_is_stdlib_only_and_has_no_runtime_side_effects():
         "assert sys.getrecursionlimit() == recursion_limit\n"
         "assert {name: len(logging.getLogger(name).handlers) "
         "for name in ('log', 'trace')} == handler_counts\n"
-        "assert yupp.__version__ == '1.2c1'\n"
+        "assert yupp.__version__ == '2.0rc1'\n"
     )
 
     assert process.returncode == 0, process.stderr
