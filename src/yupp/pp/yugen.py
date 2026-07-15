@@ -51,6 +51,7 @@ def config():
     config.pp_browse = PP_BROWSE
     config.pp_define = []
     config.warn_unbound_application = WARN_UNBOUND_APPLICATION
+    config.warn_dynamic_scope = WARN_DYNAMIC_SCOPE
     config.directory = []
     config.passage = 0
 
@@ -2626,6 +2627,35 @@ class EVAL_CONTINUATION( object ):
         return self
 
 #   ---------------------------------------------------------------------------
+class _MIGRATION_DIAGNOSTICS( object ):
+    """Executed-source sites already reported in one evaluation chain."""
+#   -----------------------------------
+    def __init__( self ):
+        self.seen = set()
+
+#   -----------------------------------
+    def report_dynamic_scope( self, node ):
+        atom = node.atom
+        input_file = getattr( atom, 'input_file', None )
+        pos = getattr( atom, 'pos', None )
+        declaration = None
+        declaration_pos = None
+        if ( input_file is not None and input_file.isdigit()
+        and input_file in yushell.source ):
+            declaration = yushell.source[ input_file ][ 0 ]
+            declaration_pos = getattr( declaration, 'pos', None )
+            input_file = getattr( declaration, 'input_file', input_file )
+
+        site = ( input_file, declaration_pos, pos, str( atom ))
+        if site in self.seen:
+            return
+        self.seen.add( site )
+        log.warning( 'regular reference "%s" depends on legacy dynamic scope; '
+        'the caller value is not used. This runtime migration diagnostic checks '
+        'only the executed path; pass an explicit argument or use late binding "&%s"%s'
+        % ( str( atom ), str( atom ), atom.loc()))
+
+#   ---------------------------------------------------------------------------
 class ENV( dict ):
     """
     Environment.
@@ -2639,6 +2669,7 @@ class ENV( dict ):
         self._template_reduction = getattr( parent, '_template_reduction', False )
         self._caller = getattr( parent, '_caller', None )
         self._resumption_caller = getattr( parent, '_resumption_caller', None )
+        self._diagnostics = getattr( parent, '_diagnostics', None )
         if local:
             for key, value in local:
                 self.__setitem__( key, value )
@@ -2703,6 +2734,15 @@ class ENV( dict ):
         return self.lookup( reg, var )
 
 #   -----------------------------------
+    def report_dynamic_scope( self, node ):
+        caller_value = ( NOT_FOUND if self._caller is None
+        else self._caller.lookup( node.reg, node.atom ))
+        if ( self._diagnostics is None or caller_value is NOT_FOUND
+        or isinstance( caller_value, BOUND )):
+            return
+        self._diagnostics.report_dynamic_scope( node )
+
+#   -----------------------------------
     def predeclare( self, key ):
         if self.__contains__( key ):
             raise ValueError( 'recursive binding is already declared' )
@@ -2754,6 +2794,7 @@ class ENV( dict ):
         result._template_reduction = self._template_reduction
         result._caller = self._caller
         result._resumption_caller = self._resumption_caller
+        result._diagnostics = self._diagnostics
         return result
 
 #   -----------------------------------
@@ -3379,6 +3420,9 @@ def echo__eval_( fn ):
         if continuation is not None and not env._template_reduction:
             _clear_continuation( node )
             env = continuation.fork_env( env )
+        elif depth == 0:
+            env._diagnostics = ( _MIGRATION_DIAGNOSTICS()
+            if config.warn_dynamic_scope else None )
         if depth > trace.deepest:
             trace.deepest = depth
         trace__eval_in_( node, env, depth )
@@ -3749,6 +3793,7 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 
                     fn.env._caller = _dynamic_caller( env )
                     fn.env._resumption_caller = None
+                    fn.env._diagnostics = env._diagnostics
                     if node.named or node.args:
                         node.fn = yueval( copy.deepcopy( fn.l_form ), fn.env, depth + 1 )
                         continue
@@ -3910,8 +3955,17 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #                           -- irreducible
                             return node
 
+                        if ( env._template_reduction
+                        and config.warn_dynamic_scope ):
+                            return node
+
+                        if config.warn_dynamic_scope:
+                            env.report_dynamic_scope( node )
+
                         return node.atom
 
+                    if config.warn_dynamic_scope:
+                        env.report_dynamic_scope( node )
                     raise TypeError( '%s: undefined variable "%s"' % ( _callee(), str( node.atom ))
                     + node.atom.loc())
 

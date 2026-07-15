@@ -57,6 +57,15 @@ warn if an application of unbound atom is detected
 WARN_UNBOUND_APPLICATION = True
 
 #   -----------------------------------
+#   WARN_DYNAMIC_SCOPE
+#   -----------------------------------
+WARN_DYNAMIC_SCOPE_HELP = """
+warn when an executed regular lambda reference is absent from lexical scope
+but present in the invocation caller; caller values are never substituted
+"""
+WARN_DYNAMIC_SCOPE = False
+
+#   -----------------------------------
 #   LOG_LEVEL
 #   -----------------------------------
 LOG_LEVEL_HELP = """
