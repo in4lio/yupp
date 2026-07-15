@@ -278,3 +278,79 @@ def test_residual_default_is_demanded_in_definition_environment():
     caller = yugen.ENV(None, [(captured, yugen.INT(99))])
 
     assert yugen.yueval(yugen.APPLY(closure, [], []), caller) == 7
+
+
+def test_unresolved_conditional_keeps_both_branches_untouched_until_selection():
+    condition = yugen.ATOM("condition")
+    items_name = yugen.ATOM("items")
+    items = yugen.LIST([yugen.INT(1), yugen.INT(2)])
+    env = yugen.ENV(None, [(items_name, items)])
+    env.predeclare(condition)
+    source = yugen.COND(
+        yugen.VAR([], condition),
+        yugen.EMIT(yugen.VAR([], items_name), None),
+        _apply(_var("div"), yugen.INT(1), yugen.INT(0)),
+    )
+
+    residual = yugen.yueval(source, env)
+    still_residual = yugen.yueval(residual, yugen.ENV())
+
+    assert isinstance(still_residual, yugen.COND_CLOSURE)
+    assert isinstance(still_residual.leg_1, yugen.EMIT)
+    assert isinstance(still_residual.leg_0, yugen.APPLY)
+    assert items == yugen.LIST([yugen.INT(1), yugen.INT(2)])
+
+    env.publish(condition, yugen.INT(1))
+    assert yugen.yueval(still_residual, yugen.ENV()) == 1
+    assert items == yugen.LIST([yugen.INT(1), yugen.INT(2)])
+
+
+def test_residual_keeps_regular_invocation_locals_after_lambda_returns():
+    condition = yugen.ATOM("condition")
+    definition = yugen.ENV()
+    definition.predeclare(condition)
+    closure = yugen.yueval(
+        _lambda(
+            ["value"],
+            yugen.COND(yugen.VAR([], condition), _var("value"), yugen.INT(0)),
+        ),
+        definition,
+    )
+
+    residual = yugen.yueval(_apply(closure, yugen.INT(7)), yugen.ENV())
+    definition.publish(condition, yugen.INT(1))
+
+    assert isinstance(residual, yugen.COND_CLOSURE)
+    assert yugen.yueval(residual, yugen.ENV()) == 7
+
+
+def test_residual_chain_commits_effects_once_and_checkpoint_forks_are_independent():
+    items_name = yugen.ATOM("items")
+    gate_1 = yugen.ATOM("gate_1")
+    gate_2 = yugen.ATOM("gate_2")
+    items = yugen.LIST([yugen.INT(1), yugen.INT(2), yugen.INT(3)])
+    env = yugen.ENV(None, [(items_name, items)])
+    env.predeclare(gate_1)
+    env.predeclare(gate_2)
+    source = _apply(
+        _var("list"),
+        yugen.EMIT(yugen.VAR([], items_name), None),
+        yugen.VAR([], gate_1),
+        yugen.EMIT(yugen.VAR([], items_name), None),
+        yugen.VAR([], gate_2),
+        yugen.EMIT(yugen.VAR([], items_name), None),
+    )
+    before = repr(source)
+
+    first = yugen.yueval(source, env)
+    assert items == yugen.LIST([yugen.INT(2), yugen.INT(3)])
+    env.publish(gate_1, yugen.INT(10))
+    second = yugen.yueval(first, yugen.ENV())
+    assert isinstance(second, yugen.APPLY)
+    env.publish(gate_2, yugen.INT(20))
+
+    assert yugen.yueval(second, yugen.ENV()) == yugen.LIST([1, 10, 2, 20, 3])
+    assert yugen.yueval(first, yugen.ENV()) == yugen.LIST([1, 10, 2, 20, 3])
+    assert yugen.yueval(first, yugen.ENV()) == yugen.LIST([1, 10, 2, 20, 3])
+    assert items == yugen.LIST([yugen.INT(2), yugen.INT(3)])
+    assert repr(source) == before

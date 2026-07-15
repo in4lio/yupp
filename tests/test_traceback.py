@@ -4,7 +4,8 @@ import traceback
 
 import pytest
 
-from tests.conftest import run_source
+from tests.conftest import parse_source, run_source
+from yupp.pp import yugen
 from yupp import _traceback
 
 
@@ -160,3 +161,26 @@ def test_recursive_traceback_keeps_stdlib_compression(tmp_path):
     assert "recursive.yugen.py" in process.stderr
     assert "Previous line repeated" in process.stderr
     assert "RecursionError" in process.stderr
+
+
+def test_evaluator_residual_keeps_source_location_across_resumptions():
+    gate_1 = yugen.ATOM("gate_1")
+    gate_2 = yugen.ATOM("gate_2")
+    env = yugen.ENV()
+    env.predeclare(gate_1)
+    env.predeclare(gate_2)
+    ast = parse_source("($div gate_1 gate_2)", "residual.yu")
+
+    first = yugen.yueval(ast, env)
+    env.publish(gate_1, yugen.INT(1))
+    second = yugen.yueval(first, yugen.ENV())
+    env.publish(gate_2, yugen.INT(0))
+
+    with pytest.raises(ZeroDivisionError) as error:
+        yugen.yueval(second, yugen.ENV())
+
+    message = str(error.value)
+    assert message.startswith("yueval: python: division by zero")
+    assert 'File "residual.yu", line 1' in message
+    assert "($div gate_1 gate_2)" in message
+    assert "^" in message
