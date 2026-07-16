@@ -49,7 +49,7 @@ repeating code structures by a dictionary.
 
 For example:
 
-![dict definition](../doc/pic/library_01.png)
+![dict definition](https://raw.githubusercontent.com/in4lio/yupp/master/doc/pic/library_01.png)
 
 The foregoing application of `dict` macro corresponds to:
 
@@ -62,7 +62,7 @@ The foregoing application of `dict` macro corresponds to:
 
 The application of `each-INI` spawns cycle from 0 to 3.
 
-![dict unwinding](../doc/pic/library_02.png)
+![dict unwinding](https://raw.githubusercontent.com/in4lio/yupp/master/doc/pic/library_02.png)
 
 This snippet generates the following code:
 
@@ -194,7 +194,7 @@ Binary representation of the number.
 
 ($hex ($BB,,10110011,,10110010,,10110001,,10110000))
 
-0xb3b2b1b0L
+0xb3b2b1b0
 ```
 
 #### def-fn-argv
@@ -223,7 +223,8 @@ int sumi( int argcnt, ... )
 
 #### INT_MAX, INT_MIN
 
-Minimal and maximal values of `int32_t`.
+Compatibility names bound to `sys.maxsize` and `-sys.maxsize - 1` on the
+Python host running yupp.
 
 
 ### Coroutines in C ([corolib.yu](./corolib.yu))
@@ -269,7 +270,7 @@ int main( void )
 }
 ```
 
-See also - [ulam.yu-c](../eg/ulam.yu-c)
+See also: [ulam.yu-c](https://github.com/in4lio/yupp/blob/master/eg/ulam.yu-c)
 
 
 ### Coroutines in Python ([coroutine-py.yu](./coroutine-py.yu))
@@ -301,7 +302,7 @@ if __name__ == '__main__':
     ($coro-uninit B)
 ```
 
-See also - [coro.yu-py](../eg/coro.yu-py)
+See also: [coro.py](https://github.com/in4lio/yupp/blob/master/eg/coro.py)
 
 
 ### Header Files Helper ([h.yu](./h.yu))

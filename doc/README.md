@@ -1,6 +1,25 @@
-[![logo](pic/logo.png)](README.md)
+[![logo](pic/logo.png)](../README.md)
 
-### WHAT IS IT?
+# yupp language guide
+
+This guide describes the macro language shipped by yupp. yupp is Python 3-only
+and requires Python 3.11 or newer. Syntax marked *experimental* remains
+available but is not part of the small stable core proposed for future
+evolution.
+
+## Documentation map
+
+- [Built-in functions](builtin.md) lists evaluator functions and constants.
+- [Macros in Python](python.md) defines the direct-script codec boundary.
+- [Evaluator semantics and migration](yueval-migration.md) is the canonical
+  guide to security, Python upgrades, evaluator scope, reduction, suspension,
+  and compatibility.
+- [Language evolution](language-evolution.md) collects post-2.0 design ideas;
+  it is not a release checklist.
+- [Examples](../eg/README.md) maps every tracked template to its generated
+  output.
+
+## What is it?
 
 **yupp** is a lexical preprocessor which implements the macro language
 with Lisp-like Polish notation syntax in fully parenthesized form.
@@ -22,7 +41,7 @@ The [language evolution note](language-evolution.md) records the design
 principles, current pressure points, and possible directions beyond the 2.0
 semantic contract.
 
-### SYNTAX
+## Syntax
 
 The main syntactic categories of the macro language are **a list**,
 **an application** and **a lambda expression**.
@@ -54,7 +73,7 @@ Syntactic forms can be nested within each other but, as mentioned above,
 only **an application** can be embedded into source code directly.
 
 The following examples show various syntactic constructs of the macro
-language. You can try them using [yupp Web Console][console].
+language. Put an example in a source file and run it with `yupp -q FILE`.
 
     ($! this is a comment, won't be saved in the generated text )
 
@@ -262,7 +281,7 @@ The special `($import <expr>)` form is provided to include macros and
 functions from [yupp Standard Library](../src/yupp/lib/README.md)
 or other libraries.
 
-### EVALUATION AND SCOPE
+## Evaluation and scope
 
 Lambda functions use lexical scope: a regular free name is resolved in the
 lambda's invocation frame and the environment where the lambda was defined,
@@ -292,9 +311,9 @@ is no legacy scope mode. See [Evaluator semantics and
 migration](yueval-migration.md) for residual/effect rules, examples, the
 compatibility table, and scaling evidence.
 
-### USAGE
+## Usage
 
-Install **yupp** into a supported CPython 3.11-3.14 environment:
+Install **yupp** into a Python 3.11 or newer environment:
 
     python -m pip install yupp
 
@@ -313,7 +332,7 @@ that could come from the original, for example _".c"_ for _".yu-c"_.
 In failing to translate the preprocessor expressions into a plain text
 the evaluation result will be saved as _".ast"_ file.
 
-### EXAMPLE
+## Example
 
 First, we'll output the original source code of our example to the terminal:
 
@@ -381,7 +400,7 @@ int main( void )
 
 [Further examples...](../eg/)
 
-### MACROS IN PYTHON
+## Macros in Python
 
 After the [yupp package][package] is installed into the interpreter that will
 run the script, you can use macro expressions in a direct Python main file by
@@ -401,25 +420,20 @@ transparent codec also requires normal `site` startup; `python -S`, stdin,
 `python -c`, zipapps, and pipx-only installations do not provide the supported
 direct-script path.
 
-### TRUSTED INPUT
+## Trusted input
 
 Use **yupp** only with trusted sources. Macros, infix Python expressions,
 Python files loaded by `($import ...)`, and `.yuconfig` files can execute
 arbitrary Python code. The preprocessor does not provide a sandbox.
 
-### SUBLIME TEXT
+## Editor integration
 
 The folder [_"sublime_text"_](../sublime_text/) contains
 configuration files for comfortable
 usage of the preprocessor in Sublime Text editor. In addition there is
 a plugin for quick navigation between the generated text and its origin.
 
-### VIM
-
-Switching between the generated text and its origin in VIM editor is
-[under development][vim].
-
-### TESTKIT
+## Development
 
 The maintained pytest suite covers the macro language, CLI, codec, traceback
 mapping, examples, and clean distribution installs. From a checkout run:
@@ -427,34 +441,14 @@ mapping, examples, and clean distribution installs. From a checkout run:
     python -m pytest -q
     python -m build
 
-The syntax guide still marks experimental language features explicitly.
+The syntax guide still marks experimental language features explicitly. The
+[ev3dev-c project][ev3dev-c] is also used as a real-world preprocessing
+regression corpus before releases.
 
-### WEB
-
-- [yupp Wiki][wiki]
-- [yupp Blog][blog]
-- [yupp Web Console][console]
-
-### PROJECTS
-
-- [LEGO MINDSTORMS EV3 Debian C library][ev3dev-c]
-- [predict – an embedded application framework][predict]
-
-### GIT
-
-Enter in the following on your command-line to clone **yupp** repository:
-
-    git clone https://github.com/in4lio/yupp.git
-
-### CONTACT
+## Contact
 
 Please feel free to contact me at in4lio+yupp@gmail.com if you have
 any questions about the preprocessor.
 
-[console]:  http://yup-py.appspot.com/
-[blog]:     http://yup-py.blogspot.com/
 [package]:  https://pypi.org/project/yupp/
-[wiki]:     https://github.com/in4lio/yupp/wiki/
-[vim]:      https://github.com/in4lio/vim-yupp/
 [ev3dev-c]: https://github.com/in4lio/ev3dev-c/
-[predict]:  https://github.com/in4lio/predict/

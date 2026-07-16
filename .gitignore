@@ -4,6 +4,9 @@
 *.sublime-workspace
 .DS_Store
 
+# Local editor workspace
+/.vscode/
+
 VERSION
 
 # Python packaging output
