@@ -1,9 +1,8 @@
-A glance at the preprocessing
------------------------------
+# A glance at preprocessing
 
 Let's get acquainted with __yupp__ lexical preprocessor, which allows to generate snippets
 of source code applying meta-constructs in the functional style. We will explore a small
-example from [_"glance.yu-cpp"_](pic/glance.yu-cpp.md) file. The result of preprocessing is
+example from [_"glance.yu-cpp"_](../eg/glance/glance.yu-cpp) file. The result of preprocessing is
 [_"glance.cpp"_](../eg/glance/glance.cpp) file. Our example reads data from an ini-file,
 calculates the value of _Pi_ by the Leibniz formula, increasing the value accuracy at each
 run; and then saves the intermediate results back into the ini-file.
@@ -107,7 +106,7 @@ void ini_save( const QString &fn )
 ```
 
 The function `($q <expr>)` encloses an argument in the quotation marks. For more
-information, please see [Built-in Functions](../doc/builtin.md).
+information, please see [Built-in Functions](builtin.md).
 
 __A string formatting__ is performed using the string application. If a replacement
 field in the string contains a number, this field will be replaced with the positional

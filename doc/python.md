@@ -2,7 +2,7 @@
 
 `yupp` can expand its macro language before CPython parses a direct main
 script. This integration is intended for trusted, filesystem-backed scripts
-run by CPython 3.11-3.14.
+run by CPython 3.11 or newer.
 
 ## Install and run
 

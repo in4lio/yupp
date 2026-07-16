@@ -1,4 +1,9 @@
-### Built-in Functions
+# Built-in functions
+
+These names are available to trusted yupp expressions. The evaluator exposes
+the documented compatibility helpers below together with functions and
+constants from Python's `string`, `operator`, and `math` modules. Host calls
+can execute arbitrary Python behavior and are not a sandbox.
 
 &nbsp;&nbsp; | Various functions
 :--- | :---
@@ -6,6 +11,7 @@
 `($__OUTPUT_FILE__)` | Name of the output file.
 `($__MODULE_NAME__)` | Return an uppercase base name of the current preprocessed file without extension. All hyphens are replaced with underscores.
 `($__TITLE__ dt)` | Insert comment with info about the file, without creation time if `dt == 0`.
+`($abs x)` | Return the absolute value of `x`.
 `($car list)` | Head of a list.
 `($cdr list)` | Tail of a list.
 `($chr x)` | Return the one-character string whose Unicode code point is the integer `x`.
@@ -25,7 +31,7 @@
 `($len list)` | Length of a list.
 `($list ...)` | Create a list of arguments.
 `($oct x)` | Convert an integer number to an octal string.
-`($ord x)` | Return an integer representing of the argument.
+`($ord x)` | Return the Unicode code point of a one-character string.
 `($print ...)` | Print arguments to `<stdout>`.
 `($q s)` | Quote a string `"value"`.
 `($qs s)` | Quote a string `'value'`.
@@ -33,7 +39,7 @@
 `($reduce function iterable[ initializer])` | Apply built-in function of two arguments cumulatively to the items of `iterable`, from left to right, so as to reduce the `iterable` to a single value.
 `($repr x)` | Return a string containing a printable representation of the argument.
 `($reversed list)` | Return a reversed list.
-`($re-split regex s)` | _Experimental_. Equality `filter( None, re.split( regex, s ))`.
+`($re-split regex s)` | _Experimental_. Split `s` with a regular expression and return a yupp list; empty matches are retained.
 `($round x [n])` | Return the floating point value `x` rounded to `n` digits after the decimal point.
 `($skip)` | _Experimental_. Skip the rest of the current module.
 `($SPACE)` | Steady SPACE character.
@@ -41,6 +47,7 @@
 `($strlen s)` | Length of a string (without quotes).
 `($sum list [start])` | Sum `start` and the items of a list from left to right and return the total. `start` defaults to `0`.
 `($TAB)` | Steady TAB character.
+`($typeof x)` | Return the Python runtime type name as an atom.
 `($unique list)` | Return a list of unique elements, preserving order.
 `($unq s)` | Unquote a string.
 &nbsp;&nbsp; | **Functions imported from Python `operator` module**
@@ -48,6 +55,7 @@
 `($concat seq1 seq2)` | Concatenation `seq1 + seq2`.
 `($contains seq obj)` | Containment Test `obj in seq`.
 `($div a b)` | Division `a / b`.
+`($truediv a b)` | Python operator spelling for division `a / b`; `div` is the yupp compatibility alias.
 `($floordiv a b)` | Division `a // b`.
 `($and a b)` | Bitwise And `a & b`.
 `($xor a b)` | Bitwise Exclusive Or `a ^ b`.
@@ -135,13 +143,13 @@
 `($count s sub [start [end]])` | Return the number of (non-overlapping) occurrences of substring `sub` in string `s[start:end]`.
 `($lower s)` | Convert letters to lower case.
 `($maketrans from to)` | Return a translation table suitable for passing to `translate`, that will map each character in `from` into the character at the same position in `to`; `from` and `to` must have the same length.
-`($split s [sep [maxsplit]])` | Return a list of the words of the string `s`. If the optional second argument `sep` is absent or None, the words are separated by arbitrary strings of whitespace characters (space, tab, newline, return, formfeed). If the second argument `sep` is present and not None, it specifies a string to be used as the word separator. The returned list will then have one more items than the number of non-overlapping occurrences of the separator in the string. The optional third argument `maxsplit` defaults to `0`. If it is nonzero, at most `maxsplit` number of splits occur, and the remainder of the string is returned as the final element of the list.
+`($split s [sep [maxsplit]])` | Return a list of the words of the string `s`. If the optional second argument `sep` is absent or None, the words are separated by arbitrary strings of whitespace characters (space, tab, newline, return, formfeed). If the second argument `sep` is present and not None, it specifies a string to be used as the word separator. The returned list will then have one more item than the number of non-overlapping occurrences of the separator. The optional third argument `maxsplit` defaults to `-1`, meaning no limit; a non-negative value limits the number of splits.
 `($join words [sep])` | Concatenate a list or tuple of words with intervening occurrences of `sep`. The default value for `sep` is a single space character.
 `($lstrip s)` | Remove leading whitespace from the string `s`.
 `($rstrip s)` | Remove trailing whitespace from the string `s`.
 `($strip s)` | Remove leading and trailing whitespace from the string `s`.
 `($swapcase s)` | Convert lower case letters to upper case and vice versa.
-`($translate s table [deletechars])` | Delete all characters from `s` that are in `deletechars` (if present), and then translate the characters using `table`, which must be a 256-character string giving the translation for each character value, indexed by its ordinal.
+`($translate s table [deletechars])` | Delete characters named by `deletechars` (if present), then translate `s` using a Python translation mapping or the legacy 256-character table form.
 `($upper s)` | Convert letters to upper case.
 `($ljust s width)`<br>`($rjust s width)`<br>`($center s width)` | These functions respectively left-justify, right-justify and center a string in a field of given width. They return a string that is at least width characters wide, created by padding the string `s` with spaces until the given width on the right, left or both sides. The string is never truncated.
 `($zfill s width)` | Pad a numeric string on the left with zero digits until the given width is reached. Strings starting with a sign are handled correctly.

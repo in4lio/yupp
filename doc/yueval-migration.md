@@ -5,6 +5,27 @@ functions are lexical. Macros, `EVAL` (`$$`), and explicit late-bound names are
 the language's caller-context mechanisms. There is no legacy dynamic-scope
 mode.
 
+## Security boundary
+
+Process only trusted input. Macro expressions and infix `{ Python }`
+expressions can execute Python, `($import ...)` can execute imported Python
+files, and `.yuconfig` files are Python scripts. yupp is not a sandbox.
+
+## Python 3 project migration
+
+When upgrading from the Python 2-compatible release:
+
+- remove dependencies on `future`, `past`, and the backport `builtins` package
+  from templates and imported helper files;
+- update `.yuconfig` files and Python files loaded through `($import ...)` to
+  valid Python 3, because both now execute only on Python 3;
+- regenerate cached outputs after changing runtimes. Set `force = True` in a
+  trusted `.yuconfig` for one run, or update or remove the generated output,
+  then restore normal cache behavior;
+- keep legacy macro-language integer suffixes such as `10L` if needed: they
+  remain part of the yupp language even though Python source no longer accepts
+  them.
+
 ## Language contract
 
 - A lambda captures the environment in which it is defined. Each full or

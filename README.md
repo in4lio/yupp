@@ -2,13 +2,11 @@
 
 # yupp
 
-`yupp` 2.0rc1 is a lexical macro preprocessor for C, C++, Python, and
-other text-based languages. It embeds a small, fully parenthesized macro
-language into ordinary source files and emits readable generated text.
+`yupp` is a lexical macro preprocessor for C, C++, Python, and other text-based
+languages. It embeds a small, fully parenthesized macro language into ordinary
+source files and emits readable generated text.
 
-This branch is Python 3-only. CPython 3.11, 3.12, 3.13, and 3.14 are the
-supported runtimes. CI also exercises the CPython 3.15 prerelease as an
-advisory, non-blocking compatibility signal.
+`yupp` requires Python 3.11 or newer.
 
 ## Install
 
@@ -55,9 +53,11 @@ int main(void)
 }
 ```
 
-See the [language guide](doc/README.md), [built-in functions](doc/builtin.md),
-[language evolution note](doc/language-evolution.md),
+Documentation starts with the [language guide](doc/README.md). The
+[built-in reference](doc/builtin.md), [Python integration guide](doc/python.md),
 [evaluator migration guide](doc/yueval-migration.md), and
+[language evolution note](doc/language-evolution.md) cover specialized topics.
+Runnable inputs and their checked-in outputs are indexed in
 [tracked examples](eg/README.md).
 
 ## Direct Python scripts
@@ -91,32 +91,15 @@ that registers the codec.
 
 More detail is in [Macros in Python](doc/python.md).
 
-## Security and migration notes
+## Security and migration
 
 Process only trusted input. Macro expressions and infix `{ Python }`
 expressions can execute Python, `($import ...)` can execute imported Python
 files, and `.yuconfig` files are Python scripts. `yupp` is not a sandbox.
 
-When upgrading from the Python 2-compatible release:
-
-- remove dependencies on `future`, `past`, and the backport `builtins` package
-  from templates and imported helper files;
-- update `.yuconfig` files and Python files loaded through `($import ...)` to
-  valid Python 3, because both now execute only on Python 3;
-- regenerate cached outputs after changing runtimes. Set `force = True` in a
-  trusted `.yuconfig` for one run, or update/remove the generated output, then
-  restore normal cache behavior;
-- keep legacy macro-language integer suffixes such as `10L` if needed: they
-  remain part of the yupp language even though Python source no longer accepts
-  them.
-
-The evaluator now gives lambdas lexical scope and evaluates only the selected
-conditional branch. Macros, `EVAL` (`$$`), and `&name` remain explicit
-caller-context features. Projects that may rely on accidental caller lookup
-can run `yupp -Wdynamic-scope ...`; the warning checks executed paths without
-substituting caller values. See [Evaluator semantics and
-migration](doc/yueval-migration.md) for the full contract, examples, and
-compatibility table. There is no legacy dynamic-scope mode.
+The [migration guide](doc/yueval-migration.md) covers Python 3 project updates,
+cache regeneration, evaluator scope and conditional changes, the optional
+dynamic-scope warning, and the full compatibility table.
 
 ## Development
 
@@ -135,6 +118,18 @@ template first, regenerate with the current engine, and review both diffs.
 
 The bundled [Sublime Text files](sublime_text/README.md) remain a manually
 installed editor integration.
+
+The repository has one public documentation tree:
+
+- `src/yupp/` contains the installable package and bundled macro libraries;
+- `tests/` contains unit, integration, packaging, and compatibility tests;
+- `eg/` contains source templates and their deterministic generated outputs;
+- `doc/` contains the language documentation and its images;
+- `script/` contains developer utilities such as the evaluator benchmark;
+- `sublime_text/` contains the optional, manually installed editor integration.
+
+Build products, caches, virtual environments, and editor-local settings are
+ignored and must not be committed.
 
 ## License
 
