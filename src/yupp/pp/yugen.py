@@ -1574,7 +1574,7 @@ def ps_plain( sou, pth_sq, pth, indent, depth = 0 ):
         if symbol is None:
             raise EOFError( '%s: unexpected EOF:' % ( callee()))
 
-        if symbol not in ps_ANY:
+        if symbol not in ps_ANY and symbol < 256:
             raise SyntaxError( '%s: forbidden character' % ( callee()) + sou.loc())
 
 #   ---- [switch ...
@@ -2903,6 +2903,27 @@ def _prepare_lambda_call( closure, env, already_private = False ):
     return result
 
 #   ---------------------------------------------------------------------------
+def _deferred_conditional_parameters( closure ):
+    """Return direct branch parameters of a reduced conditional closure."""
+    form = closure.l_form
+    if ( isinstance( form, APPLY ) and not form.args and not form.named
+    and isinstance( form.fn, COND_CLOSURE )):
+        form = form.fn
+
+    if ( not isinstance( form, COND_CLOSURE )
+    or not isinstance( form.cond, VAR )
+    or isinstance( form.cond.reg, LATE_BOUND )
+    or not closure.env.__contains__( form.cond.atom )):
+        return set()
+
+    result = set()
+    for leg in ( form.leg_1, form.leg_0 ):
+        if ( isinstance( leg, VAR ) and not isinstance( leg.reg, LATE_BOUND )
+        and closure.env.__contains__( leg.atom )):
+            result.add( leg.atom )
+    return result if len( result ) == 2 and form.cond.atom not in result else set()
+
+#   ---------------------------------------------------------------------------
 class INFIX_VISITOR( NodeVisitor ):
     """
     Get identifiers from expression in Python.
@@ -2922,6 +2943,18 @@ class LAZY( BASE_OBJECT, CAPTION ):
     """
 #   ---------------
     pass
+
+#   ---------------------------------------------------------------------------
+class DEFERRED_ARGUMENT( BASE_OBJECT, CAPTION ):
+    """Runtime-only conditional branch together with its lexical call site."""
+#   -----------------------------------
+    def __init__( self, form, env ):
+        CAPTION.__init__( self, form )
+        self.env = env
+
+#   -----------------------------------
+    def __deepcopy__( self, memo = None ):
+        return DEFERRED_ARGUMENT( copy.deepcopy( self.ast, memo ), self.env )
 
 #   ---------------------------------------------------------------------------
 class SKIP( BASE_MARK ):
@@ -3523,6 +3556,13 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                 trace__eval_in_( node, env, depth )
             else:
                 tr = True
+#   ---- DEFERRED_ARGUMENT
+            if isinstance( node, DEFERRED_ARGUMENT ):
+                env = _operation_scope( node.env, env )
+                env._context.resumption_caller = node.env
+                node = node.ast
+                # fall through -- yueval( node )
+
 #   ---- TEXT --> T
             if isinstance( node, TEXT ):
                 node = T( node.ast )
@@ -3658,6 +3698,9 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     node._positional_parameters = [var for var, value in node.fn.env.xlocal()
                     if isinstance( value, BOUND ) and var not in named_parameters]
                 positional_parameters = node._positional_parameters
+                conditional_parameters = ( _deferred_conditional_parameters( node.fn )
+                if isinstance( node.fn, L_CLOSURE ) and not env._context.template_reduction
+                else set())
                 while node._next_operand < len( node._order ):
                     named, pos = node._order[ node._next_operand ]
                     operand_env = ( _operation_scope( node.fn._operation_env, env )
@@ -3667,13 +3710,14 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                     if named:
                         var, operand = node.named[ pos ]
                         deferred = ( isinstance( node.fn, L_CLOSURE )
-                        and var in node.fn.late )
+                        and ( var in node.fn.late or var in conditional_parameters ))
                         value = operand if deferred else yueval( operand, operand_env, depth + 1 )
                         node.named[ pos ] = ( var, value )
                     else:
                         if isinstance( node.fn, L_CLOSURE ):
                             deferred = ( pos < len( positional_parameters )
-                            and positional_parameters[ pos ] in node.fn.late )
+                            and ( positional_parameters[ pos ] in node.fn.late
+                            or positional_parameters[ pos ] in conditional_parameters ))
                         value = ( node.args[ pos ] if deferred
                         else yueval( node.args[ pos ], operand_env, depth + 1 ))
                         node.args[ pos ] = value
@@ -3818,6 +3862,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
 #   ---- APPLY -- L_CLOSURE
                 elif isinstance( node.fn, L_CLOSURE ):
                     fn = node.fn
+                    conditional_parameters = ( _deferred_conditional_parameters( fn )
+                    if not env._context.template_reduction else set())
                     has_named = node._next_named_argument < len( node.named )
                     has_args = node._next_argument < len( node.args )
                     if has_named:
@@ -3830,6 +3876,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                             log.warning( 'parameter "%s" is already assigned with value' % ( str( var )) + var.loc())
                         if var in fn.late:
                             val = L_CLOSURE( val, ENV( env, fn.late[ var ]))
+                        elif var in conditional_parameters:
+                            val = DEFERRED_ARGUMENT( val, env )
                         else:
                             val = yueval( val, env, depth + 1 )
                         fn = fn.bind( var, val )
@@ -3851,6 +3899,8 @@ def yueval( node, env = ENV(), depth = 0 ):                                     
                             return node
                         if var in fn.late:
                             val = L_CLOSURE( val, ENV( env, fn.late[ var ]))
+                        elif var in conditional_parameters:
+                            val = DEFERRED_ARGUMENT( val, env )
                         fn = fn.bind( var, val )
 
                     else:
