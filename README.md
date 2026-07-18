@@ -1,4 +1,4 @@
-[![yupp logo](doc/pic/logo.png)](doc/README.md)
+[![yupp logo][logo]][language guide]
 
 # yupp
 
@@ -53,12 +53,11 @@ int main(void)
 }
 ```
 
-Documentation starts with the [language guide](doc/README.md). The
-[built-in reference](doc/builtin.md), [Python integration guide](doc/python.md),
-[evaluator migration guide](doc/yueval-migration.md), and
-[language evolution note](doc/language-evolution.md) cover specialized topics.
+Documentation starts with the [language guide]. The [built-in reference],
+[Python integration guide], [evaluator migration guide], and
+[language evolution note] cover specialized topics.
 Runnable inputs and their checked-in outputs are indexed in
-[tracked examples](eg/README.md).
+[tracked examples].
 
 ## Direct Python scripts
 
@@ -89,7 +88,7 @@ and a script run by a different interpreter environment from the one where
 `yupp` is installed. In particular, `-S` disables `site` and the `.pth` hook
 that registers the codec.
 
-More detail is in [Macros in Python](doc/python.md).
+More detail is in [Macros in Python][Python integration guide].
 
 ## Security and migration
 
@@ -97,9 +96,9 @@ Process only trusted input. Macro expressions and infix `{ Python }`
 expressions can execute Python, `($import ...)` can execute imported Python
 files, and `.yuconfig` files are Python scripts. `yupp` is not a sandbox.
 
-The [migration guide](doc/yueval-migration.md) covers Python 3 project updates,
-cache regeneration, evaluator scope and conditional changes, the optional
-dynamic-scope warning, and the full compatibility table.
+The [migration guide][evaluator migration guide] covers Python 3 project
+updates, cache regeneration, evaluator scope and conditional changes, the
+optional dynamic-scope warning, and the full compatibility table.
 
 ## Development
 
@@ -116,7 +115,7 @@ The wheel is the installation artifact used by clean-environment tests. The
 repository keeps generated examples next to their source templates; update a
 template first, regenerate with the current engine, and review both diffs.
 
-The bundled [Sublime Text files](sublime_text/README.md) remain a manually
+The bundled [Sublime Text files] remain a manually
 installed editor integration.
 
 The repository has one public documentation tree:
@@ -133,4 +132,14 @@ ignored and must not be committed.
 
 ## License
 
-See [LICENSE](LICENSE).
+See [LICENSE].
+
+[logo]: https://raw.githubusercontent.com/in4lio/yupp/master/doc/pic/logo.png
+[language guide]: https://github.com/in4lio/yupp/blob/master/doc/README.md
+[built-in reference]: https://github.com/in4lio/yupp/blob/master/doc/builtin.md
+[Python integration guide]: https://github.com/in4lio/yupp/blob/master/doc/python.md
+[evaluator migration guide]: https://github.com/in4lio/yupp/blob/master/doc/yueval-migration.md
+[language evolution note]: https://github.com/in4lio/yupp/blob/master/doc/language-evolution.md
+[tracked examples]: https://github.com/in4lio/yupp/blob/master/eg/README.md
+[Sublime Text files]: https://github.com/in4lio/yupp/blob/master/sublime_text/README.md
+[LICENSE]: https://github.com/in4lio/yupp/blob/master/LICENSE

@@ -5,6 +5,7 @@ import email.parser
 import hashlib
 import os
 from pathlib import Path
+import re
 import shutil
 import stat
 import subprocess
@@ -145,9 +146,21 @@ def test_metadata_is_static_and_artifacts_are_complete(distributions):
     assert metadata["Version"] == "2.0rc1"
     assert metadata["Requires-Python"] == ">=3.11"
     assert metadata.get_all("Requires-Dist") is None
+    assert "Development Status :: 4 - Beta" in metadata.get_all("Classifier")
+    description = metadata.get_payload()
     assert b"yupp = yupp.__main__:main" in payload[f"{dist_info}/entry_points.txt"]
     assert b"Root-Is-Purelib: true" in payload[f"{dist_info}/WHEEL"]
     assert b"Tag: py3-none-any" in payload[f"{dist_info}/WHEEL"]
+
+    reference_targets = re.findall(
+        r"^\[[^]]+\]:\s+(\S+)$", description, re.MULTILINE
+    )
+    inline_targets = re.findall(r"\]\(([^)\s]+)", description)
+    assert reference_targets
+    assert all(
+        target.startswith("https://")
+        for target in (*reference_targets, *inline_targets)
+    )
 
     assert names.count("yupp.pth") == 1
     recorded_names = _assert_wheel_record(payload)
