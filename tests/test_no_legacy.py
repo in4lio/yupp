@@ -327,7 +327,11 @@ def test_migration_details_have_one_canonical_guide():
         encoding="utf8"
     ).lower()
 
-    assert "[migration guide](doc/yueval-migration.md)" in readme
+    assert "[migration guide][evaluator migration guide]" in readme
+    assert (
+        "[evaluator migration guide]: "
+        "https://github.com/in4lio/yupp/blob/master/doc/yueval-migration.md"
+    ) in readme
     assert "when upgrading from the python 2-compatible release" not in readme
     for required in (
         "## security boundary",
